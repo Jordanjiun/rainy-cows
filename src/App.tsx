@@ -1,12 +1,32 @@
-import { TestComponent } from './components/TestComponent';
+import { Application, extend } from '@pixi/react';
+import { Container, Graphics } from 'pixi.js';
+import { SceneProvider } from './context/SceneProvider';
+import { TestScene } from './scenes/TestScene';
+import { useScene } from './context/useScene';
+import type { SceneKey } from './context/SceneTypes';
+import './App.css';
 
-function App() {
+extend({ Container, Graphics });
+
+export const App = () => {
+  const { currentScene } = useScene();
+
+  const renderScene = (scene: SceneKey) => {
+    switch (scene) {
+      case 'TestScene':
+        return <TestScene />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div>
-      <h1>My Pixi App</h1>
-      <TestComponent />
-    </div>
+    <SceneProvider>
+      <div className="app-container">
+        <Application width={800} height={600} className="responsive-canvas">
+          {renderScene(currentScene)}
+        </Application>
+      </div>
+    </SceneProvider>
   );
-}
-
-export default App;
+};

@@ -1,4 +1,4 @@
-import { Application, extend } from '@pixi/react';
+import { extend } from '@pixi/react';
 import { Container, Graphics } from 'pixi.js';
 import { useCallback } from 'react';
 
@@ -16,10 +16,8 @@ export const TestComponent = () => {
   }, []);
 
   return (
-    <Application>
-      <pixiContainer x={100} y={100}>
-        <pixiGraphics draw={drawCallback} />
-      </pixiContainer>
-    </Application>
+    <pixiContainer x={100} y={100}>
+      <pixiGraphics draw={drawCallback} />
+    </pixiContainer>
   );
 };
