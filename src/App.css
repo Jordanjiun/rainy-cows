@@ -1,0 +1,13 @@
+.app-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+}
+
+.responsive-canvas {
+  width: 100%;
+  max-width: 800px;
+  height: auto;
+}
