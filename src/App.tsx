@@ -50,6 +50,7 @@ export const App = () => {
 
   return (
     <SceneProvider>
+      <div className="banner">Rainy Cows</div>
       <div ref={containerRef} className="app-container">
         <button className="fullscreen-btn" onClick={toggleFullscreen}>
           {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
