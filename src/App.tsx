@@ -1,12 +1,15 @@
 import { Application, extend } from '@pixi/react';
 import { Container, Graphics } from 'pixi.js';
+
 import { SceneProvider } from './context/SceneProvider';
 import { TestScene } from './scenes/TestScene';
 import { useScene } from './context/useScene';
 import type { SceneKey } from './context/SceneTypes';
+
 import './App.css';
-import { useRef, useEffect, useState } from 'react';
 import { Maximize, Minimize } from 'lucide-react';
+import { useRef, useEffect, useState } from 'react';
+import type { MouseEvent } from 'react';
 
 extend({ Container, Graphics });
 
@@ -24,7 +27,9 @@ export const App = () => {
     }
   };
 
-  const toggleFullscreen = () => {
+  const toggleFullscreen = (e: MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.blur();
+
     const elem = containerRef.current;
     if (!elem) return;
 
