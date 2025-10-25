@@ -1,5 +1,4 @@
-import { Application, extend } from '@pixi/react';
-import { Container, Graphics } from 'pixi.js';
+import { Application } from '@pixi/react';
 import { useScene } from './context/useScene';
 import type { SceneKey } from './context/SceneTypes';
 import { TestScene } from './scenes/TestScene';
@@ -9,7 +8,9 @@ import { useRef, useEffect, useState } from 'react';
 import type { MouseEvent } from 'react';
 import './App.css';
 
-extend({ Container, Graphics });
+const defaultAppWidth = 800;
+const defaultAppHeight = 600;
+const fullscreenSvgSize = 20;
 
 export const AppContent = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -57,10 +58,18 @@ export const AppContent = () => {
 
       <div ref={containerRef} className="app-container">
         <button className="fullscreen-btn" onClick={toggleFullscreen}>
-          {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+          {isFullscreen ? (
+            <Minimize size={fullscreenSvgSize} />
+          ) : (
+            <Maximize size={fullscreenSvgSize} />
+          )}
         </button>
 
-        <Application width={800} height={600} className="responsive-canvas">
+        <Application
+          width={defaultAppWidth}
+          height={defaultAppHeight}
+          className="responsive-canvas"
+        >
           {renderScene(currentScene)}
         </Application>
       </div>

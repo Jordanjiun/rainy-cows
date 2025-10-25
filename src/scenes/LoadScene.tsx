@@ -1,16 +1,23 @@
-import { extend } from '@pixi/react';
-import { Container, Graphics, Text } from 'pixi.js';
+import { extend, useApplication } from '@pixi/react';
+import { Container } from 'pixi.js';
 import { useEffect, useState } from 'react';
 import { useScene } from '../context/useScene';
 import { LoadingBar } from '../components/LoadingBar';
 
-extend({ Container, Graphics, Text });
+extend({ Container });
+
+const loadingBarWidth = 500;
+const loadingBarHeight = 30;
 
 export const LoadScreen = () => {
   const [progress, setProgress] = useState(0);
   const { switchScene } = useScene();
+  const { app } = useApplication();
 
-  // Simulate fake loading process
+  if (!app) return null;
+  const appWidth = app.renderer?.width ?? 0;
+  const appHeight = app.renderer?.height ?? 0;
+
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress((prev) => {
@@ -28,5 +35,16 @@ export const LoadScreen = () => {
     return () => clearInterval(interval);
   }, [switchScene]);
 
-  return <LoadingBar progress={progress} />;
+  return (
+    <pixiContainer
+      x={appWidth / 2 - loadingBarWidth / 2}
+      y={appHeight / 2 - loadingBarHeight / 2}
+    >
+      <LoadingBar
+        width={loadingBarWidth}
+        height={loadingBarHeight}
+        progress={progress}
+      />
+    </pixiContainer>
+  );
 };
