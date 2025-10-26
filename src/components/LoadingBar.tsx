@@ -14,18 +14,14 @@ export const LoadingBar = ({
   progress: number;
 }) => {
   const drawBackground = useCallback((g: Graphics) => {
-    g.clear();
-    g.setFillStyle({ color: 'black' });
     g.rect(0, 0, width, height);
-    g.fill();
+    g.fill({ color: 'black' });
   }, []);
 
   const drawProgress = useCallback(
     (g: Graphics) => {
-      g.clear();
-      g.setFillStyle({ color: 'green' });
       g.rect(0, 0, (progress / 100) * width, height);
-      g.fill();
+      g.fill({ color: 'green' });
     },
     [progress],
   );
