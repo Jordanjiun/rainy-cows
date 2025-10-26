@@ -25,7 +25,7 @@ export const LoadScreen = () => {
         if (next >= 100) {
           clearInterval(interval);
           setTimeout(() => {
-            switchScene('TestScene');
+            switchScene('MainScene');
           }, 100);
         }
         return next;

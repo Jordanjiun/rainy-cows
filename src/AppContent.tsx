@@ -1,8 +1,8 @@
 import { Application } from '@pixi/react';
 import { useScene } from './context/useScene';
 import type { SceneKey } from './context/SceneTypes';
-import { TestScene } from './scenes/TestScene';
 import { LoadScreen } from './scenes/LoadScene';
+import { MainScene } from './scenes/MainScene';
 import { Maximize, Minimize } from 'lucide-react';
 import { useRef, useEffect, useState } from 'react';
 import type { MouseEvent } from 'react';
@@ -21,8 +21,8 @@ export const AppContent = () => {
     switch (scene) {
       case 'LoadScreen':
         return <LoadScreen />;
-      case 'TestScene':
-        return <TestScene />;
+      case 'MainScene':
+        return <MainScene />;
       default:
         return null;
     }
