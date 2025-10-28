@@ -8,14 +8,12 @@ import { useRef, useEffect, useState } from 'react';
 import type { MouseEvent } from 'react';
 import './App.css';
 
-const defaultAppWidth = 800;
-const defaultAppHeight = 600;
 const fullscreenSvgSize = 20;
 
 export const AppContent = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const { currentScene } = useScene();
   const containerRef = useRef<HTMLDivElement>(null);
+  const { currentScene } = useScene();
 
   const renderScene = (scene: SceneKey) => {
     switch (scene) {
@@ -65,11 +63,7 @@ export const AppContent = () => {
           )}
         </button>
 
-        <Application
-          width={defaultAppWidth}
-          height={defaultAppHeight}
-          className="responsive-canvas"
-        >
+        <Application resizeTo={window} className="canvas">
           {renderScene(currentScene)}
         </Application>
       </div>
