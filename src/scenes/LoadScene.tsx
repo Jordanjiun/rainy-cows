@@ -6,27 +6,47 @@ import { LoadingBar } from '../components/LoadingBar';
 
 extend({ Container });
 
-const loadingBarWidth = 500;
-const loadingBarHeight = 30;
-
 export const LoadScreen = () => {
   const [progress, setProgress] = useState(0);
   const { switchScene } = useScene();
   const { app } = useApplication();
+  const [size, setSize] = useState({ width: 0, height: 0 });
 
-  if (!app) return null;
-  const appWidth = app.renderer?.width ?? 0;
-  const appHeight = app.renderer?.height ?? 0;
+  useEffect(() => {
+    if (!app) return;
 
+    const updateSize = () => {
+      if (!app.renderer) return;
+      setSize({ width: app.renderer.width, height: app.renderer.height });
+    };
+
+    if (app.renderer) {
+      app.renderer.on('resize', updateSize);
+      updateSize();
+    }
+
+    const interval = setInterval(() => {
+      if (app.renderer) {
+        app.renderer.on('resize', updateSize);
+        updateSize();
+        clearInterval(interval);
+      }
+    }, 50);
+
+    return () => {
+      if (app.renderer) app.renderer.off('resize', updateSize);
+      clearInterval(interval);
+    };
+  }, [app]);
+
+  // Simulate loading progress
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress((prev) => {
         const next = prev + 10;
         if (next >= 100) {
           clearInterval(interval);
-          setTimeout(() => {
-            switchScene('MainScene');
-          }, 100);
+          setTimeout(() => switchScene('MainScene'), 100);
         }
         return next;
       });
@@ -35,14 +55,13 @@ export const LoadScreen = () => {
     return () => clearInterval(interval);
   }, [switchScene]);
 
+  if (!app) return null;
+
   return (
-    <pixiContainer
-      x={appWidth / 2 - loadingBarWidth / 2}
-      y={appHeight / 2 - loadingBarHeight / 2}
-    >
+    <pixiContainer>
       <LoadingBar
-        width={loadingBarWidth}
-        height={loadingBarHeight}
+        appWidth={size.width}
+        appHeight={size.height}
         progress={progress}
       />
     </pixiContainer>
