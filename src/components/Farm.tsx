@@ -4,6 +4,8 @@ import { useCallback } from 'react';
 
 extend({ Graphics });
 
+const landRatio = Number(import.meta.env.VITE_LAND_RATIO);
+
 export const Farm = ({
   appWidth,
   appHeight,
@@ -14,28 +16,18 @@ export const Farm = ({
   const drawBackground = useCallback(
     (g: Graphics) => {
       g.clear();
-      g.rect(0, 0, appWidth, appHeight);
-      g.fill({ color: 'green' });
+      g.rect(0, 0, appWidth, appHeight * (1 - landRatio));
+      g.fill({ color: '#87CEEB' });
+      g.rect(
+        0,
+        appHeight - appHeight * landRatio,
+        appWidth,
+        appHeight * landRatio,
+      );
+      g.fill({ color: '#32CD32' });
     },
     [appWidth, appHeight],
   );
 
-  const drawPointers = useCallback(
-    (g: Graphics) => {
-      g.clear();
-      g.circle(0, 0, 10);
-      g.circle(0, appHeight, 10);
-      g.circle(appWidth, 0, 10);
-      g.circle(appWidth, appHeight, 10);
-      g.fill({ color: 'red' });
-    },
-    [appWidth, appHeight],
-  );
-
-  return (
-    <>
-      <pixiGraphics draw={drawBackground} />
-      <pixiGraphics draw={drawPointers} />
-    </>
-  );
+  return <pixiGraphics draw={drawBackground} />;
 };

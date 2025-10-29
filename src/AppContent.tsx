@@ -8,7 +8,7 @@ import { useRef, useEffect, useState } from 'react';
 import type { MouseEvent } from 'react';
 import './App.css';
 
-const fullscreenSvgSize = 20;
+const fullscreenSvgSize = Number(import.meta.env.VITE_FULLSCREEN_SVG_SIZE);
 
 export const AppContent = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
