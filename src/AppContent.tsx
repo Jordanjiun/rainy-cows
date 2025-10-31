@@ -51,8 +51,10 @@ export const AppContent = () => {
   }, []);
 
   return (
-    <div className="banner-container">
-      <div className="banner">Rainy Cows</div>
+    <>
+      <div className="banner-container">
+        <div className="banner">Rainy Cows</div>
+      </div>
 
       <div ref={containerRef} className="app-container">
         <button className="fullscreen-btn" onClick={toggleFullscreen}>
@@ -63,10 +65,15 @@ export const AppContent = () => {
           )}
         </button>
 
-        <Application resizeTo={window} className="canvas">
+        <Application
+          antialias={false}
+          className="canvas"
+          resizeTo={window}
+          roundPixels={true}
+        >
           {renderScene(currentScene)}
         </Application>
       </div>
-    </div>
+    </>
   );
 };

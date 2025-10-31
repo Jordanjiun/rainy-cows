@@ -1,10 +1,35 @@
 import { extend, useApplication } from '@pixi/react';
-import { Container } from 'pixi.js';
+import { Assets, Container } from 'pixi.js';
 import { useEffect, useState } from 'react';
 import { useScene } from '../context/useScene';
 import { LoadingBar } from '../components/LoadingBar';
 
 extend({ Container });
+
+const manifest = {
+  bundles: [
+    {
+      name: 'cows',
+      assets: [
+        { alias: 'cowblack0', src: '/assets/cows/cows_spritesheet_black0.png' },
+        { alias: 'cowblack1', src: '/assets/cows/cows_spritesheet_black1.png' },
+        { alias: 'cowbrown', src: '/assets/cows/cows_spritesheet_brown.png' },
+        {
+          alias: 'cowwhitedarkspots',
+          src: '/assets/cows/cows_spritesheet_white_darkspots.png',
+        },
+        {
+          alias: 'cowwhitepinkspots',
+          src: '/assets/cows/cows_spritesheet_white_pinkspots.png',
+        },
+        { alias: 'cowwhite0', src: '/assets/cows/cows_spritesheet_white0.png' },
+        { alias: 'cowwhite1', src: '/assets/cows/cows_spritesheet_white1.png' },
+      ],
+    },
+  ],
+};
+
+await Assets.init({ manifest });
 
 export const LoadScreen = () => {
   const [progress, setProgress] = useState(0);
@@ -50,7 +75,7 @@ export const LoadScreen = () => {
         }
         return next;
       });
-    }, 100);
+    }, 50);
 
     return () => clearInterval(interval);
   }, [switchScene]);
