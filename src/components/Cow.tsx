@@ -14,7 +14,6 @@ export const Cow = ({
   appWidth: number;
   appHeight: number;
 }) => {
-  const [currentAnim, setCurrentAnim] = useState('idle');
   const { pos, cowScale, animation, direction } = useCowKeyboardMovement(
     appWidth,
     appHeight,
@@ -22,20 +21,41 @@ export const Cow = ({
   const animations = useCowAnimations();
   const spriteRef = useRef<AnimatedSprite>(null);
 
+  const [currentAnim, setCurrentAnim] = useState('idle');
+  const [queuedAnim, setQueuedAnim] = useState<string | null>(null);
+
   useEffect(() => {
-    if (animations && animations[animation]) {
+    if (!animations) return;
+
+    const nextAnimCapitalized =
+      animation.charAt(0).toUpperCase() + animation.slice(1);
+    const transitionKey = `${currentAnim}To${nextAnimCapitalized}`;
+
+    if (animations[transitionKey]) {
+      setQueuedAnim(animation);
+      setCurrentAnim(transitionKey);
+    } else {
       setCurrentAnim(animation);
+      setQueuedAnim(null);
     }
   }, [animation, animations]);
 
   useEffect(() => {
     const sprite = spriteRef.current;
-    if (!sprite) return;
+    if (!sprite || !animations) return;
 
+    sprite.textures = animations[currentAnim];
     sprite.animationSpeed = cowAnimSpeed;
-    sprite.loop = true;
+    sprite.loop = !currentAnim.includes('To');
     sprite.play();
-  }, [animations, currentAnim]);
+
+    sprite.onComplete = () => {
+      if (queuedAnim) {
+        setCurrentAnim(queuedAnim);
+        setQueuedAnim(null);
+      }
+    };
+  }, [currentAnim, animations]);
 
   if (!animations) return null;
 

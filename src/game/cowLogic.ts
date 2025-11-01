@@ -16,9 +16,10 @@ const landRatio = Number(import.meta.env.VITE_LAND_RATIO);
 const animationsDef: Record<string, number[]> = {
   idle: [0],
   look: [0, 1, 2, 4, 5, 4, 2, 1],
-  walkhorizontal: [16, 17, 18, 19],
-  walkdown: [20, 21, 22, 23],
-  walkup: [24, 25, 26, 27],
+  walkHorizontal: [16, 17, 18, 19],
+  walkDown: [20, 21, 22, 23],
+  walkUp: [24, 25, 26, 27],
+  walkHorizontalToIdle: [2, 1],
 };
 
 export function getCowScale(input: number) {
@@ -86,7 +87,7 @@ export function useCowRandomMovement(appWidth: number, appHeight: number) {
 export function useCowKeyboardMovement(appWidth: number, appHeight: number) {
   const [pos, setPos] = useState<Vec2>({ x: appWidth / 2, y: appHeight / 2 });
   const [animation, setAnimation] = useState<
-    'idle' | 'walkhorizontal' | 'walkdown' | 'walkup'
+    'idle' | 'walkHorizontal' | 'walkDown' | 'walkUp'
   >('idle');
   const [direction, setDirection] = useState<1 | -1>(1);
   const keys = useRef<Record<string, boolean>>({});
@@ -150,9 +151,9 @@ export function useCowKeyboardMovement(appWidth: number, appHeight: number) {
     if (dx === 0 && dy === 0) {
       setAnimation('idle');
     } else if (Math.abs(dy) > Math.abs(dx)) {
-      setAnimation(dy < 0 ? 'walkup' : 'walkdown');
+      setAnimation(dy < 0 ? 'walkUp' : 'walkDown');
     } else {
-      setAnimation('walkhorizontal');
+      setAnimation('walkHorizontal');
       if (dx !== 0) setDirection(dx > 0 ? 1 : -1);
     }
 
