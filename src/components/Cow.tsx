@@ -14,11 +14,13 @@ export const Cow = ({
   appWidth: number;
   appHeight: number;
 }) => {
-  const { pos, cowScale } = useCowKeyboardMovement(appWidth, appHeight);
-  const animations = useCowAnimations();
   const [currentAnim, setCurrentAnim] = useState('idle');
+  const { pos, cowScale, animation, direction } = useCowKeyboardMovement(
+    appWidth,
+    appHeight,
+  );
+  const animations = useCowAnimations();
   const spriteRef = useRef<AnimatedSprite>(null);
-  const animation = 'look';
 
   useEffect(() => {
     if (animations && animations[animation]) {
@@ -45,7 +47,7 @@ export const Cow = ({
       textures={textures}
       x={pos.x}
       y={pos.y}
-      scale={cowScale}
+      scale={{ x: cowScale * direction, y: cowScale }}
       anchor={0.5}
     />
   );

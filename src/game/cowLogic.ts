@@ -16,7 +16,9 @@ const landRatio = Number(import.meta.env.VITE_LAND_RATIO);
 const animationsDef: Record<string, number[]> = {
   idle: [0],
   look: [0, 1, 2, 4, 5, 4, 2, 1],
-  walk: [40, 41, 42, 43],
+  walkhorizontal: [16, 17, 18, 19],
+  walkdown: [20, 21, 22, 23],
+  walkup: [24, 25, 26, 27],
 };
 
 export function getCowScale(input: number) {
@@ -83,10 +85,15 @@ export function useCowRandomMovement(appWidth: number, appHeight: number) {
 
 export function useCowKeyboardMovement(appWidth: number, appHeight: number) {
   const [pos, setPos] = useState<Vec2>({ x: appWidth / 2, y: appHeight / 2 });
+  const [animation, setAnimation] = useState<
+    'idle' | 'walkhorizontal' | 'walkdown' | 'walkup'
+  >('idle');
+  const [direction, setDirection] = useState<1 | -1>(1);
   const keys = useRef<Record<string, boolean>>({});
   const cowScale = getCowScale(appWidth * appHeight);
   const landBoundary = appHeight * (1 - landRatio) - frameSize * cowScale + 10;
 
+  // Ensure cow stays in bounds when app resizes
   useEffect(() => {
     setPos((prev) => {
       const cowScale = getCowScale(appWidth * appHeight);
@@ -95,8 +102,8 @@ export function useCowKeyboardMovement(appWidth: number, appHeight: number) {
 
       let x = prev.x;
       let y = prev.y;
-
       const halfSize = (frameSize * cowScale) / 2;
+
       if (x < halfSize) x = halfSize;
       else if (x > appWidth - halfSize) x = appWidth - halfSize;
 
@@ -107,6 +114,7 @@ export function useCowKeyboardMovement(appWidth: number, appHeight: number) {
     });
   }, [appWidth, appHeight]);
 
+  // Keyboard input tracking
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       keys.current[e.key.toLowerCase()] = true;
@@ -138,12 +146,23 @@ export function useCowKeyboardMovement(appWidth: number, appHeight: number) {
     dx /= len;
     dy /= len;
 
+    // Determine animation and direction
+    if (dx === 0 && dy === 0) {
+      setAnimation('idle');
+    } else if (Math.abs(dy) > Math.abs(dx)) {
+      setAnimation(dy < 0 ? 'walkup' : 'walkdown');
+    } else {
+      setAnimation('walkhorizontal');
+      if (dx !== 0) setDirection(dx > 0 ? 1 : -1);
+    }
+
+    // Move cow
     if (dx !== 0 || dy !== 0) {
       setPos((prev) => {
         let x = prev.x + dx * cowSpeed * delta;
         let y = prev.y + dy * cowSpeed * delta;
 
-        if (x < 0 + (frameSize * cowScale) / 2) x = (frameSize * cowScale) / 2;
+        if (x < (frameSize * cowScale) / 2) x = (frameSize * cowScale) / 2;
         else if (x > appWidth - (frameSize * cowScale) / 2)
           x = appWidth - (frameSize * cowScale) / 2;
 
@@ -157,7 +176,7 @@ export function useCowKeyboardMovement(appWidth: number, appHeight: number) {
     }
   });
 
-  return { pos, cowScale };
+  return { pos, cowScale, animation, direction };
 }
 
 export function useCowAnimations() {
