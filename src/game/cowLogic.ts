@@ -11,6 +11,7 @@ const cowMinTickIdle = Number(import.meta.env.VITE_COW_MIN_TICK_IDLE);
 const cowMinTickWalk = Number(import.meta.env.VITE_COW_MIN_TICK_WALK);
 const cowSheetCols = Number(import.meta.env.VITE_COW_SHEET_COLS);
 const cowSpeed = Number(import.meta.env.VITE_COW_SPEED);
+const cowWalkDelay = Number(import.meta.env.VITE_COW_WALK_DELAY_MS);
 const landRatio = Number(import.meta.env.VITE_LAND_RATIO);
 
 const animationsDef: Record<string, number[]> = {
@@ -21,7 +22,8 @@ const animationsDef: Record<string, number[]> = {
   walkDown: [20, 21, 22, 23],
   walkUp: [24, 25, 26, 27],
   walkHorizontalToIdle: [2, 1],
-  walkToIdle: [2, 1],
+  idleToWalk: [0, 1, 2],
+  walkToIdle: [2, 1, 0],
 };
 
 export function useCowRandomMovement(
@@ -32,6 +34,7 @@ export function useCowRandomMovement(
   const [pos, setPos] = useState<Vec2>({ x: appWidth / 2, y: appHeight / 2 });
   const [animation, setAnimation] = useState<'idle' | 'walk'>('idle');
   const [direction, setDirection] = useState<1 | -1>(1);
+  const [canMove, setCanMove] = useState(false);
 
   const rng = useRef(createSeededRNG(seed));
   const moveDir = useRef<{ dx: number; dy: number }>({ dx: 0, dy: 0 });
@@ -53,10 +56,9 @@ export function useCowRandomMovement(
       const cowScale = getCowScale(appWidth * appHeight);
       const landBoundary =
         appHeight * (1 - landRatio) - frameSize * cowScale + 10;
-
+      const halfSize = (frameSize * cowScale) / 2;
       let x = prev.x;
       let y = prev.y;
-      const halfSize = (frameSize * cowScale) / 2;
 
       if (x < halfSize) x = halfSize;
       else if (x > appWidth - halfSize) x = appWidth - halfSize;
@@ -78,16 +80,19 @@ export function useCowRandomMovement(
         setAnimation('walk');
         stateTimer.current = 0;
         seedDirection();
+        setCanMove(false);
+        setTimeout(() => setCanMove(true), cowWalkDelay); // Delay movement start
       }
     } else if (animation === 'walk' && stateTimer.current >= cowMinTickWalk) {
       if (rng.current() < cowIdleWalkChance) {
         setAnimation('idle');
         stateTimer.current = 0;
         moveDir.current = { dx: 0, dy: 0 };
+        setCanMove(false);
       }
     }
 
-    if (animation === 'walk') {
+    if (animation === 'walk' && canMove) {
       let { dx, dy } = moveDir.current;
       dy += (rng.current() - 0.5) * 0.1;
       dx = dx >= 0 ? Math.abs(dx) : -Math.abs(dx);
