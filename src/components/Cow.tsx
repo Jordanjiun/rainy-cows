@@ -1,8 +1,11 @@
 import { extend } from '@pixi/react';
-import { Sprite } from 'pixi.js';
-import { useCowMovement, useCowTexture } from '../game/cowLogic';
+import { AnimatedSprite } from 'pixi.js';
+import { useEffect, useRef, useState } from 'react';
+import { useCowAnimations, useCowKeyboardMovement } from '../game/cowLogic';
 
-extend({ Sprite });
+extend({ AnimatedSprite });
+
+const cowAnimSpeed = Number(import.meta.env.VITE_COW_ANIM_SPEED);
 
 export const Cow = ({
   appWidth,
@@ -11,15 +14,35 @@ export const Cow = ({
   appWidth: number;
   appHeight: number;
 }) => {
-  const { pos, cowScale } = useCowMovement(appWidth, appHeight);
-  const cowTexture = useCowTexture();
+  const { pos, cowScale } = useCowKeyboardMovement(appWidth, appHeight);
+  const animations = useCowAnimations();
+  const [currentAnim, setCurrentAnim] = useState('idle');
+  const spriteRef = useRef<AnimatedSprite>(null);
+  const animation = 'look';
 
-  if (!cowTexture) return null;
-  cowTexture.source.scaleMode = 'nearest';
+  useEffect(() => {
+    if (animations && animations[animation]) {
+      setCurrentAnim(animation);
+    }
+  }, [animation, animations]);
+
+  useEffect(() => {
+    const sprite = spriteRef.current;
+    if (!sprite) return;
+
+    sprite.animationSpeed = cowAnimSpeed;
+    sprite.loop = true;
+    sprite.play();
+  }, [animations, currentAnim]);
+
+  if (!animations) return null;
+
+  const textures = animations[currentAnim];
 
   return (
-    <pixiSprite
-      texture={cowTexture}
+    <pixiAnimatedSprite
+      ref={spriteRef}
+      textures={textures}
       x={pos.x}
       y={pos.y}
       scale={cowScale}
