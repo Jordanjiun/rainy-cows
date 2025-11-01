@@ -1,7 +1,7 @@
 import { extend } from '@pixi/react';
 import { AnimatedSprite } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
-import { useCowAnimations, useCowKeyboardMovement } from '../game/cowLogic';
+import { useCowAnimations, useCowRandomMovement } from '../game/cowLogic';
 
 extend({ AnimatedSprite });
 
@@ -14,7 +14,7 @@ export const Cow = ({
   appWidth: number;
   appHeight: number;
 }) => {
-  const { pos, cowScale, animation, direction } = useCowKeyboardMovement(
+  const { pos, cowScale, animation, direction } = useCowRandomMovement(
     appWidth,
     appHeight,
   );
