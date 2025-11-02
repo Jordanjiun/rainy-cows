@@ -11,19 +11,10 @@ const manifest = {
     {
       name: 'cows',
       assets: [
-        { alias: 'cowblack0', src: '/assets/cows/cows_spritesheet_black0.png' },
-        { alias: 'cowblack1', src: '/assets/cows/cows_spritesheet_black1.png' },
-        { alias: 'cowbrown', src: '/assets/cows/cows_spritesheet_brown.png' },
-        {
-          alias: 'cowwhitedarkspots',
-          src: '/assets/cows/cows_spritesheet_white_darkspots.png',
-        },
-        {
-          alias: 'cowwhitepinkspots',
-          src: '/assets/cows/cows_spritesheet_white_pinkspots.png',
-        },
-        { alias: 'cowwhite0', src: '/assets/cows/cows_spritesheet_white0.png' },
-        { alias: 'cowwhite1', src: '/assets/cows/cows_spritesheet_white1.png' },
+        { alias: 'cowbase', src: '/assets/cows/base.png' },
+        { alias: 'cowhorns', src: '/assets/cows/horns.png' },
+        { alias: 'cowspots', src: '/assets/cows/spots.png' },
+        { alias: 'cowtongue', src: '/assets/cows/tongue.png' },
       ],
     },
   ],

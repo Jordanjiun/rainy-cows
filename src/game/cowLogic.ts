@@ -1,7 +1,8 @@
 import { useTick } from '@pixi/react';
-import { Assets, Rectangle, Texture, Ticker } from 'pixi.js';
+import { Ticker } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
 import { createSeededRNG, getCowScale } from './utils';
+import { animationsDef } from './cowBuilder';
 
 type AnimationKey = 'eat' | 'idle' | 'pet' | 'walk';
 type AnimationOptions = {
@@ -15,20 +16,10 @@ const cowIdleWalkChance = Number(import.meta.env.VITE_COW_IDLE_WALK_CHANCE);
 const cowMinTickIdle = Number(import.meta.env.VITE_COW_MIN_TICK_IDLE);
 const cowMinTickWalk = Number(import.meta.env.VITE_COW_MIN_TICK_WALK);
 const cowMsPerFrame = Number(import.meta.env.VITE_COW_MS_PER_FRAME);
-const cowSheetCols = Number(import.meta.env.VITE_COW_SHEET_COLS);
 const cowSpeed = Number(import.meta.env.VITE_COW_SPEED);
 
 const frameSize = Number(import.meta.env.VITE_COW_FRAME_SIZE);
 const landRatio = Number(import.meta.env.VITE_LAND_RATIO);
-
-const animationsDef: Record<string, number[]> = {
-  eat: [9, 10, 11, 11, 11, 10, 9],
-  idle: [0],
-  idleToWalk: [0, 1, 2],
-  pet: [13, 14, 15, 14, 13],
-  walk: [17, 18, 19],
-  walkToIdle: [2, 1, 0],
-};
 
 export function useCowActions(
   appWidth: number,
@@ -204,55 +195,4 @@ export function useCowActions(
   }, [animation]);
 
   return { pos, cowScale, animation, direction, petCow };
-}
-
-export function useCowAnimations() {
-  const [animations, setAnimations] = useState<Record<
-    string,
-    Texture[]
-  > | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function load() {
-      const baseTexture = await Assets.load('cowblack0');
-      const anims: Record<string, Texture[]> = {};
-
-      for (const [name, indices] of Object.entries(animationsDef)) {
-        const textures: Texture[] = [];
-
-        for (const index of indices) {
-          const row = Math.floor(index / cowSheetCols);
-          const col = index % cowSheetCols;
-
-          const frame = new Rectangle(
-            col * frameSize,
-            row * frameSize,
-            frameSize,
-            frameSize,
-          );
-
-          const cropped = new Texture({
-            source: baseTexture.source,
-            frame,
-          });
-
-          cropped.source.scaleMode = 'nearest';
-          textures.push(cropped);
-        }
-
-        anims[name] = textures;
-      }
-
-      if (isMounted) setAnimations(anims);
-    }
-
-    load();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  return animations;
 }

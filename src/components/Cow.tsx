@@ -2,7 +2,8 @@ import { extend } from '@pixi/react';
 import { AnimatedSprite } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
-import { useCowActions, useCowAnimations } from '../game/cowLogic';
+import { useCowActions } from '../game/cowLogic';
+import { useCowAnimations } from '../game/cowBuilder';
 
 extend({ AnimatedSprite });
 
