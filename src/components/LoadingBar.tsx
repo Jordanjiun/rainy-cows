@@ -4,30 +4,40 @@ import { useCallback } from 'react';
 
 extend({ Graphics, Text });
 
+const barTextSep = 25;
+
 export const LoadingBar = ({
-  width,
-  height,
+  appWidth,
+  appHeight,
   progress,
 }: {
-  width: number;
-  height: number;
+  appWidth: number;
+  appHeight: number;
   progress: number;
 }) => {
-  const drawBackground = useCallback((g: Graphics) => {
-    g.clear();
-    g.setFillStyle({ color: 'black' });
-    g.rect(0, 0, width, height);
-    g.fill();
-  }, []);
+  const barWidth = appWidth * 0.6;
+  const barHeight = appHeight * 0.05;
+  const barX = (appWidth - barWidth) / 2;
+  const barY = (appHeight - barHeight) / 2;
+
+  const drawBackground = useCallback(
+    (g: Graphics) => {
+      g.clear();
+      g.rect(0, 0, appWidth, appHeight);
+      g.fill({ color: '#87CEEB' });
+      g.rect(barX, barY - barTextSep, barWidth, barHeight);
+      g.fill({ color: 'black' });
+    },
+    [appWidth, appHeight],
+  );
 
   const drawProgress = useCallback(
     (g: Graphics) => {
       g.clear();
-      g.setFillStyle({ color: 'green' });
-      g.rect(0, 0, (progress / 100) * width, height);
-      g.fill();
+      g.rect(barX, barY - barTextSep, (progress / 100) * barWidth, barHeight);
+      g.fill({ color: 'green' });
     },
-    [progress],
+    [appWidth, appHeight, progress],
   );
 
   return (
@@ -36,13 +46,12 @@ export const LoadingBar = ({
       <pixiGraphics draw={drawProgress} />
       <pixiText
         text={`Loading... ${progress}%`}
-        x={width / 2}
-        y={height * 2}
+        x={appWidth / 2}
+        y={appHeight / 2 + barTextSep}
         anchor={0.5}
         style={{
-          fill: 'white',
+          fill: 'black',
           fontSize: 24,
-          fontFamily: 'Arial',
         }}
       />
     </>

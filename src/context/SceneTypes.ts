@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 
-export type SceneKey = 'LoadScreen' | 'TestScene';
+export type SceneKey = 'LoadScreen' | 'MainScene';
 
 export interface SceneContextType {
   currentScene: SceneKey;

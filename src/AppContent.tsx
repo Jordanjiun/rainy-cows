@@ -1,28 +1,26 @@
 import { Application } from '@pixi/react';
 import { useScene } from './context/useScene';
 import type { SceneKey } from './context/SceneTypes';
-import { TestScene } from './scenes/TestScene';
 import { LoadScreen } from './scenes/LoadScene';
+import { MainScene } from './scenes/MainScene';
 import { Maximize, Minimize } from 'lucide-react';
 import { useRef, useEffect, useState } from 'react';
 import type { MouseEvent } from 'react';
 import './App.css';
 
-const defaultAppWidth = 800;
-const defaultAppHeight = 600;
-const fullscreenSvgSize = 20;
+const fullscreenSvgSize = Number(import.meta.env.VITE_FULLSCREEN_SVG_SIZE);
 
 export const AppContent = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const { currentScene } = useScene();
   const containerRef = useRef<HTMLDivElement>(null);
+  const { currentScene } = useScene();
 
   const renderScene = (scene: SceneKey) => {
     switch (scene) {
       case 'LoadScreen':
         return <LoadScreen />;
-      case 'TestScene':
-        return <TestScene />;
+      case 'MainScene':
+        return <MainScene />;
       default:
         return null;
     }
@@ -53,8 +51,10 @@ export const AppContent = () => {
   }, []);
 
   return (
-    <div className="banner-container">
-      <div className="banner">Rainy Cows</div>
+    <>
+      <div className="banner-container">
+        <div className="banner">Rainy Cows</div>
+      </div>
 
       <div ref={containerRef} className="app-container">
         <button className="fullscreen-btn" onClick={toggleFullscreen}>
@@ -66,13 +66,14 @@ export const AppContent = () => {
         </button>
 
         <Application
-          width={defaultAppWidth}
-          height={defaultAppHeight}
-          className="responsive-canvas"
+          antialias={false}
+          className="canvas"
+          resizeTo={window}
+          roundPixels={true}
         >
           {renderScene(currentScene)}
         </Application>
       </div>
-    </div>
+    </>
   );
 };
