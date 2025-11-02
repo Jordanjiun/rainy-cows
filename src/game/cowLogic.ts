@@ -3,6 +3,11 @@ import { Assets, Rectangle, Texture, Ticker } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
 import { createSeededRNG, getCowScale } from './utils';
 
+type AnimationKey = 'eat' | 'idle' | 'pet' | 'walk';
+type AnimationOptions = {
+  blockMovement?: boolean;
+  setIdleAfter?: boolean;
+};
 type Vec2 = { x: number; y: number };
 
 const cowEatChance = Number(import.meta.env.VITE_COW_EAT_CHANCE);
@@ -39,8 +44,9 @@ export function useCowActions(
   const [isIdleActionPlaying, setIsIdleActionPlaying] = useState(false);
   const [isBeingPetted, setIsBeingPetted] = useState(false);
 
-  const rng = useRef(createSeededRNG(seed));
+  const animationTimeoutRef = useRef<number | null>(null);
   const moveDir = useRef<{ dx: number; dy: number }>({ dx: 0, dy: 0 });
+  const rng = useRef(createSeededRNG(seed));
   const stateTimer = useRef(0);
 
   const cowScale = getCowScale(appWidth * appHeight);
@@ -60,29 +66,42 @@ export function useCowActions(
     return { x, y };
   }
 
-  const handleEatAnimation = () => {
-    if (animation === 'eat') {
-      const timeout = setTimeout(() => {
+  const playAnimation = (
+    animName: AnimationKey,
+    options: AnimationOptions = {},
+  ) => {
+    const { blockMovement = false, setIdleAfter = true } = options;
+
+    if (animationTimeoutRef.current) {
+      clearTimeout(animationTimeoutRef.current);
+      animationTimeoutRef.current = null;
+    }
+
+    setAnimation(animName);
+    setIsIdleActionPlaying(true);
+    setCanMove(!blockMovement);
+
+    if (setIdleAfter) {
+      animationTimeoutRef.current = setTimeout(() => {
         setAnimation('idle');
         setIsIdleActionPlaying(false);
-      }, animationsDef['eat'].length * cowMsPerFrame);
-      return () => clearTimeout(timeout);
+        setCanMove(true);
+        animationTimeoutRef.current = null;
+        if (animName === 'pet') setIsBeingPetted(false);
+      }, animationsDef[animName].length * cowMsPerFrame);
+    }
+  };
+
+  const handleEatAnimation = () => {
+    if (animation === 'eat') {
+      playAnimation('eat');
     }
   };
 
   const petCow = () => {
     if (isBeingPetted) return;
     setIsBeingPetted(true);
-    setAnimation('pet');
-    setCanMove(false);
-    setIsIdleActionPlaying(true);
-
-    setTimeout(() => {
-      setAnimation('idle');
-      setIsIdleActionPlaying(false);
-      setCanMove(true);
-      setIsBeingPetted(false);
-    }, animationsDef['pet'].length * cowMsPerFrame);
+    playAnimation('pet', { blockMovement: true });
   };
 
   const seedDirection = () => {
