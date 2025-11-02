@@ -1,5 +1,5 @@
 import { useTick } from '@pixi/react';
-import { Assets, Rectangle, Texture } from 'pixi.js';
+import { Assets, Rectangle, Texture, Ticker } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
 import { createSeededRNG, getCowScale } from './utils';
 
@@ -17,30 +17,73 @@ const frameSize = Number(import.meta.env.VITE_COW_FRAME_SIZE);
 const landRatio = Number(import.meta.env.VITE_LAND_RATIO);
 
 const animationsDef: Record<string, number[]> = {
-  eat: [8, 9, 10, 11, 11, 11, 10, 9, 8],
+  eat: [9, 10, 11, 11, 11, 10, 9],
   idle: [0],
   idleToWalk: [0, 1, 2],
-  walk: [16, 17, 18, 19],
+  pet: [13, 14, 15, 14, 13],
+  walk: [17, 18, 19],
   walkToIdle: [2, 1, 0],
 };
 
 export function useCowActions(
   appWidth: number,
   appHeight: number,
-  seed = Date.now(),
+  seed: number,
 ) {
   const [pos, setPos] = useState<Vec2>({ x: appWidth / 2, y: appHeight / 2 });
-  const [animation, setAnimation] = useState<'idle' | 'walk' | 'eat'>('idle');
+  const [animation, setAnimation] = useState<'idle' | 'walk' | 'eat' | 'pet'>(
+    'idle',
+  );
   const [direction, setDirection] = useState<1 | -1>(1);
   const [canMove, setCanMove] = useState(false);
   const [isIdleActionPlaying, setIsIdleActionPlaying] = useState(false);
+  const [isBeingPetted, setIsBeingPetted] = useState(false);
 
   const rng = useRef(createSeededRNG(seed));
   const moveDir = useRef<{ dx: number; dy: number }>({ dx: 0, dy: 0 });
   const stateTimer = useRef(0);
 
   const cowScale = getCowScale(appWidth * appHeight);
-  const landBoundary = appHeight * (1 - landRatio) - frameSize * cowScale;
+  const cowHalfSize = (frameSize * cowScale) / 2;
+  const landBoundary = appHeight * (1 - landRatio) - frameSize * cowScale + 10;
+
+  function clampPosition(prev: Vec2, appWidth: number, appHeight: number) {
+    let x = prev.x;
+    let y = prev.y;
+
+    if (x < cowHalfSize) x = cowHalfSize;
+    else if (x > appWidth - cowHalfSize) x = appWidth - cowHalfSize;
+
+    if (y < landBoundary + cowHalfSize) y = landBoundary + cowHalfSize;
+    else if (y > appHeight - cowHalfSize) y = appHeight - cowHalfSize;
+
+    return { x, y };
+  }
+
+  const handleEatAnimation = () => {
+    if (animation === 'eat') {
+      const timeout = setTimeout(() => {
+        setAnimation('idle');
+        setIsIdleActionPlaying(false);
+      }, animationsDef['eat'].length * cowMsPerFrame);
+      return () => clearTimeout(timeout);
+    }
+  };
+
+  const petCow = () => {
+    if (isBeingPetted) return;
+    setIsBeingPetted(true);
+    setAnimation('pet');
+    setCanMove(false);
+    setIsIdleActionPlaying(true);
+
+    setTimeout(() => {
+      setAnimation('idle');
+      setIsIdleActionPlaying(false);
+      setCanMove(true);
+      setIsBeingPetted(false);
+    }, animationsDef['pet'].length * cowMsPerFrame);
+  };
 
   const seedDirection = () => {
     const dx = rng.current() < 0.5 ? 1 : -1;
@@ -49,27 +92,7 @@ export function useCowActions(
     setDirection(dx >= 0 ? 1 : -1);
   };
 
-  // Keep cow inside screen when resizing
-  useEffect(() => {
-    setPos((prev) => {
-      const cowScale = getCowScale(appWidth * appHeight);
-      const landBoundary =
-        appHeight * (1 - landRatio) - frameSize * cowScale + 10;
-      const halfSize = (frameSize * cowScale) / 2;
-      let x = prev.x;
-      let y = prev.y;
-
-      if (x < halfSize) x = halfSize;
-      else if (x > appWidth - halfSize) x = appWidth - halfSize;
-
-      if (y < landBoundary + halfSize) y = landBoundary + halfSize;
-      else if (y > appHeight - halfSize) y = appHeight - halfSize;
-
-      return { x, y };
-    });
-  }, [appWidth, appHeight]);
-
-  useTick((ticker) => {
+  const updateCow = (ticker: Ticker) => {
     const delta = ticker.deltaTime;
 
     if (
@@ -122,24 +145,23 @@ export function useCowActions(
         setPos((prev) => {
           let x = prev.x + dx * cowSpeed * delta;
           let y = prev.y + dy * cowSpeed * delta;
-          const halfSize = (frameSize * cowScale) / 2;
 
           // Bounce off edges
-          if (x < halfSize) {
-            x = halfSize;
+          if (x < cowHalfSize) {
+            x = cowHalfSize;
             dx = Math.abs(dx);
             setDirection(1);
-          } else if (x > appWidth - halfSize) {
-            x = appWidth - halfSize;
+          } else if (x > appWidth - cowHalfSize) {
+            x = appWidth - cowHalfSize;
             dx = -Math.abs(dx);
             setDirection(-1);
           }
 
-          if (y < landBoundary + halfSize + 10) {
-            y = landBoundary + halfSize + 10;
+          if (y < landBoundary + cowHalfSize) {
+            y = landBoundary + cowHalfSize;
             dy = Math.abs(dy);
-          } else if (y > appHeight - halfSize) {
-            y = appHeight - halfSize;
+          } else if (y > appHeight - cowHalfSize) {
+            y = appHeight - cowHalfSize;
             dy = -Math.abs(dy);
           }
 
@@ -148,19 +170,21 @@ export function useCowActions(
         });
       }
     }
+  };
+
+  useEffect(() => {
+    setPos((prev) => clampPosition(prev, appWidth, appHeight));
+  }, [appWidth, appHeight]);
+
+  useTick((ticker) => {
+    updateCow(ticker);
   });
 
   useEffect(() => {
-    if (animation === 'eat') {
-      const timeout = setTimeout(() => {
-        setAnimation('idle');
-        setIsIdleActionPlaying(false);
-      }, animationsDef[animation].length * cowMsPerFrame);
-      return () => clearTimeout(timeout);
-    }
+    handleEatAnimation();
   }, [animation]);
 
-  return { pos, cowScale, animation, direction };
+  return { pos, cowScale, animation, direction, petCow };
 }
 
 export function useCowAnimations() {

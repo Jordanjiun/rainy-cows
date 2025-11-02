@@ -1,11 +1,49 @@
 import { extend } from '@pixi/react';
 import { AnimatedSprite } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
+import type { RefObject } from 'react';
 import { useCowActions, useCowAnimations } from '../game/cowLogic';
 
 extend({ AnimatedSprite });
 
 const cowAnimSpeed = Number(import.meta.env.VITE_COW_ANIM_SPEED);
+const pointerHoldThreshold = Number(
+  import.meta.env.VITE_POINTER_HOLD_THRESHOLD_MS,
+);
+
+const seed = Date.now(); // replace once cows have data
+
+function handleClicks(
+  spriteRef: RefObject<AnimatedSprite | null>,
+  petCow: () => void,
+) {
+  const sprite = spriteRef.current;
+  if (!sprite) return;
+
+  sprite.eventMode = 'static';
+  let pointerDownTime = 0;
+
+  const handlePointerDown = () => {
+    pointerDownTime = performance.now();
+  };
+
+  const handlePointerUp = () => {
+    const duration = performance.now() - pointerDownTime;
+    if (duration < pointerHoldThreshold) {
+      petCow();
+    }
+  };
+
+  sprite.on('pointerdown', handlePointerDown);
+  sprite.on('pointerup', handlePointerUp);
+  sprite.on('pointerupoutside', handlePointerUp);
+
+  return () => {
+    sprite.off('pointerdown', handlePointerDown);
+    sprite.off('pointerup', handlePointerUp);
+    sprite.off('pointerupoutside', handlePointerUp);
+  };
+}
 
 export const Cow = ({
   appWidth,
@@ -14,9 +52,10 @@ export const Cow = ({
   appWidth: number;
   appHeight: number;
 }) => {
-  const { pos, cowScale, animation, direction } = useCowActions(
+  const { pos, cowScale, animation, direction, petCow } = useCowActions(
     appWidth,
     appHeight,
+    seed,
   );
   const animations = useCowAnimations();
   const spriteRef = useRef<AnimatedSprite>(null);
@@ -24,7 +63,7 @@ export const Cow = ({
   const [currentAnim, setCurrentAnim] = useState('idle');
   const [queuedAnim, setQueuedAnim] = useState<string | null>(null);
 
-  useEffect(() => {
+  const handleAnimationChange = (animation: string) => {
     if (!animations) return;
 
     const nextAnimCapitalized =
@@ -38,9 +77,9 @@ export const Cow = ({
       setCurrentAnim(animation);
       setQueuedAnim(null);
     }
-  }, [animation, animations]);
+  };
 
-  useEffect(() => {
+  const handleAnimation = () => {
     const sprite = spriteRef.current;
     if (!sprite || !animations) return;
 
@@ -55,7 +94,19 @@ export const Cow = ({
         setQueuedAnim(null);
       }
     };
+  };
+
+  useEffect(() => {
+    handleAnimationChange(animation);
+  }, [animation, animations]);
+
+  useEffect(() => {
+    handleAnimation();
   }, [currentAnim, animations]);
+
+  useEffect(() => {
+    handleClicks(spriteRef, petCow);
+  }, [petCow]);
 
   if (!animations) return null;
 
