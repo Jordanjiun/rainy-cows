@@ -12,6 +12,7 @@ type AnimationOptions = {
 type Vec2 = { x: number; y: number };
 
 const cowEatChance = Number(import.meta.env.VITE_COW_EAT_CHANCE);
+const cowEatCoolDown = Number(import.meta.env.VITE_COW_EAT_COOLDOWN);
 const cowIdleWalkChance = Number(import.meta.env.VITE_COW_IDLE_WALK_CHANCE);
 const cowMinTickIdle = Number(import.meta.env.VITE_COW_MIN_TICK_IDLE);
 const cowMinTickWalk = Number(import.meta.env.VITE_COW_MIN_TICK_WALK);
@@ -35,6 +36,7 @@ export function useCowActions(
   const [isIdleActionPlaying, setIsIdleActionPlaying] = useState(false);
 
   const animationTimeoutRef = useRef<number | null>(null);
+  const eatCooldown = useRef(0);
   const isBeingPetted = useRef(false);
   const moveDir = useRef<{ dx: number; dy: number }>({ dx: 0, dy: 0 });
   const rng = useRef(createSeededRNG(seed));
@@ -107,6 +109,10 @@ export function useCowActions(
   const updateCow = (ticker: Ticker) => {
     const delta = ticker.deltaTime;
 
+    if (eatCooldown.current > 0) {
+      eatCooldown.current -= 1;
+    }
+
     if (
       (animation === 'idle' && !isIdleActionPlaying) ||
       animation === 'walk'
@@ -115,9 +121,14 @@ export function useCowActions(
     }
 
     if (animation === 'idle') {
-      if (!isIdleActionPlaying && rng.current() < cowEatChance) {
+      if (
+        !isIdleActionPlaying &&
+        eatCooldown.current <= 0 &&
+        rng.current() < cowEatChance
+      ) {
         setIsIdleActionPlaying(true);
         setAnimation('eat');
+        eatCooldown.current = cowEatCoolDown;
         return;
       }
 

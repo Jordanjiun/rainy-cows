@@ -3,7 +3,7 @@ import { AnimatedSprite, Container, Texture } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 import { useCowActions } from '../game/cowLogic';
-import { useCowAnimations } from '../game/cowBuilder';
+import { useCowAnimations, useCowFilter } from '../game/cowBuilder';
 
 extend({ AnimatedSprite, Container });
 
@@ -14,7 +14,7 @@ const pointerHoldThreshold = Number(
 
 // replace once cows have data
 const seed = Date.now();
-const cowLayers = ['cowbase', 'cowtongue', 'cowspots'];
+const cowLayers = ['cowbase', 'cowtongue', 'cowspots', 'cowhorns'];
 
 function handleClicks(
   spriteRef: RefObject<AnimatedSprite | null>,
@@ -61,6 +61,7 @@ export const Cow = ({
     seed,
   );
   const animations = useCowAnimations(cowLayers);
+  const layerFilters = useCowFilter(cowLayers, seed);
   const scale = { x: cowScale * direction, y: cowScale };
 
   const [currentAnim, setCurrentAnim] = useState('idle');
@@ -111,7 +112,11 @@ export const Cow = ({
   useEffect(() => {
     if (!animations) return;
     Object.entries(animations).forEach(([layerName, animMap]) => {
-      playAnim(layerRefs.current[layerName], animMap[currentAnim]);
+      const sprite = layerRefs.current[layerName];
+      playAnim(sprite, animMap[currentAnim]);
+      if (sprite) {
+        sprite.filters = [layerFilters[layerName]];
+      }
     });
   }, [currentAnim, animations]);
 
@@ -130,6 +135,7 @@ export const Cow = ({
           ref={(el) => void (layerRefs.current[layerName] = el)}
           textures={animMap[currentAnim]}
           anchor={0.5}
+          filters={[layerFilters[layerName]]}
         />
       ))}
     </pixiContainer>

@@ -66,7 +66,7 @@ export const LoadScreen = () => {
         }
         return next;
       });
-    }, 50);
+    }, 10);
 
     return () => clearInterval(interval);
   }, [switchScene]);
