@@ -33,9 +33,9 @@ export function useCowActions(
   const [direction, setDirection] = useState<1 | -1>(1);
   const [canMove, setCanMove] = useState(false);
   const [isIdleActionPlaying, setIsIdleActionPlaying] = useState(false);
-  const [isBeingPetted, setIsBeingPetted] = useState(false);
 
   const animationTimeoutRef = useRef<number | null>(null);
+  const isBeingPetted = useRef(false);
   const moveDir = useRef<{ dx: number; dy: number }>({ dx: 0, dy: 0 });
   const rng = useRef(createSeededRNG(seed));
   const stateTimer = useRef(0);
@@ -78,7 +78,6 @@ export function useCowActions(
         setIsIdleActionPlaying(false);
         setCanMove(true);
         animationTimeoutRef.current = null;
-        if (animName === 'pet') setIsBeingPetted(false);
       }, animationsDef[animName].length * cowMsPerFrame);
     }
   };
@@ -90,9 +89,12 @@ export function useCowActions(
   };
 
   const petCow = () => {
-    if (isBeingPetted) return;
-    setIsBeingPetted(true);
-    playAnimation('pet', { blockMovement: true });
+    if (isBeingPetted.current) return;
+    isBeingPetted.current = true;
+    playAnimation('pet');
+    setTimeout(() => {
+      isBeingPetted.current = false;
+    }, animationsDef['pet'].length * cowMsPerFrame);
   };
 
   const seedDirection = () => {

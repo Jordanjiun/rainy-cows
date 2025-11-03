@@ -13,53 +13,54 @@ export const animationsDef: Record<string, number[]> = {
   walkToIdle: [2, 1, 0],
 };
 
-export function useCowAnimations() {
+export function useCowAnimations(cowLayers: string[]) {
+  // structure: { cowbase: { walk: Texture[], idle: Texture[] }, cowlayer: { … } }
   const [animations, setAnimations] = useState<Record<
     string,
-    Texture[]
+    Record<string, Texture[]>
   > | null>(null);
 
   useEffect(() => {
     let isMounted = true;
 
     async function load() {
-      const baseTexture = await Assets.load('cowbase');
-      const anims: Record<string, Texture[]> = {};
+      const loadedTextures = await Promise.all(
+        cowLayers.map((key) => Assets.load(key)),
+      );
 
-      for (const [name, indices] of Object.entries(animationsDef)) {
-        const textures: Texture[] = [];
+      const layerAnims: Record<string, Record<string, Texture[]>> = {};
 
-        for (const index of indices) {
-          const row = Math.floor(index / cowSheetCols);
-          const col = index % cowSheetCols;
+      loadedTextures.forEach((baseTexture, i) => {
+        const layerName = cowLayers[i];
+        const anims: Record<string, Texture[]> = {};
 
-          const frame = new Rectangle(
-            col * frameSize,
-            row * frameSize,
-            frameSize,
-            frameSize,
-          );
-
-          const cropped = new Texture({
-            source: baseTexture.source,
-            frame,
+        for (const [name, indices] of Object.entries(animationsDef)) {
+          anims[name] = indices.map((index) => {
+            const row = Math.floor(index / cowSheetCols);
+            const col = index % cowSheetCols;
+            const frame = new Rectangle(
+              col * frameSize,
+              row * frameSize,
+              frameSize,
+              frameSize,
+            );
+            const cropped = new Texture({ source: baseTexture.source, frame });
+            cropped.source.scaleMode = 'nearest';
+            return cropped;
           });
-
-          cropped.source.scaleMode = 'nearest';
-          textures.push(cropped);
         }
 
-        anims[name] = textures;
-      }
+        layerAnims[layerName] = anims;
+      });
 
-      if (isMounted) setAnimations(anims);
+      if (isMounted) setAnimations(layerAnims);
     }
 
     load();
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [cowLayers]);
 
   return animations;
 }
