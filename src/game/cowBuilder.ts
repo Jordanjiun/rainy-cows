@@ -1,6 +1,7 @@
 import { Assets, ColorMatrixFilter, Rectangle, Texture } from 'pixi.js';
 import { useEffect, useState } from 'react';
 import { createSeededRNG } from './utils';
+import { Cow } from '../models/cowModel';
 
 const frameSize = Number(import.meta.env.VITE_COW_FRAME_SIZE);
 
@@ -18,6 +19,10 @@ export const animationsDef: Record<string, number[]> = {
   walk: [12, 13, 14, 15],
   walkToIdle: [2, 1, 0],
 };
+
+export function createNewCow() {
+  return new Cow({});
+}
 
 export function useCowFilter(cowLayers: string[], seed: number) {
   const rng = createSeededRNG(seed);

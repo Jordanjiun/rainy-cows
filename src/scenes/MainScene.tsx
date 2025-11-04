@@ -1,6 +1,6 @@
 import { extend, useApplication } from '@pixi/react';
 import { Container } from 'pixi.js';
-import { Cow } from '../components/Cow';
+import { CowComponent } from '../components/CowComponent';
 import { Farm } from '../components/Farm';
 import { useEffect, useState } from 'react';
 
@@ -30,7 +30,7 @@ export const MainScene = () => {
   return (
     <pixiContainer>
       <Farm appWidth={size.width} appHeight={size.height} />
-      <Cow appWidth={size.width} appHeight={size.height} />
+      <CowComponent appWidth={size.width} appHeight={size.height} />
     </pixiContainer>
   );
 };

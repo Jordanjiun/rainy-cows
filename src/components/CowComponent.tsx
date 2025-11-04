@@ -3,7 +3,11 @@ import { AnimatedSprite, Container, Texture } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 import { useCowActions } from '../game/cowLogic';
-import { useCowAnimations, useCowFilter } from '../game/cowBuilder';
+import {
+  createNewCow,
+  useCowAnimations,
+  useCowFilter,
+} from '../game/cowBuilder';
 
 extend({ AnimatedSprite, Container });
 
@@ -12,8 +16,9 @@ const pointerHoldThreshold = Number(
   import.meta.env.VITE_POINTER_HOLD_THRESHOLD_MS,
 );
 
-// replace once cows have data
-const seed = Date.now();
+// replace with cow manager
+const cow = createNewCow();
+const seed = cow.id;
 const cowLayers = ['cowbase', 'cowtongue', 'cowspots', 'cowhorns'];
 
 function handleClicks(
@@ -48,7 +53,7 @@ function handleClicks(
   };
 }
 
-export const Cow = ({
+export const CowComponent = ({
   appWidth,
   appHeight,
 }: {
