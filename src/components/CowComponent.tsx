@@ -18,8 +18,6 @@ const pointerHoldThreshold = Number(
 
 // replace with cow manager
 const cow = createNewCow();
-const seed = cow.id;
-const cowLayers = ['cowbase', 'cowtongue', 'cowspots', 'cowhorns'];
 
 function handleClicks(
   spriteRef: RefObject<AnimatedSprite | null>,
@@ -63,10 +61,10 @@ export const CowComponent = ({
   const { pos, cowScale, animation, direction, petCow } = useCowActions(
     appWidth,
     appHeight,
-    seed,
+    cow.seed,
   );
-  const animations = useCowAnimations(cowLayers);
-  const layerFilters = useCowFilter(cowLayers, seed);
+  const animations = useCowAnimations(cow.sprite.layers);
+  const layerFilters = useCowFilter(cow.sprite);
   const scale = { x: cowScale * direction, y: cowScale };
 
   const [currentAnim, setCurrentAnim] = useState('idle');

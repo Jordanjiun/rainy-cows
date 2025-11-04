@@ -11,10 +11,14 @@ const manifest = {
     {
       name: 'cows',
       assets: [
-        { alias: 'cowbase', src: '/assets/cows/base.png' },
-        { alias: 'cowhorns', src: '/assets/cows/horns.png' },
-        { alias: 'cowspots', src: '/assets/cows/spots.png' },
-        { alias: 'cowtongue', src: '/assets/cows/tongue.png' },
+        { alias: 'baseBlack', src: '/assets/cows/baseBlack.png' },
+        { alias: 'baseBrown', src: '/assets/cows/baseBrown.png' },
+        { alias: 'baseGrey', src: '/assets/cows/baseGrey.png' },
+        { alias: 'baseWhite', src: '/assets/cows/baseWhite.png' },
+        { alias: 'baseYellow', src: '/assets/cows/baseYellow.png' },
+        { alias: 'horns', src: '/assets/cows/horns.png' },
+        { alias: 'spots', src: '/assets/cows/spots.png' },
+        { alias: 'tongue', src: '/assets/cows/tongue.png' },
       ],
     },
   ],
