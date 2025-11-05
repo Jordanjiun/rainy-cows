@@ -68,8 +68,82 @@ function createSpriteInfo(rng: Function): SpriteInfo {
   if (spriteInfo.layers.includes('spots')) {
     spriteInfo.filters.spots = randomFilter();
   }
-  console.log(spriteInfo)
+
   return spriteInfo;
+}
+
+function createName(rng: Function): string {
+  const names = [
+    'Apollo',
+    'Biggie',
+    'Bruno',
+    'Bubba',
+    'Bullseye',
+    'Bully',
+    'Clover',
+    'Diesel',
+    'Duke',
+    'Earl',
+    'Ferdinand',
+    'Frank',
+    'Herbie',
+    'Hercules',
+    'James',
+    'Jimmy',
+    'Kenny',
+    'Maverick',
+    'Mercury',
+    'Neptune',
+    'Norman',
+    'Ollie',
+    'Orson',
+    'Pluto',
+    'Rex',
+    'Samson',
+    'Toby',
+    'Zeus',
+    'Amy',
+    'Arabella',
+    'Bertha',
+    'Bubbles',
+    'Buttercup',
+    'Chloe',
+    'Cinnamon',
+    'Ella',
+    'Elsie',
+    'Emma',
+    'Hope',
+    'Lulu',
+    'Maggie',
+    'Melody',
+    'Millie',
+    'Minnie',
+    'Moolinda',
+    'Moolise',
+    'Moolissa',
+    'Muffin',
+    'Nellie',
+    'Penelope',
+    'Phoebe',
+    'Princess',
+    'Sadie',
+    'Sweetie',
+    'Annabelle',
+    'Bella',
+    'Bessie',
+    'Betty',
+    'Betsie',
+    'Bossy',
+    'Clarabelle',
+    'Daisy',
+    'Flossie',
+    'Gertie',
+    'Henrietta',
+    'Rosie',
+    'Magic',
+  ];
+
+  return names[Math.floor(rng() * names.length)];
 }
 
 export class Cow {
@@ -78,11 +152,11 @@ export class Cow {
   sprite: SpriteInfo;
   name: string;
 
-  constructor(data: Partial<Cow>) {
+  constructor() {
     this.seed = Date.now();
     this.rng = createSeededRNG(this.seed);
     this.sprite = createSpriteInfo(this.rng);
-    this.name = data.name ?? 'Cow';
+    this.name = createName(this.rng);
   }
 
   get displayName(): string {

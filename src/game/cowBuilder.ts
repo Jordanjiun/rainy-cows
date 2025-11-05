@@ -17,7 +17,7 @@ export const animationsDef: Record<string, number[]> = {
 };
 
 export function createNewCow() {
-  return new Cow({});
+  return new Cow();
 }
 
 export function useCowFilter(spriteInfo: SpriteInfo) {
