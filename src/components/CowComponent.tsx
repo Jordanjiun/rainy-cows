@@ -3,11 +3,8 @@ import { AnimatedSprite, Container, Texture } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 import { useCowActions } from '../game/cowLogic';
-import {
-  createNewCow,
-  useCowAnimations,
-  useCowFilter,
-} from '../game/cowBuilder';
+import { useCowAnimations, useCowFilter } from '../game/cowBuilder';
+import type { Cow } from '../models/cowModel';
 
 extend({ AnimatedSprite, Container });
 
@@ -15,9 +12,6 @@ const cowAnimSpeed = Number(import.meta.env.VITE_COW_ANIM_SPEED);
 const pointerHoldThreshold = Number(
   import.meta.env.VITE_POINTER_HOLD_THRESHOLD_MS,
 );
-
-// replace with cow manager
-const cow = createNewCow();
 
 function handleClicks(
   spriteRef: RefObject<AnimatedSprite | null>,
@@ -29,13 +23,16 @@ function handleClicks(
   sprite.eventMode = 'static';
   let pointerDownTime = 0;
 
-  const handlePointerDown = () => {
+  const handlePointerDown = (e: PointerEvent) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
     pointerDownTime = performance.now();
   };
 
-  const handlePointerUp = () => {
-    const duration = performance.now() - pointerDownTime;
-    if (duration < pointerHoldThreshold) {
+  const handlePointerUp = (e: PointerEvent) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    if (performance.now() - pointerDownTime < pointerHoldThreshold) {
       petCow();
     }
   };
@@ -54,9 +51,11 @@ function handleClicks(
 export const CowComponent = ({
   appWidth,
   appHeight,
+  cow,
 }: {
   appWidth: number;
   appHeight: number;
+  cow: Cow;
 }) => {
   const { pos, cowScale, animation, direction, petCow } = useCowActions(
     appWidth,

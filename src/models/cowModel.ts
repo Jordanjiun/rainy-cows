@@ -24,10 +24,10 @@ const contrastRange = [0, 0.5];
 const brightnessRange = [0.6, 1.5];
 const baseColors = {
   Black: 0.15,
-  Brown: 0.2,
-  Grey: 0.3,
+  Brown: 0.15,
+  Grey: 0.4,
   White: 0.15,
-  Yellow: 0.2,
+  Yellow: 0.15,
 };
 
 function createSpriteInfo(rng: Function): SpriteInfo {
@@ -147,12 +147,14 @@ function createName(rng: Function): string {
 }
 
 export class Cow {
+  id: string;
   seed: number;
   rng: Function;
   sprite: SpriteInfo;
   name: string;
 
   constructor() {
+    this.id = crypto.randomUUID();
     this.seed = Date.now();
     this.rng = createSeededRNG(this.seed);
     this.sprite = createSpriteInfo(this.rng);
