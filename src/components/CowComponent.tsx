@@ -52,10 +52,12 @@ export const CowComponent = ({
   appWidth,
   appHeight,
   cow,
+  onPositionUpdate,
 }: {
   appWidth: number;
   appHeight: number;
   cow: Cow;
+  onPositionUpdate?: (id: string, y: number) => void;
 }) => {
   const { pos, cowScale, animation, direction, petCow } = useCowActions(
     appWidth,
@@ -106,6 +108,10 @@ export const CowComponent = ({
       }
     };
   };
+
+  useEffect(() => {
+    onPositionUpdate?.(cow.id, pos.y);
+  }, [pos.y]);
 
   useEffect(() => {
     handleAnimationChange(animation);

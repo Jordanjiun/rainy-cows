@@ -18,16 +18,17 @@ const cowColorMutateChance = Number(
 const cowHornChance = Number(import.meta.env.VITE_COW_HORN_CHANCE);
 const cowSpotChance = Number(import.meta.env.VITE_COW_SPOT_CHANCE);
 
+const spotLayers = ['spotsBlack', 'spotsPink'];
 const hueRange = [0, 360];
 const saturateRange = [0.5, 1.5];
 const contrastRange = [0, 0.5];
 const brightnessRange = [0.6, 1.5];
 const baseColors = {
-  Black: 0.15,
-  Brown: 0.15,
-  Grey: 0.4,
-  White: 0.15,
-  Yellow: 0.15,
+  Black: 0.1,
+  Brown: 0.1,
+  Grey: 0.6,
+  White: 0.1,
+  Yellow: 0.1,
 };
 
 function createSpriteInfo(rng: Function): SpriteInfo {
@@ -50,8 +51,9 @@ function createSpriteInfo(rng: Function): SpriteInfo {
 
   spriteInfo.layers.push('tongue');
 
-  if (rng() > cowHornChance) spriteInfo.layers.push('horns');
-  if (rng() > cowSpotChance) spriteInfo.layers.push('spots');
+  if (rng() < cowHornChance) spriteInfo.layers.push('horns');
+  if (rng() < cowSpotChance)
+    spriteInfo.layers.push(spotLayers[Math.floor(rng() * spotLayers.length)]);
 
   const randomFilter = (): FilterSettings => ({
     hue: hueRange[0] + rng() * (hueRange[1] - hueRange[0]),
@@ -61,12 +63,14 @@ function createSpriteInfo(rng: Function): SpriteInfo {
       brightnessRange[0] + rng() * (brightnessRange[1] - brightnessRange[0]),
   });
 
-  if (spriteInfo.layers.includes('baseGrey') && rng() > cowColorMutateChance) {
+  if (spriteInfo.layers.includes('baseGrey') && rng() < cowColorMutateChance) {
     spriteInfo.filters.baseGrey = randomFilter();
   }
 
-  if (spriteInfo.layers.includes('spots')) {
-    spriteInfo.filters.spots = randomFilter();
+  for (const layer of spotLayers) {
+    if (spriteInfo.layers.includes(layer)) {
+      spriteInfo.filters[layer] = randomFilter();
+    }
   }
 
   return spriteInfo;
