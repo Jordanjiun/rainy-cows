@@ -1,17 +1,23 @@
 import { extend } from '@pixi/react';
-import { AnimatedSprite } from 'pixi.js';
+import { AnimatedSprite, Container, Texture } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
-import { useCowActions, useCowAnimations } from '../game/cowLogic';
+import { useCowActions } from '../game/cowLogic';
+import {
+  createNewCow,
+  useCowAnimations,
+  useCowFilter,
+} from '../game/cowBuilder';
 
-extend({ AnimatedSprite });
+extend({ AnimatedSprite, Container });
 
 const cowAnimSpeed = Number(import.meta.env.VITE_COW_ANIM_SPEED);
 const pointerHoldThreshold = Number(
   import.meta.env.VITE_POINTER_HOLD_THRESHOLD_MS,
 );
 
-const seed = Date.now(); // replace once cows have data
+// replace with cow manager
+const cow = createNewCow();
 
 function handleClicks(
   spriteRef: RefObject<AnimatedSprite | null>,
@@ -45,7 +51,7 @@ function handleClicks(
   };
 }
 
-export const Cow = ({
+export const CowComponent = ({
   appWidth,
   appHeight,
 }: {
@@ -55,13 +61,17 @@ export const Cow = ({
   const { pos, cowScale, animation, direction, petCow } = useCowActions(
     appWidth,
     appHeight,
-    seed,
+    cow.seed,
   );
-  const animations = useCowAnimations();
-  const spriteRef = useRef<AnimatedSprite>(null);
+  const animations = useCowAnimations(cow.sprite.layers);
+  const layerFilters = useCowFilter(cow.sprite);
+  const scale = { x: cowScale * direction, y: cowScale };
 
   const [currentAnim, setCurrentAnim] = useState('idle');
   const [queuedAnim, setQueuedAnim] = useState<string | null>(null);
+
+  const layerRefs = useRef<Record<string, AnimatedSprite | null>>({});
+  const containerRef = useRef<Container>(null);
 
   const handleAnimationChange = (animation: string) => {
     if (!animations) return;
@@ -69,8 +79,9 @@ export const Cow = ({
     const nextAnimCapitalized =
       animation.charAt(0).toUpperCase() + animation.slice(1);
     const transitionKey = `${currentAnim}To${nextAnimCapitalized}`;
+    const baseLayer = Object.keys(animations)[0];
 
-    if (animations[transitionKey]) {
+    if (animations[baseLayer]?.[transitionKey]) {
       setQueuedAnim(animation);
       setCurrentAnim(transitionKey);
     } else {
@@ -79,11 +90,12 @@ export const Cow = ({
     }
   };
 
-  const handleAnimation = () => {
-    const sprite = spriteRef.current;
-    if (!sprite || !animations) return;
-
-    sprite.textures = animations[currentAnim];
+  const playAnim = (
+    sprite: AnimatedSprite | null,
+    textures: Texture[] | undefined,
+  ) => {
+    if (!sprite || !textures) return;
+    sprite.textures = textures;
     sprite.animationSpeed = cowAnimSpeed;
     sprite.loop = !currentAnim.includes('To');
     sprite.play();
@@ -101,25 +113,34 @@ export const Cow = ({
   }, [animation, animations]);
 
   useEffect(() => {
-    handleAnimation();
+    if (!animations) return;
+    Object.entries(animations).forEach(([layerName, animMap]) => {
+      const sprite = layerRefs.current[layerName];
+      playAnim(sprite, animMap[currentAnim]);
+      if (sprite) {
+        sprite.filters = [layerFilters[layerName]];
+      }
+    });
   }, [currentAnim, animations]);
 
   useEffect(() => {
-    handleClicks(spriteRef, petCow);
+    const baseLayer = layerRefs.current[Object.keys(layerRefs.current)[0]];
+    handleClicks({ current: baseLayer }, petCow);
   }, [petCow]);
 
   if (!animations) return null;
 
-  const textures = animations[currentAnim];
-
   return (
-    <pixiAnimatedSprite
-      ref={spriteRef}
-      textures={textures}
-      x={pos.x}
-      y={pos.y}
-      scale={{ x: cowScale * direction, y: cowScale }}
-      anchor={0.5}
-    />
+    <pixiContainer ref={containerRef} x={pos.x} y={pos.y} scale={scale}>
+      {Object.entries(animations).map(([layerName, animMap]) => (
+        <pixiAnimatedSprite
+          key={layerName}
+          ref={(el) => void (layerRefs.current[layerName] = el)}
+          textures={animMap[currentAnim]}
+          anchor={0.5}
+          filters={[layerFilters[layerName]]}
+        />
+      ))}
+    </pixiContainer>
   );
 };

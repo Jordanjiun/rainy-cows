@@ -11,19 +11,14 @@ const manifest = {
     {
       name: 'cows',
       assets: [
-        { alias: 'cowblack0', src: '/assets/cows/cows_spritesheet_black0.png' },
-        { alias: 'cowblack1', src: '/assets/cows/cows_spritesheet_black1.png' },
-        { alias: 'cowbrown', src: '/assets/cows/cows_spritesheet_brown.png' },
-        {
-          alias: 'cowwhitedarkspots',
-          src: '/assets/cows/cows_spritesheet_white_darkspots.png',
-        },
-        {
-          alias: 'cowwhitepinkspots',
-          src: '/assets/cows/cows_spritesheet_white_pinkspots.png',
-        },
-        { alias: 'cowwhite0', src: '/assets/cows/cows_spritesheet_white0.png' },
-        { alias: 'cowwhite1', src: '/assets/cows/cows_spritesheet_white1.png' },
+        { alias: 'baseBlack', src: '/assets/cows/baseBlack.png' },
+        { alias: 'baseBrown', src: '/assets/cows/baseBrown.png' },
+        { alias: 'baseGrey', src: '/assets/cows/baseGrey.png' },
+        { alias: 'baseWhite', src: '/assets/cows/baseWhite.png' },
+        { alias: 'baseYellow', src: '/assets/cows/baseYellow.png' },
+        { alias: 'horns', src: '/assets/cows/horns.png' },
+        { alias: 'spots', src: '/assets/cows/spots.png' },
+        { alias: 'tongue', src: '/assets/cows/tongue.png' },
       ],
     },
   ],
@@ -75,7 +70,7 @@ export const LoadScreen = () => {
         }
         return next;
       });
-    }, 50);
+    }, 10);
 
     return () => clearInterval(interval);
   }, [switchScene]);
