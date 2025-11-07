@@ -76,7 +76,7 @@ function createSpriteInfo(rng: Function): SpriteInfo {
   return spriteInfo;
 }
 
-function createName(rng: Function): string {
+function createName(rng: Function, cows?: Cow[] | null): string {
   const names = [
     'Apollo',
     'Biggie',
@@ -147,7 +147,26 @@ function createName(rng: Function): string {
     'Magic',
   ];
 
-  return names[Math.floor(rng() * names.length)];
+  if (!cows || cows.length === 0) {
+    return names[Math.floor(rng() * names.length)];
+  }
+
+  const existingNames = new Set(cows.map((c) => c.name));
+  const availableNames = names.filter((name) => !existingNames.has(name));
+
+  if (availableNames.length > 0) {
+    return availableNames[Math.floor(rng() * availableNames.length)];
+  }
+
+  const base = names[Math.floor(rng() * names.length)];
+  let newName = base;
+  let counter = 2;
+
+  while (existingNames.has(newName)) {
+    newName = `${base} ${counter++}`;
+  }
+
+  return newName;
 }
 
 export class Cow {
@@ -157,12 +176,12 @@ export class Cow {
   sprite: SpriteInfo;
   name: string;
 
-  constructor() {
+  constructor(cows?: Cow[]) {
     this.id = crypto.randomUUID();
     this.seed = Date.now();
     this.rng = createSeededRNG(this.seed);
     this.sprite = createSpriteInfo(this.rng);
-    this.name = createName(this.rng);
+    this.name = createName(this.rng, cows);
   }
 
   get displayName(): string {

@@ -3,9 +3,8 @@ import { Container, Graphics } from 'pixi.js';
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { CowComponent } from './CowComponent';
 import { CowInfoBox } from './CowInfoBox';
-import { createNewCow } from '../game/cowBuilder';
 import { getCowScale } from '../game/utils';
-import type { Cow } from '../models/cowModel';
+import { Cow } from '../models/cowModel';
 
 extend({ Container, Graphics });
 
@@ -20,7 +19,7 @@ export const CowManager = ({
 }) => {
   const [cowPositions, setCowPositions] = useState<Record<string, number>>({});
   const [cows, setCows] = useState(() =>
-    Array.from({ length: 1 }, () => createNewCow()),
+    Array.from({ length: 1 }, () => new Cow()),
   );
   const [selectedCow, setSelectedCow] = useState<Cow | null>(null);
   const [cowXY, setCowXY] = useState<Record<string, { x: number; y: number }>>(
@@ -29,8 +28,8 @@ export const CowManager = ({
   const cowScale = getCowScale(appWidth * appHeight);
 
   const addCow = useCallback(() => {
-    setCows((prev) => [...prev, createNewCow()]);
-  }, []);
+    setCows((prev) => [...prev, new Cow(cows)]);
+  }, [cows]);
 
   const handlePositionUpdate = useCallback(
     (id: string, x: number, y: number) => {
@@ -67,6 +66,7 @@ export const CowManager = ({
       <pixiContainer x={x - rectSize / 2} y={y - rectSize / 2}>
         <pixiGraphics
           draw={(g) => {
+            g.clear();
             g.rect(0, 0, rectSize, rectSize);
             g.stroke({
               width: 2,
@@ -76,10 +76,19 @@ export const CowManager = ({
         />
       </pixiContainer>
     );
-  }, [selectedCow, cowXY]);
+  }, [selectedCow, cowXY, appWidth, appHeight]);
 
   return (
     <>
+      {selectedCow && (
+        <CowInfoBox
+          appWidth={appWidth}
+          appHeight={appHeight}
+          cow={selectedCow}
+          onClose={() => setSelectedCow(null)}
+        />
+      )}
+
       {sortedCows.map((cow) => (
         <CowComponent
           key={cow.id}
@@ -92,14 +101,6 @@ export const CowManager = ({
       ))}
 
       {drawSelectedCowIndicator}
-
-      {selectedCow && (
-        <CowInfoBox
-          appWidth={appWidth}
-          appHeight={appHeight}
-          onClose={() => setSelectedCow(null)}
-        />
-      )}
     </>
   );
 };
