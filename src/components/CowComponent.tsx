@@ -1,70 +1,27 @@
 import { extend } from '@pixi/react';
 import { AnimatedSprite, Container, Texture } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
-import type { RefObject } from 'react';
 import { useCowActions } from '../game/cowLogic';
 import { useCowAnimations, useCowFilter } from '../game/cowBuilder';
 import type { Cow } from '../models/cowModel';
 
 extend({ AnimatedSprite, Container });
 
-const cowAnimSpeed = Number(import.meta.env.VITE_COW_ANIM_SPEED);
-const pointerHoldThreshold = Number(
-  import.meta.env.VITE_POINTER_HOLD_THRESHOLD_MS,
-);
-
-function handleClicks(
-  spriteRef: RefObject<AnimatedSprite | null>,
-  petCow: () => void,
-  onLongPress?: () => void,
-) {
-  const sprite = spriteRef.current;
-  if (!sprite) return;
-
-  sprite.eventMode = 'static';
-  let pointerDownTime = 0;
-
-  const handlePointerDown = (e: PointerEvent) => {
-    if (e.button !== 0) return;
-    e.preventDefault();
-    pointerDownTime = performance.now();
-  };
-
-  const handlePointerUp = (e: PointerEvent) => {
-    if (e.button !== 0) return;
-    e.preventDefault();
-    const duration = performance.now() - pointerDownTime;
-
-    if (duration < pointerHoldThreshold) {
-      petCow();
-    } else {
-      onLongPress?.();
-    }
-  };
-
-  sprite.on('pointerdown', handlePointerDown);
-  sprite.on('pointerup', handlePointerUp);
-  sprite.on('pointerupoutside', handlePointerUp);
-
-  return () => {
-    sprite.off('pointerdown', handlePointerDown);
-    sprite.off('pointerup', handlePointerUp);
-    sprite.off('pointerupoutside', handlePointerUp);
-  };
-}
-
 export const CowComponent = ({
   appWidth,
   appHeight,
   cow,
   onPositionUpdate,
-  onLongPress,
+  registerRef,
 }: {
   appWidth: number;
   appHeight: number;
   cow: Cow;
   onPositionUpdate?: (id: string, x: number, y: number) => void;
-  onLongPress?: (cow: Cow) => void;
+  registerRef?: (
+    layerRefs: Record<string, AnimatedSprite | null>,
+    petCow: () => void,
+  ) => void;
 }) => {
   const { pos, cowScale, animation, direction, petCow } = useCowActions(
     appWidth,
@@ -104,7 +61,7 @@ export const CowComponent = ({
   ) => {
     if (!sprite || !textures) return;
     sprite.textures = textures;
-    sprite.animationSpeed = cowAnimSpeed;
+    sprite.animationSpeed = Number(import.meta.env.VITE_COW_ANIM_SPEED);
     sprite.loop = !currentAnim.includes('To');
     sprite.play();
 
@@ -136,9 +93,8 @@ export const CowComponent = ({
   }, [currentAnim, animations]);
 
   useEffect(() => {
-    const baseLayer = layerRefs.current[Object.keys(layerRefs.current)[0]];
-    handleClicks({ current: baseLayer }, petCow, () => onLongPress?.(cow));
-  }, [petCow, onLongPress, cow]);
+    registerRef?.(layerRefs.current, petCow);
+  }, [layerRefs.current, registerRef, petCow]);
 
   if (!animations) return null;
 

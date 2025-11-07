@@ -12,12 +12,6 @@ export interface SpriteInfo {
   filters: Record<string, FilterSettings>;
 }
 
-const cowColorMutateChance = Number(
-  import.meta.env.VITE_COW_COLOR_MUTATE_CHANCE,
-);
-const cowHornChance = Number(import.meta.env.VITE_COW_HORN_CHANCE);
-const cowSpotChance = Number(import.meta.env.VITE_COW_SPOT_CHANCE);
-
 const spotLayers = ['spotsBlack', 'spotsPink'];
 const hueRange = [0, 360];
 const saturateRange = [0.5, 1.5];
@@ -51,8 +45,9 @@ function createSpriteInfo(rng: Function): SpriteInfo {
 
   spriteInfo.layers.push('tongue');
 
-  if (rng() < cowHornChance) spriteInfo.layers.push('horns');
-  if (rng() < cowSpotChance)
+  if (rng() < Number(import.meta.env.VITE_COW_HORN_CHANCE))
+    spriteInfo.layers.push('horns');
+  if (rng() < Number(import.meta.env.VITE_COW_SPOT_CHANCE))
     spriteInfo.layers.push(spotLayers[Math.floor(rng() * spotLayers.length)]);
 
   const randomFilter = (): FilterSettings => ({
@@ -63,7 +58,10 @@ function createSpriteInfo(rng: Function): SpriteInfo {
       brightnessRange[0] + rng() * (brightnessRange[1] - brightnessRange[0]),
   });
 
-  if (spriteInfo.layers.includes('baseGrey') && rng() < cowColorMutateChance) {
+  if (
+    spriteInfo.layers.includes('baseGrey') &&
+    rng() < Number(import.meta.env.VITE_COW_COLOR_MUTATE_CHANCE)
+  ) {
     spriteInfo.filters.baseGrey = randomFilter();
   }
 

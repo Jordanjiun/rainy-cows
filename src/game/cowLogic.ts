@@ -11,11 +11,7 @@ type AnimationOptions = {
 };
 type Vec2 = { x: number; y: number };
 
-const cowEatChance = Number(import.meta.env.VITE_COW_EAT_CHANCE);
-const cowEatCoolDown = Number(import.meta.env.VITE_COW_EAT_COOLDOWN);
 const cowIdleWalkChance = Number(import.meta.env.VITE_COW_IDLE_WALK_CHANCE);
-const cowMinTickIdle = Number(import.meta.env.VITE_COW_MIN_TICK_IDLE);
-const cowMinTickWalk = Number(import.meta.env.VITE_COW_MIN_TICK_WALK);
 const cowMsPerFrame = Number(import.meta.env.VITE_COW_MS_PER_FRAME);
 const cowSpeed = Number(import.meta.env.VITE_COW_SPEED);
 
@@ -141,16 +137,19 @@ export function useCowActions(
       if (
         !isIdleActionPlaying &&
         eatCooldown.current <= 0 &&
-        rng.current() < cowEatChance
+        rng.current() < Number(import.meta.env.VITE_COW_EAT_CHANCE)
       ) {
         setIsIdleActionPlaying(true);
         setAnimation('eat');
-        eatCooldown.current = cowEatCoolDown;
+        eatCooldown.current = Number(import.meta.env.VITE_COW_EAT_COOLDOWN);
         return;
       }
 
       // Maybe start walking
-      if (!isIdleActionPlaying && stateTimer.current >= cowMinTickIdle) {
+      if (
+        !isIdleActionPlaying &&
+        stateTimer.current >= Number(import.meta.env.VITE_COW_MIN_TICK_IDLE)
+      ) {
         if (rng.current() < cowIdleWalkChance) {
           setAnimation('walk');
           stateTimer.current = 0;
@@ -163,7 +162,9 @@ export function useCowActions(
         }
       }
     } else if (animation === 'walk') {
-      if (stateTimer.current >= cowMinTickWalk) {
+      if (
+        stateTimer.current >= Number(import.meta.env.VITE_COW_MIN_TICK_WALK)
+      ) {
         if (rng.current() < cowIdleWalkChance) {
           setAnimation('idle');
           stateTimer.current = 0;

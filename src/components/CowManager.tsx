@@ -1,14 +1,12 @@
 import { extend } from '@pixi/react';
-import { Container, Graphics } from 'pixi.js';
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { AnimatedSprite, Container, Graphics } from 'pixi.js';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { CowComponent } from './CowComponent';
 import { CowInfoBox } from './CowInfoBox';
 import { getCowScale } from '../game/utils';
 import { Cow } from '../models/cowModel';
 
-extend({ Container, Graphics });
-
-const frameSize = Number(import.meta.env.VITE_COW_FRAME_SIZE);
+extend({ AnimatedSprite, Container, Graphics });
 
 export const CowManager = ({
   appWidth,
@@ -25,6 +23,7 @@ export const CowManager = ({
   const [cowXY, setCowXY] = useState<Record<string, { x: number; y: number }>>(
     {},
   );
+  const cowRefs = useRef<Record<string, AnimatedSprite | null>>({});
   const cowScale = getCowScale(appWidth * appHeight);
 
   const addCow = useCallback(() => {
@@ -37,6 +36,82 @@ export const CowManager = ({
       if (x !== undefined) setCowXY((prev) => ({ ...prev, [id]: { x, y } }));
     },
     [],
+  );
+
+  const handleClick = useCallback(
+    (cow: Cow, sprite: AnimatedSprite | null, petCow: () => void) => {
+      if (!sprite) return;
+
+      sprite.eventMode = 'static';
+      let pointerDownTime = 0;
+      let startX = 0;
+      let startY = 0;
+      let longPressTimeout: number | null = null;
+
+      const pointerMoveThreshold = 5;
+      const holdThreshold = Number(
+        import.meta.env.VITE_POINTER_HOLD_THRESHOLD_MS,
+      );
+
+      const handlePointerDown = (e: PointerEvent) => {
+        if (e.button !== 0) return;
+        e.preventDefault();
+
+        pointerDownTime = performance.now();
+        startX = e.clientX;
+        startY = e.clientY;
+
+        longPressTimeout = setTimeout(() => {
+          if (selectedCow?.id !== cow.id) {
+            setSelectedCow(cow);
+          }
+          longPressTimeout = null;
+        }, holdThreshold);
+      };
+
+      const handlePointerUp = (e: PointerEvent) => {
+        if (e.button !== 0) return;
+        e.preventDefault();
+
+        if (longPressTimeout) {
+          clearTimeout(longPressTimeout);
+          longPressTimeout = null;
+        }
+
+        const moved =
+          Math.abs(e.clientX - startX) > pointerMoveThreshold ||
+          Math.abs(e.clientY - startY) > pointerMoveThreshold;
+
+        if (moved) return;
+
+        const duration = performance.now() - pointerDownTime;
+        if (duration < holdThreshold) {
+          petCow();
+        }
+      };
+
+      const handlePointerCancelOrLeave = () => {
+        if (longPressTimeout) {
+          clearTimeout(longPressTimeout);
+          longPressTimeout = null;
+        }
+      };
+
+      sprite.on('pointerdown', handlePointerDown);
+      sprite.on('pointerup', handlePointerUp);
+      sprite.on('pointerupoutside', handlePointerUp);
+      sprite.on('pointercancel', handlePointerCancelOrLeave);
+      sprite.on('pointerleave', handlePointerCancelOrLeave);
+
+      return () => {
+        sprite.off('pointerdown', handlePointerDown);
+        sprite.off('pointerup', handlePointerUp);
+        sprite.off('pointerupoutside', handlePointerUp);
+        sprite.off('pointercancel', handlePointerCancelOrLeave);
+        sprite.off('pointerleave', handlePointerCancelOrLeave);
+      };
+    },
+    [selectedCow],
   );
 
   const sortedCows = [...cows].sort(
@@ -60,7 +135,7 @@ export const CowManager = ({
     const pos = cowXY[selectedCow.id];
     if (!pos) return null;
     const { x, y } = pos;
-    const rectSize = frameSize * cowScale;
+    const rectSize = Number(import.meta.env.VITE_COW_FRAME_SIZE) * cowScale;
 
     return (
       <pixiContainer x={x - rectSize / 2} y={y - rectSize / 2}>
@@ -76,7 +151,7 @@ export const CowManager = ({
         />
       </pixiContainer>
     );
-  }, [selectedCow, cowXY, appWidth, appHeight]);
+  }, [selectedCow, cowXY, cowScale]);
 
   return (
     <>
@@ -96,7 +171,11 @@ export const CowManager = ({
           appWidth={appWidth}
           appHeight={appHeight}
           onPositionUpdate={handlePositionUpdate}
-          onLongPress={(c) => setSelectedCow(c)}
+          registerRef={(layerRefs, petCow) => {
+            const baseLayer = Object.values(layerRefs)[0];
+            cowRefs.current[cow.id] = baseLayer;
+            handleClick(cow, baseLayer, petCow);
+          }}
         />
       ))}
 
