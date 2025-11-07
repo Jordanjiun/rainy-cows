@@ -103,7 +103,7 @@ export function useCowActions(
     }
   };
 
-  const petCow = () => {
+  const handlePetAnimation = () => {
     if (isBeingPetted.current) return;
     isBeingPetted.current = true;
     playAnimation('pet');
@@ -225,5 +225,5 @@ export function useCowActions(
     handleEatAnimation();
   }, [animation]);
 
-  return { pos, cowScale, animation, direction, petCow };
+  return { pos, cowScale, animation, direction, handlePetAnimation };
 }

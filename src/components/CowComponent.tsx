@@ -20,14 +20,11 @@ export const CowComponent = ({
   onPositionUpdate?: (id: string, x: number, y: number) => void;
   registerRef?: (
     layerRefs: Record<string, AnimatedSprite | null>,
-    petCow: () => void,
+    handlePetAnimation: () => void,
   ) => void;
 }) => {
-  const { pos, cowScale, animation, direction, petCow } = useCowActions(
-    appWidth,
-    appHeight,
-    cow.seed,
-  );
+  const { pos, cowScale, animation, direction, handlePetAnimation } =
+    useCowActions(appWidth, appHeight, cow.seed);
   const animations = useCowAnimations(cow.sprite.layers);
   const layerFilters = useCowFilter(cow.sprite);
   const scale = { x: cowScale * direction, y: cowScale };
@@ -93,8 +90,8 @@ export const CowComponent = ({
   }, [currentAnim, animations]);
 
   useEffect(() => {
-    registerRef?.(layerRefs.current, petCow);
-  }, [layerRefs.current, registerRef, petCow]);
+    registerRef?.(layerRefs.current, handlePetAnimation);
+  }, [layerRefs.current, registerRef, handlePetAnimation]);
 
   if (!animations) return null;
 

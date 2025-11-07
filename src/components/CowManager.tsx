@@ -24,6 +24,7 @@ export const CowManager = ({
     {},
   );
   const cowRefs = useRef<Record<string, AnimatedSprite | null>>({});
+  const cowListenersAttached = useRef<Record<string, boolean>>({});
   const cowScale = getCowScale(appWidth * appHeight);
 
   const addCow = useCallback(() => {
@@ -39,7 +40,11 @@ export const CowManager = ({
   );
 
   const handleClick = useCallback(
-    (cow: Cow, sprite: AnimatedSprite | null, petCow: () => void) => {
+    (
+      cow: Cow,
+      sprite: AnimatedSprite | null,
+      handlePetAnimation: () => void,
+    ) => {
       if (!sprite) return;
 
       sprite.eventMode = 'static';
@@ -86,7 +91,8 @@ export const CowManager = ({
 
         const duration = performance.now() - pointerDownTime;
         if (duration < holdThreshold) {
-          petCow();
+          handlePetAnimation();
+          cow.pet();
         }
       };
 
@@ -171,10 +177,19 @@ export const CowManager = ({
           appWidth={appWidth}
           appHeight={appHeight}
           onPositionUpdate={handlePositionUpdate}
-          registerRef={(layerRefs, petCow) => {
+          registerRef={(layerRefs, handlePetAnimation) => {
             const baseLayer = Object.values(layerRefs)[0];
+            if (!baseLayer) return;
+
             cowRefs.current[cow.id] = baseLayer;
-            handleClick(cow, baseLayer, petCow);
+            if (!cowListenersAttached.current[cow.id]) {
+              const cleanup = handleClick(cow, baseLayer, handlePetAnimation);
+              cowListenersAttached.current[cow.id] = true;
+              baseLayer.on('removed', () => {
+                cleanup?.();
+                cowListenersAttached.current[cow.id] = false;
+              });
+            }
           }}
         />
       ))}
