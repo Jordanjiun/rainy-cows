@@ -16,6 +16,7 @@ const pointerHoldThreshold = Number(
 function handleClicks(
   spriteRef: RefObject<AnimatedSprite | null>,
   petCow: () => void,
+  onLongPress?: () => void,
 ) {
   const sprite = spriteRef.current;
   if (!sprite) return;
@@ -32,8 +33,12 @@ function handleClicks(
   const handlePointerUp = (e: PointerEvent) => {
     if (e.button !== 0) return;
     e.preventDefault();
-    if (performance.now() - pointerDownTime < pointerHoldThreshold) {
+    const duration = performance.now() - pointerDownTime;
+
+    if (duration < pointerHoldThreshold) {
       petCow();
+    } else {
+      onLongPress?.();
     }
   };
 
@@ -53,11 +58,13 @@ export const CowComponent = ({
   appHeight,
   cow,
   onPositionUpdate,
+  onLongPress,
 }: {
   appWidth: number;
   appHeight: number;
   cow: Cow;
-  onPositionUpdate?: (id: string, y: number) => void;
+  onPositionUpdate?: (id: string, x: number, y: number) => void;
+  onLongPress?: (cow: Cow) => void;
 }) => {
   const { pos, cowScale, animation, direction, petCow } = useCowActions(
     appWidth,
@@ -110,7 +117,7 @@ export const CowComponent = ({
   };
 
   useEffect(() => {
-    onPositionUpdate?.(cow.id, pos.y);
+    onPositionUpdate?.(cow.id, pos.x, pos.y);
   }, [pos.y]);
 
   useEffect(() => {
@@ -130,8 +137,8 @@ export const CowComponent = ({
 
   useEffect(() => {
     const baseLayer = layerRefs.current[Object.keys(layerRefs.current)[0]];
-    handleClicks({ current: baseLayer }, petCow);
-  }, [petCow]);
+    handleClicks({ current: baseLayer }, petCow, () => onLongPress?.(cow));
+  }, [petCow, onLongPress, cow]);
 
   if (!animations) return null;
 
