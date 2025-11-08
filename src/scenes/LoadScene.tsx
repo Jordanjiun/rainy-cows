@@ -17,8 +17,16 @@ const manifest = {
         { alias: 'baseWhite', src: '/assets/cows/baseWhite.png' },
         { alias: 'baseYellow', src: '/assets/cows/baseYellow.png' },
         { alias: 'horns', src: '/assets/cows/horns.png' },
-        { alias: 'spots', src: '/assets/cows/spots.png' },
+        { alias: 'spotsBlack', src: '/assets/cows/spotsBlack.png' },
+        { alias: 'spotsPink', src: '/assets/cows/spotsPink.png' },
         { alias: 'tongue', src: '/assets/cows/tongue.png' },
+      ],
+    },
+    {
+      name: 'others',
+      assets: [
+        { alias: 'heart', src: '/assets/others/heart.png' },
+        { alias: 'noHeart', src: '/assets/others/noHeart.png' },
       ],
     },
   ],

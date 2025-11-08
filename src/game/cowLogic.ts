@@ -11,11 +11,7 @@ type AnimationOptions = {
 };
 type Vec2 = { x: number; y: number };
 
-const cowEatChance = Number(import.meta.env.VITE_COW_EAT_CHANCE);
-const cowEatCoolDown = Number(import.meta.env.VITE_COW_EAT_COOLDOWN);
 const cowIdleWalkChance = Number(import.meta.env.VITE_COW_IDLE_WALK_CHANCE);
-const cowMinTickIdle = Number(import.meta.env.VITE_COW_MIN_TICK_IDLE);
-const cowMinTickWalk = Number(import.meta.env.VITE_COW_MIN_TICK_WALK);
 const cowMsPerFrame = Number(import.meta.env.VITE_COW_MS_PER_FRAME);
 const cowSpeed = Number(import.meta.env.VITE_COW_SPEED);
 
@@ -27,13 +23,9 @@ export function useCowActions(
   appHeight: number,
   seed: number,
 ) {
-  const [pos, setPos] = useState<Vec2>({ x: appWidth / 2, y: appHeight / 2 });
-  const [animation, setAnimation] = useState<'idle' | 'walk' | 'eat' | 'pet'>(
-    'idle',
-  );
-  const [direction, setDirection] = useState<1 | -1>(1);
-  const [canMove, setCanMove] = useState(false);
-  const [isIdleActionPlaying, setIsIdleActionPlaying] = useState(false);
+  const cowScale = getCowScale(appWidth * appHeight);
+  const cowHalfSize = (frameSize * cowScale) / 2;
+  const landBoundary = appHeight * (1 - landRatio) - frameSize * cowScale + 10;
 
   const animationTimeoutRef = useRef<number | null>(null);
   const eatCooldown = useRef(0);
@@ -42,9 +34,30 @@ export function useCowActions(
   const rng = useRef(createSeededRNG(seed));
   const stateTimer = useRef(0);
 
-  const cowScale = getCowScale(appWidth * appHeight);
-  const cowHalfSize = (frameSize * cowScale) / 2;
-  const landBoundary = appHeight * (1 - landRatio) - frameSize * cowScale + 10;
+  const [pos, setPos] = useState<Vec2>(() =>
+    getRandomStartPosition(appWidth, appHeight, rng.current),
+  );
+  const [animation, setAnimation] = useState<'idle' | 'walk' | 'eat' | 'pet'>(
+    'idle',
+  );
+  const [direction, setDirection] = useState<1 | -1>(1);
+  const [canMove, setCanMove] = useState(false);
+  const [isIdleActionPlaying, setIsIdleActionPlaying] = useState(false);
+
+  function getRandomStartPosition(
+    appWidth: number,
+    appHeight: number,
+    rng: () => number,
+  ) {
+    const minX = cowHalfSize;
+    const maxX = appWidth - cowHalfSize;
+    const minY = landBoundary + cowHalfSize;
+    const maxY = appHeight - cowHalfSize;
+    const x = minX + rng() * (maxX - minX);
+    const y = minY + rng() * (maxY - minY);
+
+    return { x, y };
+  }
 
   function clampPosition(prev: Vec2, appWidth: number, appHeight: number) {
     let x = prev.x;
@@ -90,7 +103,7 @@ export function useCowActions(
     }
   };
 
-  const petCow = () => {
+  const handlePetAnimation = () => {
     if (isBeingPetted.current) return;
     isBeingPetted.current = true;
     playAnimation('pet');
@@ -124,16 +137,19 @@ export function useCowActions(
       if (
         !isIdleActionPlaying &&
         eatCooldown.current <= 0 &&
-        rng.current() < cowEatChance
+        rng.current() < Number(import.meta.env.VITE_COW_EAT_CHANCE)
       ) {
         setIsIdleActionPlaying(true);
         setAnimation('eat');
-        eatCooldown.current = cowEatCoolDown;
+        eatCooldown.current = Number(import.meta.env.VITE_COW_EAT_COOLDOWN);
         return;
       }
 
       // Maybe start walking
-      if (!isIdleActionPlaying && stateTimer.current >= cowMinTickIdle) {
+      if (
+        !isIdleActionPlaying &&
+        stateTimer.current >= Number(import.meta.env.VITE_COW_MIN_TICK_IDLE)
+      ) {
         if (rng.current() < cowIdleWalkChance) {
           setAnimation('walk');
           stateTimer.current = 0;
@@ -146,7 +162,9 @@ export function useCowActions(
         }
       }
     } else if (animation === 'walk') {
-      if (stateTimer.current >= cowMinTickWalk) {
+      if (
+        stateTimer.current >= Number(import.meta.env.VITE_COW_MIN_TICK_WALK)
+      ) {
         if (rng.current() < cowIdleWalkChance) {
           setAnimation('idle');
           stateTimer.current = 0;
@@ -207,5 +225,5 @@ export function useCowActions(
     handleEatAnimation();
   }, [animation]);
 
-  return { pos, cowScale, animation, direction, petCow };
+  return { pos, cowScale, animation, direction, handlePetAnimation };
 }

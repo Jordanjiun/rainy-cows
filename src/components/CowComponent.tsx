@@ -1,74 +1,41 @@
 import { extend } from '@pixi/react';
 import { AnimatedSprite, Container, Texture } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
-import type { RefObject } from 'react';
 import { useCowActions } from '../game/cowLogic';
-import {
-  createNewCow,
-  useCowAnimations,
-  useCowFilter,
-} from '../game/cowBuilder';
+import { useCowAnimations, useCowFilter } from '../game/cowBuilder';
+import type { Cow } from '../models/cowModel';
 
 extend({ AnimatedSprite, Container });
 
-const cowAnimSpeed = Number(import.meta.env.VITE_COW_ANIM_SPEED);
-const pointerHoldThreshold = Number(
-  import.meta.env.VITE_POINTER_HOLD_THRESHOLD_MS,
-);
-
-// replace with cow manager
-const cow = createNewCow();
-
-function handleClicks(
-  spriteRef: RefObject<AnimatedSprite | null>,
-  petCow: () => void,
-) {
-  const sprite = spriteRef.current;
-  if (!sprite) return;
-
-  sprite.eventMode = 'static';
-  let pointerDownTime = 0;
-
-  const handlePointerDown = () => {
-    pointerDownTime = performance.now();
-  };
-
-  const handlePointerUp = () => {
-    const duration = performance.now() - pointerDownTime;
-    if (duration < pointerHoldThreshold) {
-      petCow();
-    }
-  };
-
-  sprite.on('pointerdown', handlePointerDown);
-  sprite.on('pointerup', handlePointerUp);
-  sprite.on('pointerupoutside', handlePointerUp);
-
-  return () => {
-    sprite.off('pointerdown', handlePointerDown);
-    sprite.off('pointerup', handlePointerUp);
-    sprite.off('pointerupoutside', handlePointerUp);
-  };
+interface CowComponentProps {
+  appWidth: number;
+  appHeight: number;
+  cow: Cow;
+  onPositionUpdate?: (id: string, x: number, y: number) => void;
+  onXpUpdate?: (id: string, xp: number) => void;
+  registerRef?: (
+    layerRefs: Record<string, AnimatedSprite | null>,
+    handlePetAnimation: () => void,
+  ) => void;
 }
 
 export const CowComponent = ({
   appWidth,
   appHeight,
-}: {
-  appWidth: number;
-  appHeight: number;
-}) => {
-  const { pos, cowScale, animation, direction, petCow } = useCowActions(
-    appWidth,
-    appHeight,
-    cow.seed,
-  );
+  cow,
+  onPositionUpdate,
+  onXpUpdate,
+  registerRef,
+}: CowComponentProps) => {
+  const { pos, cowScale, animation, direction, handlePetAnimation } =
+    useCowActions(appWidth, appHeight, cow.seed);
   const animations = useCowAnimations(cow.sprite.layers);
   const layerFilters = useCowFilter(cow.sprite);
   const scale = { x: cowScale * direction, y: cowScale };
 
   const [currentAnim, setCurrentAnim] = useState('idle');
   const [queuedAnim, setQueuedAnim] = useState<string | null>(null);
+  const [xp, setXp] = useState(cow.xp);
 
   const layerRefs = useRef<Record<string, AnimatedSprite | null>>({});
   const containerRef = useRef<Container>(null);
@@ -96,7 +63,7 @@ export const CowComponent = ({
   ) => {
     if (!sprite || !textures) return;
     sprite.textures = textures;
-    sprite.animationSpeed = cowAnimSpeed;
+    sprite.animationSpeed = Number(import.meta.env.VITE_COW_ANIM_SPEED);
     sprite.loop = !currentAnim.includes('To');
     sprite.play();
 
@@ -109,8 +76,28 @@ export const CowComponent = ({
   };
 
   useEffect(() => {
+    onPositionUpdate?.(cow.id, pos.x, pos.y);
+  }, [pos.y]);
+
+  useEffect(() => {
     handleAnimationChange(animation);
   }, [animation, animations]);
+
+  useEffect(() => {
+    onXpUpdate?.(cow.id, xp);
+  }, [xp]);
+
+  useEffect(() => {
+    if (currentAnim === 'eat') {
+      const timer = setTimeout(
+        () => {
+          setXp(cow.eat());
+        },
+        Number(import.meta.env.VITE_COW_MS_EAT_CHECK),
+      );
+      return () => clearTimeout(timer);
+    }
+  }, [currentAnim]);
 
   useEffect(() => {
     if (!animations) return;
@@ -124,9 +111,8 @@ export const CowComponent = ({
   }, [currentAnim, animations]);
 
   useEffect(() => {
-    const baseLayer = layerRefs.current[Object.keys(layerRefs.current)[0]];
-    handleClicks({ current: baseLayer }, petCow);
-  }, [petCow]);
+    registerRef?.(layerRefs.current, handlePetAnimation);
+  }, [layerRefs.current, registerRef, handlePetAnimation]);
 
   if (!animations) return null;
 

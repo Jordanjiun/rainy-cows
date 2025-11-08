@@ -1,4 +1,15 @@
 import { createSeededRNG } from '../game/utils';
+import {
+  cowBaseColors,
+  cowBrightnessRange,
+  cowContrastRange,
+  cowDateTimeOptions,
+  cowHueRange,
+  cowNames,
+  cowSaturateRange,
+  cowSpotLayers,
+  cowXpPerLevel,
+} from '../data/cowData';
 
 interface FilterSettings {
   hue: number;
@@ -12,31 +23,13 @@ export interface SpriteInfo {
   filters: Record<string, FilterSettings>;
 }
 
-const cowColorMutateChance = Number(
-  import.meta.env.VITE_COW_COLOR_MUTATE_CHANCE,
-);
-const cowHornChance = Number(import.meta.env.VITE_COW_HORN_CHANCE);
-const cowSpotChance = Number(import.meta.env.VITE_COW_SPOT_CHANCE);
-
-const hueRange = [0, 360];
-const saturateRange = [0.5, 1.5];
-const contrastRange = [0, 0.5];
-const brightnessRange = [0.6, 1.5];
-const baseColors = {
-  Black: 0.15,
-  Brown: 0.2,
-  Grey: 0.3,
-  White: 0.15,
-  Yellow: 0.2,
-};
-
 function createSpriteInfo(rng: Function): SpriteInfo {
   const spriteInfo: SpriteInfo = {
     layers: [],
     filters: {},
   };
 
-  const entries = Object.entries(baseColors);
+  const entries = Object.entries(cowBaseColors);
   const totalWeight = entries.reduce((sum, [, weight]) => sum + weight, 0);
 
   let cumulative = 0;
@@ -50,116 +43,119 @@ function createSpriteInfo(rng: Function): SpriteInfo {
 
   spriteInfo.layers.push('tongue');
 
-  if (rng() > cowHornChance) spriteInfo.layers.push('horns');
-  if (rng() > cowSpotChance) spriteInfo.layers.push('spots');
+  if (rng() < Number(import.meta.env.VITE_COW_HORN_CHANCE))
+    spriteInfo.layers.push('horns');
+  if (rng() < Number(import.meta.env.VITE_COW_SPOT_CHANCE))
+    spriteInfo.layers.push(
+      cowSpotLayers[Math.floor(rng() * cowSpotLayers.length)],
+    );
 
   const randomFilter = (): FilterSettings => ({
-    hue: hueRange[0] + rng() * (hueRange[1] - hueRange[0]),
-    saturate: saturateRange[0] + rng() * (saturateRange[1] - saturateRange[0]),
-    contrast: contrastRange[0] + rng() * (contrastRange[1] - contrastRange[0]),
+    hue: cowHueRange[0] + rng() * (cowHueRange[1] - cowHueRange[0]),
+    saturate:
+      cowSaturateRange[0] + rng() * (cowSaturateRange[1] - cowSaturateRange[0]),
+    contrast:
+      cowContrastRange[0] + rng() * (cowContrastRange[1] - cowContrastRange[0]),
     brightness:
-      brightnessRange[0] + rng() * (brightnessRange[1] - brightnessRange[0]),
+      cowBrightnessRange[0] +
+      rng() * (cowBrightnessRange[1] - cowBrightnessRange[0]),
   });
 
-  if (spriteInfo.layers.includes('baseGrey') && rng() > cowColorMutateChance) {
+  if (
+    spriteInfo.layers.includes('baseGrey') &&
+    rng() < Number(import.meta.env.VITE_COW_COLOR_MUTATE_CHANCE)
+  ) {
     spriteInfo.filters.baseGrey = randomFilter();
   }
 
-  if (spriteInfo.layers.includes('spots')) {
-    spriteInfo.filters.spots = randomFilter();
+  for (const layer of cowSpotLayers) {
+    if (spriteInfo.layers.includes(layer)) {
+      spriteInfo.filters[layer] = randomFilter();
+    }
   }
 
   return spriteInfo;
 }
 
-function createName(rng: Function): string {
-  const names = [
-    'Apollo',
-    'Biggie',
-    'Bruno',
-    'Bubba',
-    'Bullseye',
-    'Bully',
-    'Clover',
-    'Diesel',
-    'Duke',
-    'Earl',
-    'Ferdinand',
-    'Frank',
-    'Herbie',
-    'Hercules',
-    'James',
-    'Jimmy',
-    'Kenny',
-    'Maverick',
-    'Mercury',
-    'Neptune',
-    'Norman',
-    'Ollie',
-    'Orson',
-    'Pluto',
-    'Rex',
-    'Samson',
-    'Toby',
-    'Zeus',
-    'Amy',
-    'Arabella',
-    'Bertha',
-    'Bubbles',
-    'Buttercup',
-    'Chloe',
-    'Cinnamon',
-    'Ella',
-    'Elsie',
-    'Emma',
-    'Hope',
-    'Lulu',
-    'Maggie',
-    'Melody',
-    'Millie',
-    'Minnie',
-    'Moolinda',
-    'Moolise',
-    'Moolissa',
-    'Muffin',
-    'Nellie',
-    'Penelope',
-    'Phoebe',
-    'Princess',
-    'Sadie',
-    'Sweetie',
-    'Annabelle',
-    'Bella',
-    'Bessie',
-    'Betty',
-    'Betsie',
-    'Bossy',
-    'Clarabelle',
-    'Daisy',
-    'Flossie',
-    'Gertie',
-    'Henrietta',
-    'Rosie',
-    'Magic',
-  ];
+function createName(rng: Function, cows?: Cow[] | null): string {
+  if (!cows || cows.length === 0) {
+    return cowNames[Math.floor(rng() * cowNames.length)];
+  }
 
-  return names[Math.floor(rng() * names.length)];
+  const existingNames = new Set(cows.map((c) => c.name));
+  const availableNames = cowNames.filter((name) => !existingNames.has(name));
+
+  if (availableNames.length > 0) {
+    return availableNames[Math.floor(rng() * availableNames.length)];
+  }
+
+  const base = cowNames[Math.floor(rng() * cowNames.length)];
+  let newName = base;
+  let counter = 2;
+
+  while (existingNames.has(newName)) {
+    newName = `${base} ${counter++}`;
+  }
+
+  return newName;
 }
 
 export class Cow {
+  id: string;
   seed: number;
-  rng: Function;
   sprite: SpriteInfo;
   name: string;
+  level: number;
+  xp: number;
+  hearts: number;
+  lastPet: string;
 
-  constructor() {
+  constructor(cows?: Cow[]) {
+    this.id = crypto.randomUUID();
     this.seed = Date.now();
-    this.rng = createSeededRNG(this.seed);
-    this.sprite = createSpriteInfo(this.rng);
-    this.name = createName(this.rng);
+
+    const now = new Date();
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const rng = createSeededRNG(this.seed);
+
+    this.sprite = createSpriteInfo(rng);
+    this.name = createName(rng, cows);
+    this.level = 1;
+    this.xp = 0;
+    this.hearts = 1;
+    this.lastPet = yesterday.toLocaleString(undefined, cowDateTimeOptions);
   }
 
-  get displayName(): string {
-    return `${this.name}`;
+  eat() {
+    const mooneyGained = this.level * this.hearts;
+    this.xp += mooneyGained;
+
+    if (this.xp >= cowXpPerLevel[this.level]) {
+      const excess = this.xp - cowXpPerLevel[this.level];
+      this.xp = excess;
+      this.level++;
+    }
+
+    return this.xp;
+  }
+
+  pet() {
+    const now = new Date();
+    const lastPetDate = new Date(this.lastPet);
+    const isNewDay =
+      now.getFullYear() !== lastPetDate.getFullYear() ||
+      now.getMonth() !== lastPetDate.getMonth() ||
+      now.getDate() !== lastPetDate.getDate();
+
+    if (!isNewDay) {
+      return this.hearts;
+    }
+
+    if (this.hearts < 10) {
+      this.hearts++;
+    }
+
+    this.lastPet = now.toLocaleString(undefined, cowDateTimeOptions);
+    return this.hearts;
   }
 }
