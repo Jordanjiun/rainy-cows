@@ -79,6 +79,18 @@ export const CowComponent = ({
   }, [animation, animations]);
 
   useEffect(() => {
+    if (currentAnim === 'eat') {
+      const timer = setTimeout(
+        () => {
+          cow.eat(); // fix: need to change state instead of updating class so react can detect change
+        },
+        Number(import.meta.env.VITE_COW_MS_EAT_CHECK),
+      );
+      return () => clearTimeout(timer);
+    }
+  }, [currentAnim]);
+
+  useEffect(() => {
     if (!animations) return;
     Object.entries(animations).forEach(([layerName, animMap]) => {
       const sprite = layerRefs.current[layerName];

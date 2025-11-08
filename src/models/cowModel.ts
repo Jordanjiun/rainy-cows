@@ -121,8 +121,13 @@ export class Cow {
     this.name = createName(rng, cows);
     this.level = 1;
     this.xp = 0;
-    this.hearts = 0;
+    this.hearts = 1;
     this.lastPet = yesterday.toLocaleString(undefined, cowDateTimeOptions);
+  }
+
+  eat() {
+    const mooneyGained = this.level * this.hearts;
+    this.xp += mooneyGained;
   }
 
   pet() {

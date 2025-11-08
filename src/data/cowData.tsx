@@ -82,6 +82,18 @@ export const cowBaseColors = {
   Yellow: 0.1,
 };
 
+export const cowXpPerLevel: Record<number, number> = {
+  1: 100,
+  2: 500,
+  3: 1000,
+  4: 5000,
+  5: 10000,
+  6: 50000,
+  7: 100000,
+  8: 500000,
+  9: 1000000,
+};
+
 export const cowDateTimeOptions: Intl.DateTimeFormatOptions = {
   year: 'numeric',
   month: '2-digit',
