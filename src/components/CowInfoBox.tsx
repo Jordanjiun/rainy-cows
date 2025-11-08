@@ -30,6 +30,15 @@ const xpBarY = 35;
 const assetNames = ['heart', 'noHeart'];
 const boxColor = '#ebd9c0ff';
 
+interface CowInfoBoxProps {
+  appWidth: number;
+  appHeight: number;
+  cow: Cow;
+  xp: number;
+  hearts: number;
+  onClose: () => void;
+}
+
 export const CowInfoBox = ({
   appWidth,
   appHeight,
@@ -37,14 +46,7 @@ export const CowInfoBox = ({
   xp,
   hearts,
   onClose,
-}: {
-  appWidth: number;
-  appHeight: number;
-  cow: Cow;
-  xp: number;
-  hearts: number;
-  onClose: () => void;
-}) => {
+}: CowInfoBoxProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [scale, setScale] = useState(1);
   const [textures, setTextures] = useState<Record<string, Texture>>({});

@@ -7,14 +7,7 @@ import type { Cow } from '../models/cowModel';
 
 extend({ AnimatedSprite, Container });
 
-export const CowComponent = ({
-  appWidth,
-  appHeight,
-  cow,
-  onPositionUpdate,
-  onXpUpdate,
-  registerRef,
-}: {
+interface CowComponentProps {
   appWidth: number;
   appHeight: number;
   cow: Cow;
@@ -24,7 +17,16 @@ export const CowComponent = ({
     layerRefs: Record<string, AnimatedSprite | null>,
     handlePetAnimation: () => void,
   ) => void;
-}) => {
+}
+
+export const CowComponent = ({
+  appWidth,
+  appHeight,
+  cow,
+  onPositionUpdate,
+  onXpUpdate,
+  registerRef,
+}: CowComponentProps) => {
   const { pos, cowScale, animation, direction, handlePetAnimation } =
     useCowActions(appWidth, appHeight, cow.seed);
   const animations = useCowAnimations(cow.sprite.layers);

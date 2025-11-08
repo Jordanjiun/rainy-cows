@@ -8,6 +8,7 @@ import {
   cowNames,
   cowSaturateRange,
   cowSpotLayers,
+  cowXpPerLevel,
 } from '../data/cowData';
 
 interface FilterSettings {
@@ -128,6 +129,13 @@ export class Cow {
   eat() {
     const mooneyGained = this.level * this.hearts;
     this.xp += mooneyGained;
+
+    if (this.xp >= cowXpPerLevel[this.level]) {
+      const excess = this.xp - cowXpPerLevel[this.level];
+      this.xp = excess;
+      this.level++;
+    }
+
     return this.xp;
   }
 

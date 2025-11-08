@@ -3,6 +3,7 @@ import { AnimatedSprite, Container, Graphics } from 'pixi.js';
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { CowComponent } from './CowComponent';
 import { CowInfoBox } from './CowInfoBox';
+import { FloatingHearts } from './FloatingHeart';
 import { getCowScale } from '../game/utils';
 import { Cow } from '../models/cowModel';
 
@@ -25,20 +26,38 @@ export const CowManager = ({
   );
   const [cowXps, setCowXps] = useState<Record<string, number>>({});
   const [cowHearts, setCowHearts] = useState<Record<string, number>>({});
+  const [heartEvents, setHeartEvents] = useState<
+    { id: string; x: number; y: number }[]
+  >([]);
 
   const cowRefs = useRef<Record<string, AnimatedSprite | null>>({});
   const cowListenersAttached = useRef<Record<string, boolean>>({});
+  const cowXYRef = useRef(cowXY);
 
   const cowScale = getCowScale(appWidth * appHeight);
+
+  useEffect(() => {
+    cowXYRef.current = cowXY;
+  }, [cowXY]);
 
   const addCow = useCallback(() => {
     setCows((prev) => [...prev, new Cow(cows)]);
   }, [cows]);
 
+  const clearHeartEvents = useCallback(() => {
+    setHeartEvents([]);
+  }, []);
+
   const handlePositionUpdate = useCallback(
     (id: string, x: number, y: number) => {
       setCowPositions((prev) => ({ ...prev, [id]: y }));
-      if (x !== undefined) setCowXY((prev) => ({ ...prev, [id]: { x, y } }));
+      if (x !== undefined) {
+        setCowXY((prev) => {
+          const updated = { ...prev, [id]: { x, y } };
+          cowXYRef.current = updated;
+          return updated;
+        });
+      }
     },
     [],
   );
@@ -48,7 +67,17 @@ export const CowManager = ({
   }, []);
 
   const handleHeartChange = useCallback((id: string, hearts: number) => {
-    setCowHearts((prev) => ({ ...prev, [id]: hearts }));
+    setCowHearts((prev) => {
+      const oldHearts = prev[id] ?? 0;
+      const newHearts = hearts;
+      if (newHearts > oldHearts) {
+        const cowPos = cowXYRef.current[id];
+        if (cowPos) {
+          setHeartEvents((prev) => [...prev, { id, x: cowPos.x, y: cowPos.y }]);
+        }
+      }
+      return { ...prev, [id]: newHearts };
+    });
   }, []);
 
   const handleClick = useCallback(
@@ -210,6 +239,8 @@ export const CowManager = ({
       ))}
 
       {drawSelectedCowIndicator}
+
+      <FloatingHearts heartEvents={heartEvents} onConsumed={clearHeartEvents} />
     </>
   );
 };
