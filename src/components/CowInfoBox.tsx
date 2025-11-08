@@ -1,35 +1,66 @@
 import { extend } from '@pixi/react';
-import { Container, Graphics, Text, TextStyle } from 'pixi.js';
+import {
+  Assets,
+  Container,
+  Graphics,
+  Sprite,
+  Text,
+  TextStyle,
+  Texture,
+} from 'pixi.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cowXpPerLevel } from '../data/cowData';
 import type { Cow } from '../models/cowModel';
 
-extend({ Container, Graphics, Text });
+extend({ Container, Graphics, Sprite, Text });
 
 const baseFontSize = 20;
 const boxWidth = 200;
 const crossSize = 15;
 const crossThickness = 5;
+const heartMaxNum = 10;
+const heartScale = 0.07;
+const heartSpacing = 0.7;
+const heartY = 55;
 const offset = 10;
 const titleWidth = 160;
+const titleY = 18;
 const xpBarY = 35;
 
+const assetNames = ['heart', 'noHeart'];
 const boxColor = '#ebd9c0ff';
 
 export const CowInfoBox = ({
   appWidth,
   appHeight,
   cow,
+  xp,
+  hearts,
   onClose,
 }: {
   appWidth: number;
   appHeight: number;
   cow: Cow;
+  xp: number;
+  hearts: number;
   onClose: () => void;
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [scale, setScale] = useState(1);
+  const [textures, setTextures] = useState<Record<string, Texture>>({});
   const textRef = useRef<any>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadTextures() {
+      const loaded: Record<string, Texture> = await Assets.load(assetNames);
+      if (mounted) setTextures(loaded);
+    }
+    loadTextures();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const drawBox = useCallback(
     (g: Graphics) => {
@@ -42,7 +73,7 @@ export const CowInfoBox = ({
 
   const drawXpBar = useCallback(
     (g: Graphics) => {
-      const percentage = cow.xp / cowXpPerLevel[cow.level];
+      const percentage = xp / cowXpPerLevel[cow.level];
       const barWidth = boxWidth - 2 * offset;
       g.clear();
       g.rect(offset, xpBarY, barWidth, 15);
@@ -50,7 +81,7 @@ export const CowInfoBox = ({
       g.rect(offset, xpBarY, barWidth * percentage, 15);
       g.fill({ color: 'green' });
     },
-    [cow.xp, cow.level],
+    [xp],
   );
 
   const drawCloseButton = useMemo(
@@ -98,7 +129,7 @@ export const CowInfoBox = ({
       <pixiText
         ref={textRef}
         x={(boxWidth + crossSize + offset) / 2}
-        y={18}
+        y={titleY}
         text={`${cow.name} (Lvl. ${cow.level})`}
         anchor={0.5}
         scale={{ x: scale, y: scale }}
@@ -115,7 +146,7 @@ export const CowInfoBox = ({
       xpText = 'Maxed';
     } else {
       xpText =
-        cow.xp.toLocaleString('en-US') +
+        xp.toLocaleString('en-US') +
         ` / ${cowXpPerLevel[cowLevel].toLocaleString('en-US')}`;
     }
 
@@ -131,7 +162,41 @@ export const CowInfoBox = ({
         />
       </>
     );
-  }, [cow, cow.level, cow.xp]);
+  }, [cow, xp]);
+
+  const drawHearts = useMemo(() => {
+    if (!textures.noHeart || !textures.heart) return null;
+    return (
+      <>
+        {textures.noHeart &&
+          Array.from({ length: heartMaxNum }).map((_, i) => (
+            <pixiSprite
+              key={i}
+              texture={textures.noHeart}
+              scale={heartScale}
+              x={
+                i * (textures.noHeart.width * heartScale + heartSpacing) +
+                offset
+              }
+              y={heartY}
+            />
+          ))}
+
+        {textures.heart &&
+          Array.from({ length: hearts }).map((_, i) => (
+            <pixiSprite
+              key={i}
+              texture={textures.heart}
+              scale={heartScale}
+              x={
+                i * (textures.heart.width * heartScale + heartSpacing) + offset
+              }
+              y={heartY}
+            />
+          ))}
+      </>
+    );
+  }, [textures.noHeart, textures.heart, hearts]);
 
   return (
     <pixiContainer x={appWidth - boxWidth - offset} y={offset}>
@@ -139,6 +204,7 @@ export const CowInfoBox = ({
       {drawCloseButton}
       {drawNameAndLevel}
       {drawXp}
+      {drawHearts}
     </pixiContainer>
   );
 };

@@ -23,8 +23,12 @@ export const CowManager = ({
   const [cowXY, setCowXY] = useState<Record<string, { x: number; y: number }>>(
     {},
   );
+  const [cowXps, setCowXps] = useState<Record<string, number>>({});
+  const [cowHearts, setCowHearts] = useState<Record<string, number>>({});
+
   const cowRefs = useRef<Record<string, AnimatedSprite | null>>({});
   const cowListenersAttached = useRef<Record<string, boolean>>({});
+
   const cowScale = getCowScale(appWidth * appHeight);
 
   const addCow = useCallback(() => {
@@ -38,6 +42,14 @@ export const CowManager = ({
     },
     [],
   );
+
+  const handleXpChange = useCallback((id: string, xp: number) => {
+    setCowXps((prev) => ({ ...prev, [id]: xp }));
+  }, []);
+
+  const handleHeartChange = useCallback((id: string, hearts: number) => {
+    setCowHearts((prev) => ({ ...prev, [id]: hearts }));
+  }, []);
 
   const handleClick = useCallback(
     (
@@ -92,7 +104,7 @@ export const CowManager = ({
         const duration = performance.now() - pointerDownTime;
         if (duration < holdThreshold) {
           handlePetAnimation();
-          cow.pet();
+          handleHeartChange(cow.id, cow.pet());
         }
       };
 
@@ -157,7 +169,7 @@ export const CowManager = ({
         />
       </pixiContainer>
     );
-  }, [selectedCow, cowXY, cowScale]);
+  }, [appWidth, appHeight, selectedCow, cowXY]);
 
   return (
     <>
@@ -166,6 +178,8 @@ export const CowManager = ({
           appWidth={appWidth}
           appHeight={appHeight}
           cow={selectedCow}
+          xp={cowXps[selectedCow.id] ?? selectedCow.xp}
+          hearts={cowHearts[selectedCow.id] ?? selectedCow.hearts}
           onClose={() => setSelectedCow(null)}
         />
       )}
@@ -177,6 +191,7 @@ export const CowManager = ({
           appWidth={appWidth}
           appHeight={appHeight}
           onPositionUpdate={handlePositionUpdate}
+          onXpUpdate={handleXpChange}
           registerRef={(layerRefs, handlePetAnimation) => {
             const baseLayer = Object.values(layerRefs)[0];
             if (!baseLayer) return;

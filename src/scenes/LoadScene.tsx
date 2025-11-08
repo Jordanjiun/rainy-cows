@@ -22,6 +22,13 @@ const manifest = {
         { alias: 'tongue', src: '/assets/cows/tongue.png' },
       ],
     },
+    {
+      name: 'others',
+      assets: [
+        { alias: 'heart', src: '/assets/others/heart.png' },
+        { alias: 'noHeart', src: '/assets/others/noHeart.png' },
+      ],
+    },
   ],
 };
 

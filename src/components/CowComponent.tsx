@@ -12,12 +12,14 @@ export const CowComponent = ({
   appHeight,
   cow,
   onPositionUpdate,
+  onXpUpdate,
   registerRef,
 }: {
   appWidth: number;
   appHeight: number;
   cow: Cow;
   onPositionUpdate?: (id: string, x: number, y: number) => void;
+  onXpUpdate?: (id: string, xp: number) => void;
   registerRef?: (
     layerRefs: Record<string, AnimatedSprite | null>,
     handlePetAnimation: () => void,
@@ -31,6 +33,7 @@ export const CowComponent = ({
 
   const [currentAnim, setCurrentAnim] = useState('idle');
   const [queuedAnim, setQueuedAnim] = useState<string | null>(null);
+  const [xp, setXp] = useState(cow.xp);
 
   const layerRefs = useRef<Record<string, AnimatedSprite | null>>({});
   const containerRef = useRef<Container>(null);
@@ -79,10 +82,14 @@ export const CowComponent = ({
   }, [animation, animations]);
 
   useEffect(() => {
+    onXpUpdate?.(cow.id, xp);
+  }, [xp]);
+
+  useEffect(() => {
     if (currentAnim === 'eat') {
       const timer = setTimeout(
         () => {
-          cow.eat(); // fix: need to change state instead of updating class so react can detect change
+          setXp(cow.eat());
         },
         Number(import.meta.env.VITE_COW_MS_EAT_CHECK),
       );

@@ -128,6 +128,7 @@ export class Cow {
   eat() {
     const mooneyGained = this.level * this.hearts;
     this.xp += mooneyGained;
+    return this.xp;
   }
 
   pet() {
@@ -139,7 +140,7 @@ export class Cow {
       now.getDate() !== lastPetDate.getDate();
 
     if (!isNewDay) {
-      return;
+      return this.hearts;
     }
 
     if (this.hearts < 10) {
@@ -147,5 +148,6 @@ export class Cow {
     }
 
     this.lastPet = now.toLocaleString(undefined, cowDateTimeOptions);
+    return this.hearts;
   }
 }
