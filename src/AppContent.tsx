@@ -3,6 +3,7 @@ import { useScene } from './context/useScene';
 import type { SceneKey } from './context/SceneTypes';
 import { LoadScreen } from './scenes/LoadScene';
 import { MainScene } from './scenes/MainScene';
+import { useGamePersistence } from './game/store';
 import { Maximize, Minimize } from 'lucide-react';
 import { useRef, useEffect, useState } from 'react';
 import type { MouseEvent } from 'react';
@@ -11,6 +12,8 @@ import './App.css';
 const fullscreenSvgSize = Number(import.meta.env.VITE_FULLSCREEN_SVG_SIZE);
 
 export const AppContent = () => {
+  useGamePersistence();
+
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { currentScene } = useScene();

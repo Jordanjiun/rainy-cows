@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { CowComponent } from './CowComponent';
 import { CowInfoBox } from './CowInfoBox';
 import { FloatingHearts } from './FloatingHeart';
+import { useGameStore } from '../game/store';
 import { getCowScale } from '../game/utils';
 import { Cow } from '../models/cowModel';
 
@@ -16,10 +17,10 @@ export const CowManager = ({
   appWidth: number;
   appHeight: number;
 }) => {
+  const { cows, addCow } = useGameStore();
+  const cowScale = getCowScale(appWidth * appHeight);
+
   const [cowPositions, setCowPositions] = useState<Record<string, number>>({});
-  const [cows, setCows] = useState(() =>
-    Array.from({ length: 1 }, () => new Cow()),
-  );
   const [selectedCow, setSelectedCow] = useState<Cow | null>(null);
   const [cowXY, setCowXY] = useState<Record<string, { x: number; y: number }>>(
     {},
@@ -34,19 +35,30 @@ export const CowManager = ({
   const cowListenersAttached = useRef<Record<string, boolean>>({});
   const cowXYRef = useRef(cowXY);
 
-  const cowScale = getCowScale(appWidth * appHeight);
-
   useEffect(() => {
     cowXYRef.current = cowXY;
   }, [cowXY]);
 
-  const addCow = useCallback(() => {
-    setCows((prev) => [...prev, new Cow(cows)]);
-  }, [cows]);
+  useEffect(() => {
+    const initialXps: Record<string, number> = {};
+    const initialHearts: Record<string, number> = {};
+
+    cows.forEach((cow) => {
+      initialXps[cow.id] = cow.xp;
+      initialHearts[cow.id] = cow.hearts;
+    });
+
+    setCowXps(initialXps);
+    setCowHearts(initialHearts);
+  }, [cows, appWidth, appHeight]);
 
   const clearHeartEvents = useCallback(() => {
     setHeartEvents([]);
   }, []);
+
+  const handleAddCow = useCallback(() => {
+    addCow(new Cow(cows));
+  }, [addCow, cows]);
 
   const handlePositionUpdate = useCallback(
     (id: string, x: number, y: number) => {
@@ -169,13 +181,13 @@ export const CowManager = ({
     const handleRightClick = (e: PointerEvent) => {
       if (e.button === 2) {
         e.preventDefault();
-        addCow();
+        handleAddCow();
       }
     };
 
     document.addEventListener('contextmenu', handleRightClick);
     return () => document.removeEventListener('contextmenu', handleRightClick);
-  }, [addCow]);
+  }, [handleAddCow]);
 
   const drawSelectedCowIndicator = useMemo(() => {
     if (!selectedCow) return null;
