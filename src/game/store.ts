@@ -4,20 +4,17 @@ import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
 import { useEffect } from 'react';
 import { Cow } from '../models/cowModel';
 
+const dbName = String(import.meta.env.VITE_DB_NAME);
 const storeName = String(import.meta.env.VITE_DB_STORE_NAME);
 
 async function getDB() {
-  return openDB(
-    String(import.meta.env.VITE_DB_NAME),
-    Number(import.meta.env.VITE_DB_VERSION),
-    {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains(storeName)) {
-          db.createObjectStore(storeName);
-        }
-      },
+  return openDB(dbName, Number(import.meta.env.VITE_DB_VERSION), {
+    upgrade(db) {
+      if (!db.objectStoreNames.contains(storeName)) {
+        db.createObjectStore(storeName);
+      }
     },
-  );
+  });
 }
 
 async function saveGameData(data: any) {
@@ -36,6 +33,7 @@ async function cleaGameData() {
 }
 
 export const purgeGameData = async () => {
+  localStorage.removeItem(dbName);
   useGameStore.getState().reset();
   await cleaGameData();
 };
@@ -103,29 +101,51 @@ export function useGamePersistence() {
 
   useEffect(() => {
     let ignore = false;
+
     (async () => {
-      const data = await loadCompressedGameData<Partial<GameState>>();
-      if (!ignore && data) {
-        gameState.loadData(data);
+      const localData = localStorage.getItem(dbName);
+      if (localData) {
+        try {
+          const parsed = JSON.parse(decompressFromUTF16(localData));
+          if (!ignore) gameState.loadData(parsed);
+          return;
+        } catch (e) {
+          console.warn('LocalStorage corrupted, removing it', e);
+          localStorage.removeItem(dbName);
+        }
+      }
+
+      const dbData = await loadCompressedGameData<Partial<typeof gameState>>();
+      if (!ignore && dbData) {
+        gameState.loadData(dbData);
       }
     })();
+
     return () => {
       ignore = true;
     };
   }, []);
 
   useEffect(() => {
-    const save = async () => {
+    const saveToDB = async () => {
       const data = useGameStore.getState();
       await saveCompressedGameData(data);
     };
 
-    const interval = setInterval(save, 10000);
-    window.addEventListener('beforeunload', save);
+    const interval = setInterval(saveToDB, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const data = useGameStore.getState();
+      const compressed = compressToUTF16(JSON.stringify(data));
+      localStorage.setItem(dbName, compressed);
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
-      clearInterval(interval);
-      window.removeEventListener('beforeunload', save);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
 }

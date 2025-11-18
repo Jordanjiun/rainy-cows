@@ -136,7 +136,7 @@ export class Cow {
       this.level++;
     }
 
-    return this.xp;
+    return { newXp: this.xp, mooneyGained };
   }
 
   pet() {
