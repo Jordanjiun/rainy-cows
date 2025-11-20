@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { CowComponent } from './CowComponent';
 import { CowInfoBox } from './CowInfoBox';
 import { FloatingHearts } from './FloatingHeart';
+import { cowConfig } from '../data/cowData';
 import { useGameStore } from '../game/store';
 import { getCowScale } from '../game/utils';
 import { Cow } from '../models/cowModel';
@@ -194,7 +195,7 @@ export const CowManager = ({
     const pos = cowXY[selectedCow.id];
     if (!pos) return null;
     const { x, y } = pos;
-    const rectSize = Number(import.meta.env.VITE_COW_FRAME_SIZE) * cowScale;
+    const rectSize = cowConfig.frameSize * cowScale;
 
     return (
       <pixiContainer x={x - rectSize / 2} y={y - rectSize / 2}>

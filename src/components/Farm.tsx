@@ -37,7 +37,7 @@ export const Farm = ({
   const drawPurgeButton = useMemo(
     () => (
       <pixiContainer
-        x={10}
+        x={appWidth - buttonSize - 10}
         y={appHeight - buttonSize - 10}
         interactive={true}
         cursor="pointer"
@@ -61,7 +61,7 @@ export const Farm = ({
         />
       </pixiContainer>
     ),
-    [isHovered, appHeight, purgeGameData],
+    [isHovered, appWidth, appHeight, purgeGameData],
   );
 
   return (

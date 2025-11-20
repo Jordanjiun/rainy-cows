@@ -3,6 +3,7 @@ import { Ticker } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
 import { createSeededRNG, getCowScale } from './utils';
 import { animationsDef } from './cowBuilder';
+import { cowConfig } from '../data/cowData';
 
 type AnimationKey = 'eat' | 'idle' | 'pet' | 'walk';
 type AnimationOptions = {
@@ -11,11 +12,8 @@ type AnimationOptions = {
 };
 type Vec2 = { x: number; y: number };
 
-const cowIdleWalkChance = Number(import.meta.env.VITE_COW_IDLE_WALK_CHANCE);
-const cowMsPerFrame = Number(import.meta.env.VITE_COW_MS_PER_FRAME);
-const cowSpeed = Number(import.meta.env.VITE_COW_SPEED);
-
-const frameSize = Number(import.meta.env.VITE_COW_FRAME_SIZE);
+const cowMsPerFrame = cowConfig.msPerFrame;
+const frameSize = cowConfig.frameSize;
 const landRatio = Number(import.meta.env.VITE_LAND_RATIO);
 
 export function useCowActions(
@@ -137,20 +135,17 @@ export function useCowActions(
       if (
         !isIdleActionPlaying &&
         eatCooldown.current <= 0 &&
-        rng.current() < Number(import.meta.env.VITE_COW_EAT_CHANCE)
+        rng.current() < cowConfig.eatChance
       ) {
         setIsIdleActionPlaying(true);
         setAnimation('eat');
-        eatCooldown.current = Number(import.meta.env.VITE_COW_EAT_COOLDOWN);
+        eatCooldown.current = cowConfig.eatCooldown;
         return;
       }
 
       // Maybe start walking
-      if (
-        !isIdleActionPlaying &&
-        stateTimer.current >= Number(import.meta.env.VITE_COW_MIN_TICK_IDLE)
-      ) {
-        if (rng.current() < cowIdleWalkChance) {
+      if (!isIdleActionPlaying && stateTimer.current >= cowConfig.minTickIdle) {
+        if (rng.current() < cowConfig.idleWalkChance) {
           setAnimation('walk');
           stateTimer.current = 0;
           seedDirection();
@@ -162,10 +157,8 @@ export function useCowActions(
         }
       }
     } else if (animation === 'walk') {
-      if (
-        stateTimer.current >= Number(import.meta.env.VITE_COW_MIN_TICK_WALK)
-      ) {
-        if (rng.current() < cowIdleWalkChance) {
+      if (stateTimer.current >= cowConfig.minTickWalk) {
+        if (rng.current() < cowConfig.idleWalkChance) {
           setAnimation('idle');
           stateTimer.current = 0;
           moveDir.current = { dx: 0, dy: 0 };
@@ -184,8 +177,8 @@ export function useCowActions(
         dx = dx >= 0 ? Math.abs(dx) : -Math.abs(dx);
 
         setPos((prev) => {
-          let x = prev.x + dx * cowSpeed * delta;
-          let y = prev.y + dy * cowSpeed * delta;
+          let x = prev.x + dx * cowConfig.speed * delta;
+          let y = prev.y + dy * cowConfig.speed * delta;
 
           // Bounce off edges
           if (x < cowHalfSize) {

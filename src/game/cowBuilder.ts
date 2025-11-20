@@ -1,10 +1,10 @@
 import { Assets, ColorMatrixFilter, Rectangle, Texture } from 'pixi.js';
 import { useEffect, useState } from 'react';
+import { cowConfig } from '../data/cowData';
 import type { SpriteInfo } from '../models/cowModel';
 
-const frameSize = Number(import.meta.env.VITE_COW_FRAME_SIZE);
-
-const cowSheetCols = 4;
+const frameSize = cowConfig.frameSize;
+const cowSheetCols = cowConfig.numberOfSheetCols;
 
 export const animationsDef: Record<string, number[]> = {
   eat: [5, 6, 7, 7, 7, 6, 5],
