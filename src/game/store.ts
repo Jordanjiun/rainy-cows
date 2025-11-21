@@ -62,6 +62,7 @@ interface GameState {
   mooney: number;
   cows: Cow[];
   lastHarvest: number | null;
+  isHarvest: boolean;
   addMooney: (amount: number) => void;
   addCow: (cow: Cow) => void;
   loadData: (data: Partial<GameState>) => void;
@@ -72,6 +73,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   mooney: 0,
   cows: [],
   lastHarvest: null,
+  isHarvest: false,
 
   addMooney: (amount) => set({ mooney: get().mooney + amount }),
   addCow: (cow) => set((state) => ({ cows: [...state.cows, cow] })),
@@ -98,10 +100,12 @@ export const useGameStore = create<GameState>((set, get) => ({
           typeof data.lastHarvest === 'number'
             ? data.lastHarvest
             : state.lastHarvest,
+        isHarvest: data.isHarvest ?? state.isHarvest,
       };
     }),
 
-  reset: () => set({ mooney: 0, cows: [], lastHarvest: null }),
+  reset: () =>
+    set({ mooney: 0, cows: [], lastHarvest: null, isHarvest: false }),
 }));
 
 export function useGamePersistence() {

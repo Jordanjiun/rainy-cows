@@ -69,10 +69,10 @@ export const AppContent = () => {
         </button>
 
         <Application
-          antialias={false}
+          antialias={true}
           className="canvas"
           resizeTo={window}
-          roundPixels={true}
+          roundPixels={false}
         >
           {renderScene(currentScene)}
         </Application>

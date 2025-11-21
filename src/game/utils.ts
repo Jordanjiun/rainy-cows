@@ -8,6 +8,14 @@ export function createSeededRNG(seed: number) {
   };
 }
 
+export function formatTimerText(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  const formattedMinutes = minutes.toString().padStart(2, '0');
+  const formattedSeconds = seconds.toString().padStart(2, '0');
+  return `${formattedMinutes}:${formattedSeconds}`;
+}
+
 export function getCowScale(input: number) {
   if (input <= cowConfig.minArea) return cowConfig.minScale;
   if (input >= cowConfig.maxArea) return cowConfig.maxScale;
