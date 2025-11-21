@@ -1,6 +1,7 @@
 import { extend } from '@pixi/react';
 import { Graphics, Text } from 'pixi.js';
 import { useCallback, useMemo, useState } from 'react';
+import { HarvestButton } from './HarvestButton';
 import { purgeGameData } from '../game/store';
 
 extend({ Graphics, Text });
@@ -67,6 +68,7 @@ export const Farm = ({
   return (
     <>
       <pixiGraphics draw={drawBackground} />
+      <HarvestButton appWidth={appWidth} appHeight={appHeight} />
       {drawPurgeButton}
     </>
   );

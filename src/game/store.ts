@@ -61,6 +61,7 @@ async function loadCompressedGameData<T>() {
 interface GameState {
   mooney: number;
   cows: Cow[];
+  lastHarvest: number | null;
   addMooney: (amount: number) => void;
   addCow: (cow: Cow) => void;
   loadData: (data: Partial<GameState>) => void;
@@ -70,12 +71,14 @@ interface GameState {
 export const useGameStore = create<GameState>((set, get) => ({
   mooney: 0,
   cows: [],
+  lastHarvest: null,
 
   addMooney: (amount) => set({ mooney: get().mooney + amount }),
   addCow: (cow) => set((state) => ({ cows: [...state.cows, cow] })),
   loadData: (data) =>
     set((state) => {
       let restoredCows = state.cows;
+
       if (data.cows) {
         restoredCows = data.cows.map((c) => {
           const cow = Object.assign(new Cow(), c);
@@ -91,9 +94,14 @@ export const useGameStore = create<GameState>((set, get) => ({
         ...state,
         mooney: data.mooney ?? state.mooney,
         cows: restoredCows,
+        lastHarvest:
+          typeof data.lastHarvest === 'number'
+            ? data.lastHarvest
+            : state.lastHarvest,
       };
     }),
-  reset: () => set({ mooney: 0, cows: [] }),
+
+  reset: () => set({ mooney: 0, cows: [], lastHarvest: null }),
 }));
 
 export function useGamePersistence() {
