@@ -2,6 +2,7 @@ import { createSeededRNG } from '../game/utils';
 import {
   cowBaseColors,
   cowBrightnessRange,
+  cowConfig,
   cowContrastRange,
   cowDateTimeOptions,
   cowHueRange,
@@ -43,9 +44,9 @@ function createSpriteInfo(rng: Function): SpriteInfo {
 
   spriteInfo.layers.push('tongue');
 
-  if (rng() < Number(import.meta.env.VITE_COW_HORN_CHANCE))
-    spriteInfo.layers.push('horns');
-  if (rng() < Number(import.meta.env.VITE_COW_SPOT_CHANCE))
+  if (rng() < cowConfig.hornChance) spriteInfo.layers.push('horns');
+
+  if (rng() < cowConfig.spotChance)
     spriteInfo.layers.push(
       cowSpotLayers[Math.floor(rng() * cowSpotLayers.length)],
     );
@@ -63,7 +64,7 @@ function createSpriteInfo(rng: Function): SpriteInfo {
 
   if (
     spriteInfo.layers.includes('baseGrey') &&
-    rng() < Number(import.meta.env.VITE_COW_COLOR_MUTATE_CHANCE)
+    rng() < cowConfig.colourMutateChance
   ) {
     spriteInfo.filters.baseGrey = randomFilter();
   }
@@ -136,7 +137,7 @@ export class Cow {
       this.level++;
     }
 
-    return this.xp;
+    return { newXp: this.xp, mooneyGained };
   }
 
   pet() {

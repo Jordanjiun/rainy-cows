@@ -82,6 +82,27 @@ export const cowBaseColors = {
   Yellow: 0.1,
 };
 
+export const cowConfig = {
+  animSpeed: 0.06,
+  colourMutateChance: 0.9,
+  eatChance: 0.005,
+  eatCooldown: 180,
+  frameSize: 32,
+  hornChance: 0.5,
+  idleWalkChance: 0.01,
+  maxArea: 1500000,
+  maxScale: 4,
+  minArea: 250000,
+  minScale: 2.5,
+  minTickIdle: 60,
+  minTickWalk: 120,
+  msEatCheck: 800,
+  msPerFrame: 300,
+  numberOfSheetCols: 4,
+  speed: 1,
+  spotChance: 0.4,
+};
+
 export const cowXpPerLevel: Record<number, number> = {
   1: 100,
   2: 500,

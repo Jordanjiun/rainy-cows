@@ -1,7 +1,4 @@
-const cowMaxArea = Number(import.meta.env.VITE_COW_MAX_AREA);
-const cowMaxScale = Number(import.meta.env.VITE_COW_MAX_SCALE);
-const cowMinArea = Number(import.meta.env.VITE_COW_MIN_AREA);
-const cowMinScale = Number(import.meta.env.VITE_COW_MIN_SCALE);
+import { cowConfig } from '../data/cowData';
 
 export function createSeededRNG(seed: number) {
   let state = seed;
@@ -11,12 +8,20 @@ export function createSeededRNG(seed: number) {
   };
 }
 
+export function formatTimerText(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  const formattedMinutes = minutes.toString().padStart(2, '0');
+  const formattedSeconds = seconds.toString().padStart(2, '0');
+  return `${formattedMinutes}:${formattedSeconds}`;
+}
+
 export function getCowScale(input: number) {
-  if (input <= cowMinArea) return cowMinScale;
-  if (input >= cowMaxArea) return cowMaxScale;
+  if (input <= cowConfig.minArea) return cowConfig.minScale;
+  if (input >= cowConfig.maxArea) return cowConfig.maxScale;
   return (
-    cowMinScale +
-    ((input - cowMinArea) * (cowMaxScale - cowMinScale)) /
-      (cowMaxArea - cowMinArea)
+    cowConfig.minScale +
+    ((input - cowConfig.minArea) * (cowConfig.maxScale - cowConfig.minScale)) /
+      (cowConfig.maxArea - cowConfig.minArea)
   );
 }

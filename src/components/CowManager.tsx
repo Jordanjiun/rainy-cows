@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { CowComponent } from './CowComponent';
 import { CowInfoBox } from './CowInfoBox';
 import { FloatingHearts } from './FloatingHeart';
+import { cowConfig } from '../data/cowData';
+import { useGameStore } from '../game/store';
 import { getCowScale } from '../game/utils';
 import { Cow } from '../models/cowModel';
 
@@ -16,10 +18,10 @@ export const CowManager = ({
   appWidth: number;
   appHeight: number;
 }) => {
+  const { cows, isHarvest, addCow } = useGameStore();
+  const cowScale = getCowScale(appWidth * appHeight);
+
   const [cowPositions, setCowPositions] = useState<Record<string, number>>({});
-  const [cows, setCows] = useState(() =>
-    Array.from({ length: 1 }, () => new Cow()),
-  );
   const [selectedCow, setSelectedCow] = useState<Cow | null>(null);
   const [cowXY, setCowXY] = useState<Record<string, { x: number; y: number }>>(
     {},
@@ -30,34 +32,44 @@ export const CowManager = ({
     { id: string; x: number; y: number }[]
   >([]);
 
-  const cowRefs = useRef<Record<string, AnimatedSprite | null>>({});
-  const cowListenersAttached = useRef<Record<string, boolean>>({});
   const cowXYRef = useRef(cowXY);
-
-  const cowScale = getCowScale(appWidth * appHeight);
+  const cowRefs = useRef<Record<string, AnimatedSprite | null>>({});
+  const petAnimMap = useRef(new WeakMap<AnimatedSprite, () => void>()).current;
+  const cleanupPointerHandlers = useRef<Record<string, () => void>>({});
 
   useEffect(() => {
     cowXYRef.current = cowXY;
   }, [cowXY]);
 
-  const addCow = useCallback(() => {
-    setCows((prev) => [...prev, new Cow(cows)]);
-  }, [cows]);
+  useEffect(() => {
+    const initialXps: Record<string, number> = {};
+    const initialHearts: Record<string, number> = {};
+
+    cows.forEach((cow) => {
+      initialXps[cow.id] = cow.xp;
+      initialHearts[cow.id] = cow.hearts;
+    });
+
+    setCowXps(initialXps);
+    setCowHearts(initialHearts);
+  }, [cows, appWidth, appHeight]);
 
   const clearHeartEvents = useCallback(() => {
     setHeartEvents([]);
   }, []);
 
+  const handleAddCow = useCallback(() => {
+    addCow(new Cow(cows));
+  }, [addCow, cows]);
+
   const handlePositionUpdate = useCallback(
     (id: string, x: number, y: number) => {
       setCowPositions((prev) => ({ ...prev, [id]: y }));
-      if (x !== undefined) {
-        setCowXY((prev) => {
-          const updated = { ...prev, [id]: { x, y } };
-          cowXYRef.current = updated;
-          return updated;
-        });
-      }
+      setCowXY((prev) => {
+        const updated = { ...prev, [id]: { x, y } };
+        cowXYRef.current = updated;
+        return updated;
+      });
     },
     [],
   );
@@ -88,7 +100,6 @@ export const CowManager = ({
     ) => {
       if (!sprite) return;
 
-      sprite.eventMode = 'static';
       let pointerDownTime = 0;
       let startX = 0;
       let startY = 0;
@@ -100,6 +111,7 @@ export const CowManager = ({
       );
 
       const handlePointerDown = (e: PointerEvent) => {
+        if (isHarvest) return;
         if (e.button !== 0) return;
         e.preventDefault();
 
@@ -107,8 +119,8 @@ export const CowManager = ({
         startX = e.clientX;
         startY = e.clientY;
 
-        longPressTimeout = setTimeout(() => {
-          if (selectedCow?.id !== cow.id) {
+        longPressTimeout = window.setTimeout(() => {
+          if (!isHarvest && selectedCow?.id !== cow.id) {
             setSelectedCow(cow);
           }
           longPressTimeout = null;
@@ -116,6 +128,7 @@ export const CowManager = ({
       };
 
       const handlePointerUp = (e: PointerEvent) => {
+        if (isHarvest) return;
         if (e.button !== 0) return;
         e.preventDefault();
 
@@ -144,6 +157,7 @@ export const CowManager = ({
         }
       };
 
+      sprite.eventMode = isHarvest ? 'none' : 'static';
       sprite.on('pointerdown', handlePointerDown);
       sprite.on('pointerup', handlePointerUp);
       sprite.on('pointerupoutside', handlePointerUp);
@@ -158,8 +172,39 @@ export const CowManager = ({
         sprite.off('pointerleave', handlePointerCancelOrLeave);
       };
     },
-    [selectedCow],
+    [isHarvest, selectedCow, handleHeartChange],
   );
+
+  useEffect(() => {
+    if (isHarvest) {
+      if (selectedCow) {
+        setSelectedCow(null);
+      }
+
+      Object.entries(cowRefs.current).forEach(([cowId, sprite]) => {
+        if (!sprite) return;
+        sprite.eventMode = 'none';
+
+        const cleanup = cleanupPointerHandlers.current[cowId];
+        cleanup?.();
+
+        cleanupPointerHandlers.current[cowId] = () => {};
+      });
+    } else {
+      cows.forEach((cow) => {
+        const sprite = cowRefs.current[cow.id];
+        if (!sprite) return;
+
+        sprite.eventMode = 'static';
+
+        const handlePetAnimation = petAnimMap.get(sprite);
+        if (!handlePetAnimation) return;
+
+        const cleanup = handleClick(cow, sprite, handlePetAnimation);
+        cleanupPointerHandlers.current[cow.id] = cleanup || (() => {});
+      });
+    }
+  }, [isHarvest, cows, handleClick]);
 
   const sortedCows = [...cows].sort(
     (a, b) => (cowPositions[a.id] ?? 0) - (cowPositions[b.id] ?? 0),
@@ -169,20 +214,20 @@ export const CowManager = ({
     const handleRightClick = (e: PointerEvent) => {
       if (e.button === 2) {
         e.preventDefault();
-        addCow();
+        handleAddCow();
       }
     };
 
     document.addEventListener('contextmenu', handleRightClick);
     return () => document.removeEventListener('contextmenu', handleRightClick);
-  }, [addCow]);
+  }, [handleAddCow]);
 
   const drawSelectedCowIndicator = useMemo(() => {
     if (!selectedCow) return null;
     const pos = cowXY[selectedCow.id];
     if (!pos) return null;
     const { x, y } = pos;
-    const rectSize = Number(import.meta.env.VITE_COW_FRAME_SIZE) * cowScale;
+    const rectSize = cowConfig.frameSize * cowScale;
 
     return (
       <pixiContainer x={x - rectSize / 2} y={y - rectSize / 2}>
@@ -226,14 +271,9 @@ export const CowManager = ({
             if (!baseLayer) return;
 
             cowRefs.current[cow.id] = baseLayer;
-            if (!cowListenersAttached.current[cow.id]) {
-              const cleanup = handleClick(cow, baseLayer, handlePetAnimation);
-              cowListenersAttached.current[cow.id] = true;
-              baseLayer.on('removed', () => {
-                cleanup?.();
-                cowListenersAttached.current[cow.id] = false;
-              });
-            }
+            petAnimMap.set(baseLayer, handlePetAnimation);
+            const cleanup = handleClick(cow, baseLayer, handlePetAnimation);
+            cleanupPointerHandlers.current[cow.id] = cleanup || (() => {});
           }}
         />
       ))}

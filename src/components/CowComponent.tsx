@@ -1,8 +1,10 @@
 import { extend } from '@pixi/react';
 import { AnimatedSprite, Container, Texture } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
+import { cowConfig } from '../data/cowData';
 import { useCowActions } from '../game/cowLogic';
 import { useCowAnimations, useCowFilter } from '../game/cowBuilder';
+import { useGameStore } from '../game/store';
 import type { Cow } from '../models/cowModel';
 
 extend({ AnimatedSprite, Container });
@@ -27,6 +29,7 @@ export const CowComponent = ({
   onXpUpdate,
   registerRef,
 }: CowComponentProps) => {
+  const { addMooney } = useGameStore();
   const { pos, cowScale, animation, direction, handlePetAnimation } =
     useCowActions(appWidth, appHeight, cow.seed);
   const animations = useCowAnimations(cow.sprite.layers);
@@ -63,7 +66,7 @@ export const CowComponent = ({
   ) => {
     if (!sprite || !textures) return;
     sprite.textures = textures;
-    sprite.animationSpeed = Number(import.meta.env.VITE_COW_ANIM_SPEED);
+    sprite.animationSpeed = cowConfig.animSpeed;
     sprite.loop = !currentAnim.includes('To');
     sprite.play();
 
@@ -89,12 +92,11 @@ export const CowComponent = ({
 
   useEffect(() => {
     if (currentAnim === 'eat') {
-      const timer = setTimeout(
-        () => {
-          setXp(cow.eat());
-        },
-        Number(import.meta.env.VITE_COW_MS_EAT_CHECK),
-      );
+      const timer = setTimeout(() => {
+        const { newXp, mooneyGained } = cow.eat();
+        setXp(newXp);
+        addMooney(mooneyGained);
+      }, cowConfig.msEatCheck);
       return () => clearTimeout(timer);
     }
   }, [currentAnim]);
