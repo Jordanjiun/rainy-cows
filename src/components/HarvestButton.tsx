@@ -23,7 +23,14 @@ export const HarvestButton = ({
   const cooldownMs = gameUpgrades.harvestCooldownMinutes * 6e4;
 
   useEffect(() => {
-    if (hasCooldownElapsed(lastHarvest)) {
+    const last = lastHarvest ?? 0;
+    const elapsed = Date.now() - last;
+
+    if (elapsed < cooldownMs) {
+      const remaining = cooldownMs - elapsed;
+      const progress = 1 - remaining / cooldownMs;
+      setCooldownProgress(progress);
+    } else {
       setCooldownProgress(1);
       return;
     }
@@ -31,7 +38,7 @@ export const HarvestButton = ({
     let frame: number;
 
     const update = () => {
-      const elapsed = Date.now() - (lastHarvest ?? 0);
+      const elapsed = Date.now() - last;
       const remaining = Math.max(0, cooldownMs - elapsed);
       const progress = 1 - remaining / cooldownMs;
 

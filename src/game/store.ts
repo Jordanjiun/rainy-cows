@@ -2,6 +2,7 @@ import { openDB } from 'idb';
 import { create } from 'zustand';
 import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
 import { useEffect } from 'react';
+import { gameUpgrades } from '../data/gameData';
 import { Cow } from '../models/cowModel';
 
 const dbName = String(import.meta.env.VITE_DB_NAME);
@@ -69,44 +70,58 @@ interface GameState {
   reset: () => void;
 }
 
-export const useGameStore = create<GameState>((set, get) => ({
-  mooney: 0,
-  cows: [],
-  lastHarvest: null,
-  isHarvest: false,
+export const useGameStore = create<GameState>((set, get) => {
+  const harvestDuration = gameUpgrades.harvestDurationSeconds * 1000;
 
-  addMooney: (amount) => set({ mooney: get().mooney + amount }),
-  addCow: (cow) => set((state) => ({ cows: [...state.cows, cow] })),
-  loadData: (data) =>
-    set((state) => {
-      let restoredCows = state.cows;
+  return {
+    mooney: 0,
+    cows: [],
+    lastHarvest: null,
+    isHarvest: false,
 
-      if (data.cows) {
-        restoredCows = data.cows.map((c) => {
-          const cow = Object.assign(new Cow(), c);
-          cow.seed = Number.parseInt(
-            crypto.randomUUID().replace(/-/g, '').slice(0, 12),
-            16,
-          );
-          return cow;
-        });
-      }
+    addMooney: (amount) => set({ mooney: get().mooney + amount }),
+    addCow: (cow) => set((state) => ({ cows: [...state.cows, cow] })),
 
-      return {
-        ...state,
-        mooney: data.mooney ?? state.mooney,
-        cows: restoredCows,
-        lastHarvest:
+    loadData: (data) =>
+      set((state) => {
+        let restoredCows = state.cows;
+
+        if (data.cows) {
+          restoredCows = data.cows.map((c) => {
+            const cow = Object.assign(new Cow(), c);
+            cow.seed = Number.parseInt(
+              crypto.randomUUID().replace(/-/g, '').slice(0, 12),
+              16,
+            );
+            return cow;
+          });
+        }
+
+        const now = Date.now();
+        let lastHarvest =
           typeof data.lastHarvest === 'number'
             ? data.lastHarvest
-            : state.lastHarvest,
-        isHarvest: data.isHarvest ?? state.isHarvest,
-      };
-    }),
+            : state.lastHarvest;
 
-  reset: () =>
-    set({ mooney: 0, cows: [], lastHarvest: null, isHarvest: false }),
-}));
+        let isHarvest = data.isHarvest ?? state.isHarvest;
+
+        if (lastHarvest && lastHarvest + harvestDuration < now) {
+          isHarvest = false;
+        }
+
+        return {
+          ...state,
+          mooney: data.mooney ?? state.mooney,
+          cows: restoredCows,
+          lastHarvest,
+          isHarvest,
+        };
+      }),
+
+    reset: () =>
+      set({ mooney: 0, cows: [], lastHarvest: null, isHarvest: false }),
+  };
+});
 
 export function useGamePersistence() {
   const gameState = useGameStore();

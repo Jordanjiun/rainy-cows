@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { CowManager } from '../components/CowManager';
 import { Farm } from '../components/Farm';
 import { FarmHud } from '../components/FarmHud';
+import { FloatingMooney } from '../components/FloatingMooney';
 import { HarvestButton } from '../components/HarvestButton';
 
 extend({ Container });
@@ -35,6 +36,7 @@ export const MainScene = () => {
       <FarmHud />
       <CowManager appWidth={size.width} appHeight={size.height} />
       <HarvestButton appWidth={size.width} appHeight={size.height} />
+      <FloatingMooney appWidth={size.width} appHeight={size.height} />
     </pixiContainer>
   );
 };

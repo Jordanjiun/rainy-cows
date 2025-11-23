@@ -24,20 +24,25 @@ export const Farm = ({
   useEffect(() => {
     const updateTime = () => {
       if (!lastHarvest) return setRemainingTime(0);
+
       const now = Date.now();
       const harvestDuration = gameUpgrades.harvestDurationSeconds * 1000;
       const timeLeft = Math.max(
         0,
         Math.ceil((lastHarvest + harvestDuration - now) / 1000),
       );
+
       setRemainingTime(timeLeft);
+
+      if (timeLeft === 0 && isHarvest) {
+        useGameStore.setState({ isHarvest: false });
+      }
     };
 
     updateTime();
     const interval = setInterval(updateTime, 1000);
-
     return () => clearInterval(interval);
-  }, [lastHarvest]);
+  }, [lastHarvest, isHarvest]);
 
   const drawBackground = useCallback(
     (g: Graphics) => {
