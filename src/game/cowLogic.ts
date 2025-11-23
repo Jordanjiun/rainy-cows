@@ -15,6 +15,7 @@ type Vec2 = { x: number; y: number };
 const cowMsPerFrame = cowConfig.msPerFrame;
 const frameSize = cowConfig.frameSize;
 const landRatio = Number(import.meta.env.VITE_LAND_RATIO);
+const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
 export function useCowActions(
   appWidth: number,
@@ -50,7 +51,7 @@ export function useCowActions(
     const minX = cowHalfSize;
     const maxX = appWidth - cowHalfSize;
     const minY = landBoundary + cowHalfSize;
-    const maxY = appHeight - cowHalfSize;
+    const maxY = appHeight - footerHeight - cowHalfSize;
     const x = minX + rng() * (maxX - minX);
     const y = minY + rng() * (maxY - minY);
 
@@ -65,7 +66,8 @@ export function useCowActions(
     else if (x > appWidth - cowHalfSize) x = appWidth - cowHalfSize;
 
     if (y < landBoundary + cowHalfSize) y = landBoundary + cowHalfSize;
-    else if (y > appHeight - cowHalfSize) y = appHeight - cowHalfSize;
+    else if (y > appHeight - footerHeight - cowHalfSize)
+      y = appHeight - footerHeight - cowHalfSize;
 
     return { x, y };
   }
@@ -194,8 +196,8 @@ export function useCowActions(
           if (y < landBoundary + cowHalfSize) {
             y = landBoundary + cowHalfSize;
             dy = Math.abs(dy);
-          } else if (y > appHeight - cowHalfSize) {
-            y = appHeight - cowHalfSize;
+          } else if (y > appHeight - footerHeight - cowHalfSize) {
+            y = appHeight - footerHeight - cowHalfSize;
             dy = -Math.abs(dy);
           }
 

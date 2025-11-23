@@ -8,6 +8,7 @@ import { formatTimerText } from '../game/utils';
 extend({ Container, Graphics, Text });
 
 const landRatio = Number(import.meta.env.VITE_LAND_RATIO);
+const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 const buttonSize = 50;
 
 export const Farm = ({
@@ -53,9 +54,11 @@ export const Farm = ({
         0,
         appHeight - appHeight * landRatio,
         appWidth,
-        appHeight * landRatio,
+        appHeight * landRatio - footerHeight,
       );
       g.fill({ color: '#32CD32' });
+      g.rect(0, appHeight - footerHeight, appWidth, footerHeight);
+      g.fill({ color: '#A0522D' });
     },
     [appWidth, appHeight],
   );

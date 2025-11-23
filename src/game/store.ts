@@ -44,6 +44,15 @@ export async function saveCompressedGameData<T>(obj: T) {
   await saveGameData(compressed);
 }
 
+function getSerializableState(state: GameState) {
+  return {
+    mooney: state.mooney,
+    cows: state.cows,
+    lastHarvest: state.lastHarvest,
+    isHarvest: state.isHarvest,
+  };
+}
+
 async function loadCompressedGameData<T>() {
   const compressed = await loadGameData();
   if (!compressed) return null;
@@ -155,7 +164,7 @@ export function useGamePersistence() {
 
   useEffect(() => {
     const saveToDB = async () => {
-      const data = useGameStore.getState();
+      const data = getSerializableState(useGameStore.getState());
       await saveCompressedGameData(data);
     };
 
@@ -165,7 +174,7 @@ export function useGamePersistence() {
 
   useEffect(() => {
     const handleBeforeUnload = () => {
-      const data = useGameStore.getState();
+      const data = getSerializableState(useGameStore.getState());
       const compressed = compressToUTF16(JSON.stringify(data));
       localStorage.setItem(dbName, compressed);
     };
