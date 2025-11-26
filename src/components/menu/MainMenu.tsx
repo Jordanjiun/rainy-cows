@@ -1,16 +1,21 @@
 import { extend } from '@pixi/react';
 import { Assets, Graphics, Sprite, Texture } from 'pixi.js';
 import { useCallback, useMemo, useState, useEffect } from 'react';
-import { useCow } from '../context/useCow';
+import { useCow } from '../../context/useCow';
+import { useGameStore } from '../../game/store';
+import { DeleteSaveButton } from './DeleteSaveButton';
+import { FinalWarning } from './FinalWarning';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Graphics, Sprite });
 
-const boxHeight = 400;
-const boxWidth = 250;
+const boxHeight = 350;
+const boxWidth = 200;
+const buttonWidth = 175;
+const buttonHeight = 40;
 const buttonSize = 50;
 const crossSize = 20;
-const crossThickness = 5;
+const crossThickness = 4;
 const offset = 15;
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
@@ -24,9 +29,11 @@ export const MainMenu = ({
   appWidth: number;
   appHeight: number;
 }) => {
+  const { isHarvest } = useGameStore();
   const { selectedCow, setSelectedCow } = useCow();
 
   const [isHovered, setIsHovered] = useState(false);
+  const [isWarning, setIsWarning] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
   const [menuOpened, setMenuOpened] = useState(false);
   const [menuImage, setMenuImage] = useState<Texture | null>(null);
@@ -54,6 +61,11 @@ export const MainMenu = ({
     setMenuOpened(!menuOpened);
   }
 
+  function handleDeleteButton() {
+    setMenuOpened(false);
+    setIsWarning(true);
+  }
+
   function closeMenu() {
     setCloseHovered(false);
     setMenuOpened(false);
@@ -69,11 +81,13 @@ export const MainMenu = ({
     };
   }, [isHovered]);
 
-  const drawBox = useCallback(
+  const drawBase = useCallback(
     (g: Graphics) => {
       g.clear();
       g.roundRect(0, 0, boxWidth, boxHeight, 10);
       g.fill({ color: boxColor });
+      g.roundRect(0, 0, boxWidth, boxHeight, 10);
+      g.stroke({ width: 3, color: 'black' });
     },
     [boxWidth, boxHeight, boxColor],
   );
@@ -92,6 +106,14 @@ export const MainMenu = ({
       g.stroke();
     };
   }, [closeHovered]);
+
+  useEffect(() => {
+    if (isHarvest) {
+      if (menuOpened) {
+        setMenuOpened(false);
+      }
+    }
+  }, [isHarvest]);
 
   if (!menuImage) return null;
 
@@ -133,7 +155,7 @@ export const MainMenu = ({
             x={(appWidth - boxWidth) / 2}
             y={(appHeight - boxHeight - footerHeight) / 2}
           >
-            <pixiGraphics draw={drawBox} />
+            <pixiGraphics draw={drawBase} />
 
             <pixiContainer
               x={offset}
@@ -147,9 +169,31 @@ export const MainMenu = ({
               <pixiGraphics draw={drawCloseButton} />
             </pixiContainer>
 
-            <pixiText x={boxWidth / 2} y={30} text={'Menu'} anchor={0.5} />
+            <pixiText
+              x={boxWidth / 2}
+              y={25}
+              text={'Menu'}
+              anchor={0.5}
+              style={{ fontWeight: 'bold' }}
+            />
+
+            <DeleteSaveButton
+              x={(boxWidth - buttonWidth) / 2}
+              y={boxHeight - buttonHeight - offset}
+              buttonWidth={buttonWidth}
+              buttonHeight={buttonHeight}
+              onClick={handleDeleteButton}
+            />
           </pixiContainer>
         </>
+      )}
+
+      {isWarning && (
+        <FinalWarning
+          appWidth={appWidth}
+          appHeight={appHeight}
+          onClick={() => setIsWarning(false)}
+        />
       )}
     </>
   );

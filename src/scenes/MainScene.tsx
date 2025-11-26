@@ -6,7 +6,7 @@ import { Farm } from '../components/Farm';
 import { FarmHud } from '../components/FarmHud';
 import { FloatingMooney } from '../components/FloatingMooney';
 import { HarvestButton } from '../components/HarvestButton';
-import { MainMenu } from '../components/MainMenu';
+import { MainMenu } from '../components/menu/MainMenu';
 import { CowProvider } from '../context/CowProvider';
 
 extend({ Container });
