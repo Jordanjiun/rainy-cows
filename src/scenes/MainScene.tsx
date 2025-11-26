@@ -6,6 +6,7 @@ import { Farm } from '../components/Farm';
 import { FarmHud } from '../components/FarmHud';
 import { FloatingMooney } from '../components/FloatingMooney';
 import { HarvestButton } from '../components/HarvestButton';
+import { MainMenu } from '../components/MainMenu';
 
 extend({ Container });
 
@@ -35,8 +36,9 @@ export const MainScene = () => {
       <Farm appWidth={size.width} appHeight={size.height} />
       <FarmHud />
       <CowManager appWidth={size.width} appHeight={size.height} />
-      <HarvestButton appWidth={size.width} appHeight={size.height} />
+      <HarvestButton appHeight={size.height} />
       <FloatingMooney appWidth={size.width} appHeight={size.height} />
+      <MainMenu appWidth={size.width} appHeight={size.height} />
     </pixiContainer>
   );
 };

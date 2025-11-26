@@ -67,7 +67,7 @@ export const Farm = ({
   const drawPurgeButton = useMemo(
     () => (
       <pixiContainer
-        x={appWidth - buttonSize - 10}
+        x={(appWidth - buttonSize) / 2}
         y={appHeight - buttonSize - 10}
         interactive={true}
         cursor="pointer"

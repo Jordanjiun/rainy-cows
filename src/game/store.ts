@@ -68,6 +68,32 @@ async function loadCompressedGameData<T>() {
   }
 }
 
+function restoreCows(data: Partial<GameState>) {
+  if (!data.cows) return [];
+  return data.cows.map((c) => {
+    const cow = Object.assign(new Cow(), c);
+    cow.seed = Number.parseInt(
+      crypto.randomUUID().replace(/-/g, '').slice(0, 12),
+      16,
+    );
+
+    if (cow.lastPet) {
+      const lastPetDate = new Date(cow.lastPet);
+      const now = new Date();
+      const msPerDay = 24 * 60 * 60 * 1000;
+      const daysPassed = Math.floor(
+        (now.getTime() - lastPetDate.getTime()) / msPerDay,
+      );
+
+      if (daysPassed > 2) {
+        const decay = daysPassed - 2;
+        cow.hearts = Math.max(1, cow.hearts - decay);
+      }
+    }
+    return cow;
+  });
+}
+
 interface GameState {
   mooney: number;
   cows: Cow[];
@@ -96,14 +122,7 @@ export const useGameStore = create<GameState>((set, get) => {
         let restoredCows = state.cows;
 
         if (data.cows) {
-          restoredCows = data.cows.map((c) => {
-            const cow = Object.assign(new Cow(), c);
-            cow.seed = Number.parseInt(
-              crypto.randomUUID().replace(/-/g, '').slice(0, 12),
-              16,
-            );
-            return cow;
-          });
+          restoredCows = restoreCows(data);
         }
 
         const now = Date.now();

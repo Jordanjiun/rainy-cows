@@ -23,6 +23,13 @@ const manifest = {
       ],
     },
     {
+      name: 'icons',
+      assets: [
+        { alias: 'click', src: '/assets/icons/mouse-pointer-click.png' },
+        { alias: 'menu', src: '/assets/icons/settings.png' },
+      ],
+    },
+    {
       name: 'others',
       assets: [
         { alias: 'heart', src: '/assets/others/heart.png' },
