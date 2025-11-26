@@ -1,7 +1,7 @@
 import { extend, useApplication } from '@pixi/react';
 import { Container } from 'pixi.js';
 import { useEffect, useState } from 'react';
-import { CowManager } from '../components/CowManager';
+import { CowManager } from '../components/cow/CowManager';
 import { Farm } from '../components/Farm';
 import { FarmHud } from '../components/FarmHud';
 import { FloatingMooney } from '../components/FloatingMooney';

@@ -9,8 +9,8 @@ import {
   Texture,
 } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { cowXpPerLevel } from '../data/cowData';
-import type { Cow } from '../models/cowModel';
+import { cowXpPerLevel } from '../../data/cowData';
+import type { Cow } from '../../models/cowModel';
 
 extend({ Container, Graphics, Sprite, Text });
 

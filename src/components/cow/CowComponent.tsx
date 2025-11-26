@@ -1,11 +1,11 @@
 import { extend } from '@pixi/react';
 import { AnimatedSprite, Container, Texture } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
-import { cowConfig } from '../data/cowData';
-import { useCowActions } from '../game/cowLogic';
-import { useCowAnimations, useCowFilter } from '../game/cowBuilder';
-import { useGameStore } from '../game/store';
-import type { Cow } from '../models/cowModel';
+import { cowConfig } from '../../data/cowData';
+import { useCowActions } from '../../game/cowLogic';
+import { useCowAnimations, useCowFilter } from '../../game/cowBuilder';
+import { useGameStore } from '../../game/store';
+import type { Cow } from '../../models/cowModel';
 
 extend({ AnimatedSprite, Container });
 
