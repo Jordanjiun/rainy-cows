@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { CowComponent } from './CowComponent';
 import { CowInfoBox } from './CowInfoBox';
 import { FloatingHearts } from './FloatingHeart';
+import { useCow } from '../context/useCow';
 import { cowConfig } from '../data/cowData';
 import { useGameStore } from '../game/store';
 import { getCowScale } from '../game/utils';
@@ -19,10 +20,10 @@ export const CowManager = ({
   appHeight: number;
 }) => {
   const { cows, isHarvest, addCow } = useGameStore();
+  const { selectedCow, setSelectedCow } = useCow();
   const cowScale = getCowScale(appWidth * appHeight);
 
   const [cowPositions, setCowPositions] = useState<Record<string, number>>({});
-  const [selectedCow, setSelectedCow] = useState<Cow | null>(null);
   const [cowXY, setCowXY] = useState<Record<string, { x: number; y: number }>>(
     {},
   );

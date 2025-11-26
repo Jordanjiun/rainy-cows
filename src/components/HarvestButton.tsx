@@ -16,6 +16,7 @@ export const HarvestButton = ({ appHeight }: { appHeight: number }) => {
   const [clickImage, setClickImage] = useState<Texture | null>(null);
 
   const cooldownMs = gameUpgrades.harvestCooldownMinutes * 6e4;
+  const iconColor = isHovered ? 'yellow' : 'white';
 
   useEffect(() => {
     let mounted = true;
@@ -124,6 +125,7 @@ export const HarvestButton = ({ appHeight }: { appHeight: number }) => {
         anchor={0.5}
         x={buttonSize / 2}
         y={buttonSize / 2}
+        tint={iconColor}
       />
     </pixiContainer>
   ) : (
