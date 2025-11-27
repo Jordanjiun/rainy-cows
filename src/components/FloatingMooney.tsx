@@ -105,7 +105,12 @@ export const FloatingMooney = ({
           onPointerTap={handleClick}
           draw={(g) => {
             g.clear();
-            g.rect(0, 0, appWidth, appHeight);
+            g.rect(
+              0,
+              0,
+              appWidth,
+              appHeight - Number(import.meta.env.VITE_FOOTER_HEIGHT_PX),
+            );
             g.fill({ alpha: 0 });
           }}
         />

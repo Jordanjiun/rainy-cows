@@ -44,6 +44,15 @@ export async function saveCompressedGameData<T>(obj: T) {
   await saveGameData(compressed);
 }
 
+function getSerializableState(state: GameState) {
+  return {
+    mooney: state.mooney,
+    cows: state.cows,
+    lastHarvest: state.lastHarvest,
+    isHarvest: state.isHarvest,
+  };
+}
+
 async function loadCompressedGameData<T>() {
   const compressed = await loadGameData();
   if (!compressed) return null;
@@ -57,6 +66,32 @@ async function loadCompressedGameData<T>() {
     await saveGameData(null);
     return null;
   }
+}
+
+function restoreCows(data: Partial<GameState>) {
+  if (!data.cows) return [];
+  return data.cows.map((c) => {
+    const cow = Object.assign(new Cow(), c);
+    cow.seed = Number.parseInt(
+      crypto.randomUUID().replace(/-/g, '').slice(0, 12),
+      16,
+    );
+
+    if (cow.lastPet) {
+      const lastPetDate = new Date(cow.lastPet);
+      const now = new Date();
+      const msPerDay = 24 * 60 * 60 * 1000;
+      const daysPassed = Math.floor(
+        (now.getTime() - lastPetDate.getTime()) / msPerDay,
+      );
+
+      if (daysPassed > 2) {
+        const decay = daysPassed - 2;
+        cow.hearts = Math.max(1, cow.hearts - decay);
+      }
+    }
+    return cow;
+  });
 }
 
 interface GameState {
@@ -87,14 +122,7 @@ export const useGameStore = create<GameState>((set, get) => {
         let restoredCows = state.cows;
 
         if (data.cows) {
-          restoredCows = data.cows.map((c) => {
-            const cow = Object.assign(new Cow(), c);
-            cow.seed = Number.parseInt(
-              crypto.randomUUID().replace(/-/g, '').slice(0, 12),
-              16,
-            );
-            return cow;
-          });
+          restoredCows = restoreCows(data);
         }
 
         const now = Date.now();
@@ -155,7 +183,7 @@ export function useGamePersistence() {
 
   useEffect(() => {
     const saveToDB = async () => {
-      const data = useGameStore.getState();
+      const data = getSerializableState(useGameStore.getState());
       await saveCompressedGameData(data);
     };
 
@@ -165,7 +193,7 @@ export function useGamePersistence() {
 
   useEffect(() => {
     const handleBeforeUnload = () => {
-      const data = useGameStore.getState();
+      const data = getSerializableState(useGameStore.getState());
       const compressed = compressToUTF16(JSON.stringify(data));
       localStorage.setItem(dbName, compressed);
     };
@@ -175,4 +203,35 @@ export function useGamePersistence() {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
+}
+
+export async function exportGameSave() {
+  const state = getSerializableState(useGameStore.getState());
+  const compressed = compressToUTF16(JSON.stringify(state));
+  const blob = new Blob([compressed], { type: 'text/plain;charset=utf-16' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  a.download = `rainycows-save-${timestamp}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export async function importGameSave(file: File) {
+  const text = await file.text();
+
+  try {
+    const jsonString = decompressFromUTF16(text);
+    if (!jsonString) throw new Error('Decompression failed');
+    const parsed: Partial<GameState> = JSON.parse(jsonString);
+    useGameStore.getState().loadData(parsed);
+    await saveCompressedGameData(getSerializableState(useGameStore.getState()));
+
+    return { success: true };
+  } catch (err) {
+    console.error('Failed to import save:', err);
+    return { success: false, error: err };
+  }
 }

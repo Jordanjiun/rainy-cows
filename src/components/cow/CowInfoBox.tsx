@@ -9,15 +9,15 @@ import {
   Texture,
 } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { cowXpPerLevel } from '../data/cowData';
-import type { Cow } from '../models/cowModel';
+import { cowXpPerLevel } from '../../data/cowData';
+import type { Cow } from '../../models/cowModel';
 
 extend({ Container, Graphics, Sprite, Text });
 
 const baseFontSize = 20;
 const boxWidth = 200;
 const crossSize = 15;
-const crossThickness = 5;
+const crossThickness = 4;
 const heartMaxNum = 10;
 const heartScale = 0.07;
 const heartSpacing = 0.7;
@@ -69,6 +69,8 @@ export const CowInfoBox = ({
       g.clear();
       g.roundRect(0, 0, boxWidth, appHeight * 0.27, 10);
       g.fill({ color: boxColor });
+      g.roundRect(0, 0, boxWidth, appHeight * 0.27, 10);
+      g.stroke({ width: 3, color: 'black' });
     },
     [appHeight],
   );

@@ -1,6 +1,7 @@
 import { Application } from '@pixi/react';
-import { useScene } from './context/useScene';
-import type { SceneKey } from './context/SceneTypes';
+import { FileInputProvider } from './context/Providers';
+import { useScene } from './context/hooks';
+import type { SceneKey } from './context/Contexts';
 import { LoadScreen } from './scenes/LoadScene';
 import { MainScene } from './scenes/MainScene';
 import { useGamePersistence } from './game/store';
@@ -68,14 +69,16 @@ export const AppContent = () => {
           )}
         </button>
 
-        <Application
-          antialias={true}
-          className="canvas"
-          resizeTo={window}
-          roundPixels={false}
-        >
-          {renderScene(currentScene)}
-        </Application>
+        <FileInputProvider>
+          <Application
+            antialias={true}
+            className="canvas"
+            resizeTo={window}
+            roundPixels={false}
+          >
+            {renderScene(currentScene)}
+          </Application>
+        </FileInputProvider>
       </div>
     </>
   );

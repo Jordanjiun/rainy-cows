@@ -1,7 +1,7 @@
 import { extend, useApplication } from '@pixi/react';
 import { Assets, Container } from 'pixi.js';
 import { useEffect, useState } from 'react';
-import { useScene } from '../context/useScene';
+import { useScene } from '../context/hooks';
 import { LoadingBar } from '../components/LoadingBar';
 
 extend({ Container });
@@ -20,6 +20,13 @@ const manifest = {
         { alias: 'spotsBlack', src: '/assets/cows/spotsBlack.png' },
         { alias: 'spotsPink', src: '/assets/cows/spotsPink.png' },
         { alias: 'tongue', src: '/assets/cows/tongue.png' },
+      ],
+    },
+    {
+      name: 'icons',
+      assets: [
+        { alias: 'click', src: '/assets/icons/mouse-pointer-click.png' },
+        { alias: 'menu', src: '/assets/icons/settings.png' },
       ],
     },
     {

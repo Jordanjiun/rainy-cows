@@ -1,11 +1,13 @@
 import { extend, useApplication } from '@pixi/react';
 import { Container } from 'pixi.js';
 import { useEffect, useState } from 'react';
-import { CowManager } from '../components/CowManager';
+import { CowManager } from '../components/cow/CowManager';
 import { Farm } from '../components/Farm';
 import { FarmHud } from '../components/FarmHud';
 import { FloatingMooney } from '../components/FloatingMooney';
 import { HarvestButton } from '../components/HarvestButton';
+import { MainMenu } from '../components/menu/MainMenu';
+import { CowProvider, ToastProvider } from '../context/Providers';
 
 extend({ Container });
 
@@ -32,11 +34,16 @@ export const MainScene = () => {
 
   return (
     <pixiContainer>
-      <Farm appWidth={size.width} appHeight={size.height} />
-      <FarmHud />
-      <CowManager appWidth={size.width} appHeight={size.height} />
-      <HarvestButton appWidth={size.width} appHeight={size.height} />
-      <FloatingMooney appWidth={size.width} appHeight={size.height} />
+      <ToastProvider>
+        <CowProvider>
+          <Farm appWidth={size.width} appHeight={size.height} />
+          <FarmHud />
+          <CowManager appWidth={size.width} appHeight={size.height} />
+          <HarvestButton appHeight={size.height} />
+          <FloatingMooney appWidth={size.width} appHeight={size.height} />
+          <MainMenu appWidth={size.width} appHeight={size.height} />
+        </CowProvider>
+      </ToastProvider>
     </pixiContainer>
   );
 };
