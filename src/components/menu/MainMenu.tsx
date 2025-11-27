@@ -3,20 +3,21 @@ import { Assets, Graphics, Sprite, Texture } from 'pixi.js';
 import { useCallback, useMemo, useState, useEffect } from 'react';
 import { useCow } from '../../context/useCow';
 import { useGameStore } from '../../game/store';
-import { DeleteSaveButton } from './DeleteSaveButton';
+import { Button } from './Button';
 import { FinalWarning } from './FinalWarning';
 import type { FederatedPointerEvent } from 'pixi.js';
+import { Credits } from './Credits';
 
 extend({ Graphics, Sprite });
 
-const boxHeight = 350;
+const boxHeight = 300;
 const boxWidth = 200;
-const buttonWidth = 175;
+const buttonWidth = 170;
 const buttonHeight = 40;
 const buttonSize = 50;
 const crossSize = 20;
 const crossThickness = 4;
-const offset = 15;
+const offset = 20;
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
@@ -34,6 +35,7 @@ export const MainMenu = ({
 
   const [isHovered, setIsHovered] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
+  const [isCredit, setIsCredit] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
   const [menuOpened, setMenuOpened] = useState(false);
   const [menuImage, setMenuImage] = useState<Texture | null>(null);
@@ -171,18 +173,30 @@ export const MainMenu = ({
 
             <pixiText
               x={boxWidth / 2}
-              y={25}
+              y={30}
               text={'Menu'}
               anchor={0.5}
               style={{ fontWeight: 'bold' }}
             />
 
-            <DeleteSaveButton
+            <Button
               x={(boxWidth - buttonWidth) / 2}
-              y={boxHeight - buttonHeight - offset}
+              y={boxHeight - (buttonHeight + offset)}
               buttonWidth={buttonWidth}
               buttonHeight={buttonHeight}
+              buttonText={'Delete Save'}
+              buttonColor={'#E28C80'}
               onClick={handleDeleteButton}
+            />
+
+            <Button
+              x={(boxWidth - buttonWidth) / 2}
+              y={boxHeight - (buttonHeight + offset) * 2}
+              buttonWidth={buttonWidth}
+              buttonHeight={buttonHeight}
+              buttonText={'Credits'}
+              buttonColor={'white'}
+              onClick={() => setIsCredit(true)}
             />
           </pixiContainer>
         </>
@@ -193,6 +207,14 @@ export const MainMenu = ({
           appWidth={appWidth}
           appHeight={appHeight}
           onClick={() => setIsWarning(false)}
+        />
+      )}
+
+      {isCredit && (
+        <Credits
+          appWidth={appWidth}
+          appHeight={appHeight}
+          onClick={() => setIsCredit(false)}
         />
       )}
     </>

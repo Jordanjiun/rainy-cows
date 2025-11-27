@@ -4,21 +4,25 @@ import { useState } from 'react';
 
 extend({ Container, Graphics, Text });
 
-interface DeleteSaveButtonProps {
+interface ButtonProps {
   x: number;
   y: number;
   buttonWidth: number;
   buttonHeight: number;
+  buttonText: string;
+  buttonColor: string;
   onClick: () => void;
 }
 
-export const DeleteSaveButton = ({
+export const Button = ({
   x,
   y,
   buttonWidth,
   buttonHeight,
+  buttonText,
+  buttonColor,
   onClick,
-}: DeleteSaveButtonProps) => {
+}: ButtonProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
   function handleClick() {
@@ -44,7 +48,7 @@ export const DeleteSaveButton = ({
         draw={(g) => {
           g.clear();
           g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-          g.fill({ color: isHovered ? 'yellow' : '#E28C80' });
+          g.fill({ color: isHovered ? 'yellow' : buttonColor });
           g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
           g.stroke({ width: 3, color: 'black' });
         }}
@@ -52,7 +56,7 @@ export const DeleteSaveButton = ({
       <pixiText
         x={buttonWidth / 2}
         y={buttonHeight / 2 - 1}
-        text={'Delete Save'}
+        text={buttonText}
         anchor={0.5}
         style={{ fontSize: 22 }}
       />
