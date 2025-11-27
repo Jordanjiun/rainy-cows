@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { CowContext } from './CowContext';
+import { CowContext } from './Contexts';
 
 export function useCow() {
   const ctx = useContext(CowContext);

@@ -204,3 +204,34 @@ export function useGamePersistence() {
     };
   }, []);
 }
+
+export async function exportGameSave() {
+  const state = getSerializableState(useGameStore.getState());
+  const compressed = compressToUTF16(JSON.stringify(state));
+  const blob = new Blob([compressed], { type: 'text/plain;charset=utf-16' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  a.download = `rainycows-save-${timestamp}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export async function importGameSave(file: File) {
+  const text = await file.text();
+
+  try {
+    const jsonString = decompressFromUTF16(text);
+    if (!jsonString) throw new Error('Decompression failed');
+    const parsed: Partial<GameState> = JSON.parse(jsonString);
+    useGameStore.getState().loadData(parsed);
+    await saveCompressedGameData(getSerializableState(useGameStore.getState()));
+
+    return { success: true };
+  } catch (err) {
+    console.error('Failed to import save:', err);
+    return { success: false, error: err };
+  }
+}

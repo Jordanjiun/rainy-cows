@@ -2,7 +2,8 @@ import { extend } from '@pixi/react';
 import { Assets, Graphics, Sprite, Texture } from 'pixi.js';
 import { useCallback, useMemo, useState, useEffect } from 'react';
 import { useCow } from '../../context/useCow';
-import { useGameStore } from '../../game/store';
+import { useFileInput } from '../../context/useFileInput';
+import { useGameStore, exportGameSave, importGameSave } from '../../game/store';
 import { Button } from './Button';
 import { FinalWarning } from './FinalWarning';
 import type { FederatedPointerEvent } from 'pixi.js';
@@ -32,6 +33,7 @@ export const MainMenu = ({
 }) => {
   const { isHarvest } = useGameStore();
   const { selectedCow, setSelectedCow } = useCow();
+  const { openFilePicker, onFileSelected } = useFileInput();
 
   const [isHovered, setIsHovered] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
@@ -41,6 +43,8 @@ export const MainMenu = ({
   const [menuImage, setMenuImage] = useState<Texture | null>(null);
 
   const iconColor = isHovered ? 'yellow' : 'white';
+
+  onFileSelected((file) => importGameSave(file));
 
   useEffect(() => {
     let mounted = true;
@@ -192,6 +196,26 @@ export const MainMenu = ({
             <Button
               x={(boxWidth - buttonWidth) / 2}
               y={boxHeight - (buttonHeight + offset) * 2}
+              buttonWidth={buttonWidth}
+              buttonHeight={buttonHeight}
+              buttonText={'Export Save'}
+              buttonColor={'white'}
+              onClick={exportGameSave}
+            />
+
+            <Button
+              x={(boxWidth - buttonWidth) / 2}
+              y={boxHeight - (buttonHeight + offset) * 3}
+              buttonWidth={buttonWidth}
+              buttonHeight={buttonHeight}
+              buttonText={'Import Save'}
+              buttonColor={'white'}
+              onClick={openFilePicker}
+            />
+
+            <Button
+              x={(boxWidth - buttonWidth) / 2}
+              y={boxHeight - (buttonHeight + offset) * 4}
               buttonWidth={buttonWidth}
               buttonHeight={buttonHeight}
               buttonText={'Credits'}
