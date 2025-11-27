@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { CowComponent } from './CowComponent';
 import { CowInfoBox } from './CowInfoBox';
 import { FloatingHearts } from './FloatingHeart';
-import { useCow } from '../../context/useCow';
+import { useCow } from '../../context/hooks';
 import { cowConfig } from '../../data/cowData';
 import { useGameStore } from '../../game/store';
 import { getCowScale } from '../../game/utils';

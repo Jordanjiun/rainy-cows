@@ -1,8 +1,8 @@
 import { extend } from '@pixi/react';
 import { Assets, Graphics, Sprite, Texture } from 'pixi.js';
 import { useCallback, useMemo, useState, useEffect } from 'react';
-import { useCow } from '../../context/useCow';
-import { useFileInput } from '../../context/useFileInput';
+import { useCow } from '../../context/hooks';
+import { useFileInput } from '../../context/hooks';
 import { useGameStore, exportGameSave, importGameSave } from '../../game/store';
 import { Button } from './Button';
 import { FinalWarning } from './FinalWarning';

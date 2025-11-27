@@ -1,7 +1,20 @@
 import { useState, useRef } from 'react';
-import { CowContext, FileInputContext } from './Contexts';
+import { CowContext, FileInputContext, SceneContext } from './Contexts';
 import type { ReactNode } from 'react';
+import type { SceneKey } from './Contexts';
 import type { Cow } from '../models/cowModel';
+
+export const SceneProvider = ({ children }: { children: ReactNode }) => {
+  const [currentScene, setCurrentScene] = useState<SceneKey>('LoadScreen');
+
+  const switchScene = (scene: SceneKey) => setCurrentScene(scene);
+
+  return (
+    <SceneContext.Provider value={{ currentScene, switchScene }}>
+      {children}
+    </SceneContext.Provider>
+  );
+};
 
 export function CowProvider({ children }: { children: ReactNode }) {
   const [selectedCow, setSelectedCow] = useState<Cow | null>(null);

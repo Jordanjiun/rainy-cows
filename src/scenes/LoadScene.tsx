@@ -1,7 +1,7 @@
 import { extend, useApplication } from '@pixi/react';
 import { Assets, Container } from 'pixi.js';
 import { useEffect, useState } from 'react';
-import { useScene } from '../context/useScene';
+import { useScene } from '../context/hooks';
 import { LoadingBar } from '../components/LoadingBar';
 
 extend({ Container });

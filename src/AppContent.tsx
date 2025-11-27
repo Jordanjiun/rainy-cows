@@ -1,7 +1,7 @@
 import { Application } from '@pixi/react';
 import { FileInputProvider } from './context/Providers';
-import { useScene } from './context/useScene';
-import type { SceneKey } from './context/SceneTypes';
+import { useScene } from './context/hooks';
+import type { SceneKey } from './context/Contexts';
 import { LoadScreen } from './scenes/LoadScene';
 import { MainScene } from './scenes/MainScene';
 import { useGamePersistence } from './game/store';
