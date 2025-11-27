@@ -18,6 +18,10 @@ export interface FileInputContextType {
   onFileSelected: (callback: (file: File) => void) => void;
 }
 
+export interface ToastContexType {
+  showToast: (text: string, color?: string) => void;
+}
+
 export const SceneContext = createContext<SceneContextType | undefined>(
   undefined,
 );
@@ -25,3 +29,4 @@ export const CowContext = createContext<CowContextType | undefined>(undefined);
 export const FileInputContext = createContext<FileInputContextType | null>(
   null,
 );
+export const ToastContext = createContext<ToastContexType | null>(null);

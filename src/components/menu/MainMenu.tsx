@@ -1,8 +1,7 @@
 import { extend } from '@pixi/react';
 import { Assets, Graphics, Sprite, Texture } from 'pixi.js';
 import { useCallback, useMemo, useState, useEffect } from 'react';
-import { useCow } from '../../context/hooks';
-import { useFileInput } from '../../context/hooks';
+import { useCow, useFileInput, useToast } from '../../context/hooks';
 import { useGameStore, exportGameSave, importGameSave } from '../../game/store';
 import { Button } from './Button';
 import { FinalWarning } from './FinalWarning';
@@ -23,6 +22,8 @@ const offset = 20;
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
 const boxColor = '#ebd9c0ff';
+const greenColor = '#80E28C';
+const redColor = '#E28C80';
 
 export const MainMenu = ({
   appWidth,
@@ -34,6 +35,7 @@ export const MainMenu = ({
   const { isHarvest } = useGameStore();
   const { selectedCow, setSelectedCow } = useCow();
   const { openFilePicker, onFileSelected } = useFileInput();
+  const { showToast } = useToast();
 
   const [isHovered, setIsHovered] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
@@ -44,7 +46,7 @@ export const MainMenu = ({
 
   const iconColor = isHovered ? 'yellow' : 'white';
 
-  onFileSelected((file) => importGameSave(file));
+  onFileSelected((file) => handleImport(file));
 
   useEffect(() => {
     let mounted = true;
@@ -58,6 +60,19 @@ export const MainMenu = ({
       mounted = false;
     };
   }, []);
+
+  async function handleImport(file: File) {
+    const result = await importGameSave(file);
+    if (result.success) {
+      showToast('Save file imported successfully!', greenColor);
+      setMenuOpened(false);
+    } else showToast('Error: File could not be imported', redColor);
+  }
+
+  function handleExport() {
+    exportGameSave();
+    showToast('Save file exported', greenColor);
+  }
 
   function handleClick() {
     if (selectedCow) {
@@ -189,7 +204,7 @@ export const MainMenu = ({
               buttonWidth={buttonWidth}
               buttonHeight={buttonHeight}
               buttonText={'Delete Save'}
-              buttonColor={'#E28C80'}
+              buttonColor={redColor}
               onClick={handleDeleteButton}
             />
 
@@ -200,7 +215,7 @@ export const MainMenu = ({
               buttonHeight={buttonHeight}
               buttonText={'Export Save'}
               buttonColor={'white'}
-              onClick={exportGameSave}
+              onClick={handleExport}
             />
 
             <Button

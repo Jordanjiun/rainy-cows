@@ -49,7 +49,7 @@ export const Credits = ({
       g.clear();
       g.moveTo(padding, lineY);
       g.lineTo(boxWidth - padding, lineY);
-      g.stroke({ width: 3, color: 'black' });
+      g.stroke({ width: 2, color: 'black' });
     },
     [boxWidth],
   );

@@ -1,5 +1,10 @@
 import { useContext } from 'react';
-import { CowContext, FileInputContext, SceneContext } from './Contexts';
+import {
+  CowContext,
+  FileInputContext,
+  SceneContext,
+  ToastContext,
+} from './Contexts';
 
 export function useCow() {
   const ctx = useContext(CowContext);
@@ -20,3 +25,9 @@ export const useScene = () => {
   if (!context) throw new Error('useScene must be used within a SceneProvider');
   return context;
 };
+
+export function useToast() {
+  const ctx = useContext(ToastContext);
+  if (!ctx) throw new Error('useToast must be inside ToastProvider');
+  return ctx;
+}

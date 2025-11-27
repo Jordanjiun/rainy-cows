@@ -50,7 +50,7 @@ export const Button = ({
           g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
           g.fill({ color: isHovered ? 'yellow' : buttonColor });
           g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-          g.stroke({ width: 3, color: 'black' });
+          g.stroke({ width: 2, color: 'black' });
         }}
       />
       <pixiText
