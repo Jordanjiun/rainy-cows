@@ -27,6 +27,7 @@ const manifest = {
       assets: [
         { alias: 'click', src: '/assets/icons/mouse-pointer-click.png' },
         { alias: 'menu', src: '/assets/icons/settings.png' },
+        { alias: 'store', src: '/assets/icons/store.png' },
       ],
     },
     {

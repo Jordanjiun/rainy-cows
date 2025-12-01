@@ -76,22 +76,35 @@ function restoreCows(data: Partial<GameState>) {
       crypto.randomUUID().replace(/-/g, '').slice(0, 12),
       16,
     );
+    const now = new Date();
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const lastDecay = c.lastDecayCheck ? new Date(c.lastDecayCheck) : null;
 
     if (cow.lastPet) {
       const lastPetDate = new Date(cow.lastPet);
-      const now = new Date();
-      const msPerDay = 24 * 60 * 60 * 1000;
-      const daysPassed = Math.floor(
+      const daysSincePet = Math.floor(
         (now.getTime() - lastPetDate.getTime()) / msPerDay,
       );
+      const daysSinceDecay = lastDecay
+        ? Math.floor((now.getTime() - lastDecay.getTime()) / msPerDay)
+        : daysSincePet;
+      const decayDays = Math.max(0, daysSincePet - 1);
+      const newDecay = Math.min(decayDays, daysSinceDecay);
 
-      if (daysPassed > 2) {
-        const decay = daysPassed - 2;
-        cow.hearts = Math.max(1, cow.hearts - decay);
+      if (newDecay > 0) {
+        cow.hearts = Math.max(1, cow.hearts - newDecay);
+        cow.lastDecayCheck = now.toISOString();
       }
     }
     return cow;
   });
+}
+
+interface Upgrades {
+  clickLevel: number;
+  farmLevel: number;
+  harvestCooldownLevel: number;
+  harvestDurationLevel: number;
 }
 
 interface GameState {
@@ -99,6 +112,7 @@ interface GameState {
   cows: Cow[];
   lastHarvest: number | null;
   isHarvest: boolean;
+  upgrades: Upgrades;
   addMooney: (amount: number) => void;
   addCow: (cow: Cow) => void;
   loadData: (data: Partial<GameState>) => void;
@@ -113,6 +127,12 @@ export const useGameStore = create<GameState>((set, get) => {
     cows: [],
     lastHarvest: null,
     isHarvest: false,
+    upgrades: {
+      clickLevel: 1,
+      farmLevel: 1,
+      harvestCooldownLevel: 1,
+      harvestDurationLevel: 1,
+    },
 
     addMooney: (amount) => set({ mooney: get().mooney + amount }),
     addCow: (cow) => set((state) => ({ cows: [...state.cows, cow] })),
@@ -143,6 +163,7 @@ export const useGameStore = create<GameState>((set, get) => {
           cows: restoredCows,
           lastHarvest,
           isHarvest,
+          upgrades: data.upgrades ?? state.upgrades,
         };
       }),
 

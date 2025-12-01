@@ -1,19 +1,13 @@
 import { extend } from '@pixi/react';
 import { Assets, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useCallback, useMemo, useState, useEffect } from 'react';
-import { useCow, useFileInput, useMenu, useToast } from '../../context/hooks';
-import { exportGameSave, importGameSave } from '../../game/store';
-import { Button } from './Button';
-import { FinalWarning } from './FinalWarning';
+import { useCow, useMenu } from '../../context/hooks';
 import type { FederatedPointerEvent } from 'pixi.js';
-import { Credits } from './Credits';
 
 extend({ Graphics, Sprite, Text });
 
 const boxHeight = 300;
 const boxWidth = 200;
-const buttonWidth = 170;
-const buttonHeight = 40;
 const buttonSize = 50;
 const crossSize = 20;
 const crossThickness = 4;
@@ -22,10 +16,8 @@ const offset = 20;
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
 const boxColor = '#ebd9c0ff';
-const greenColor = '#80E28C';
-const redColor = '#E28C80';
 
-export const MainMenu = ({
+export const Shop = ({
   appWidth,
   appHeight,
 }: {
@@ -34,59 +26,35 @@ export const MainMenu = ({
 }) => {
   const { selectedCow, setSelectedCow } = useCow();
   const { selectedMenu, setSelectedMenu } = useMenu();
-  const { openFilePicker, onFileSelected } = useFileInput();
-  const { showToast } = useToast();
 
   const [isHovered, setIsHovered] = useState(false);
-  const [isWarning, setIsWarning] = useState(false);
-  const [isCredit, setIsCredit] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
-  const [menuImage, setMenuImage] = useState<Texture | null>(null);
+  const [shopImage, setShopImage] = useState<Texture | null>(null);
 
   const iconColor = isHovered ? 'yellow' : 'white';
 
-  onFileSelected((file) => handleImport(file));
-
   useEffect(() => {
     let mounted = true;
-    async function loadMenuImage() {
-      const loaded = await Assets.load<Texture>('menu');
+    async function loadShopImage() {
+      const loaded = await Assets.load<Texture>('store');
       loaded.source.scaleMode = 'linear';
-      if (mounted) setMenuImage(loaded);
+      if (mounted) setShopImage(loaded);
     }
-    loadMenuImage();
+    loadShopImage();
     return () => {
       mounted = false;
     };
   }, []);
 
-  async function handleImport(file: File) {
-    const result = await importGameSave(file);
-    if (result.success) {
-      showToast('Save file imported successfully!', greenColor);
-      setSelectedMenu(null);
-    } else showToast('Error: File could not be imported', redColor);
-  }
-
-  function handleExport() {
-    exportGameSave();
-    showToast('Save file exported', greenColor);
-  }
-
   function handleClick() {
     if (selectedCow) {
       setSelectedCow(null);
     }
-    if (selectedMenu != 'menu') {
-      setSelectedMenu('menu');
+    if (selectedMenu != 'shop') {
+      setSelectedMenu('shop');
     } else {
       setSelectedMenu(null);
     }
-  }
-
-  function handleDeleteButton() {
-    setSelectedMenu(null);
-    setIsWarning(true);
   }
 
   function closeMenu() {
@@ -130,12 +98,12 @@ export const MainMenu = ({
     };
   }, [closeHovered]);
 
-  if (!menuImage) return null;
+  if (!shopImage) return null;
 
   return (
     <>
       <pixiContainer
-        x={appWidth - buttonSize - 10}
+        x={appWidth - (buttonSize + 10) * 2}
         y={appHeight - buttonSize - 10}
         interactive={true}
         cursor="pointer"
@@ -145,7 +113,7 @@ export const MainMenu = ({
       >
         <pixiGraphics draw={drawButtonBase} />
         <pixiSprite
-          texture={menuImage}
+          texture={shopImage}
           anchor={0.5}
           x={buttonSize / 2}
           y={buttonSize / 2}
@@ -153,7 +121,7 @@ export const MainMenu = ({
         />
       </pixiContainer>
 
-      {selectedMenu == 'menu' && (
+      {selectedMenu == 'shop' && (
         <>
           <pixiGraphics
             interactive={true}
@@ -187,68 +155,12 @@ export const MainMenu = ({
             <pixiText
               x={boxWidth / 2}
               y={30}
-              text={'Menu'}
+              text={'Shop'}
               anchor={0.5}
               style={{ fontWeight: 'bold' }}
             />
-
-            <Button
-              x={(boxWidth - buttonWidth) / 2}
-              y={boxHeight - (buttonHeight + offset)}
-              buttonWidth={buttonWidth}
-              buttonHeight={buttonHeight}
-              buttonText={'Delete Save'}
-              buttonColor={redColor}
-              onClick={handleDeleteButton}
-            />
-
-            <Button
-              x={(boxWidth - buttonWidth) / 2}
-              y={boxHeight - (buttonHeight + offset) * 2}
-              buttonWidth={buttonWidth}
-              buttonHeight={buttonHeight}
-              buttonText={'Export Save'}
-              buttonColor={'white'}
-              onClick={handleExport}
-            />
-
-            <Button
-              x={(boxWidth - buttonWidth) / 2}
-              y={boxHeight - (buttonHeight + offset) * 3}
-              buttonWidth={buttonWidth}
-              buttonHeight={buttonHeight}
-              buttonText={'Import Save'}
-              buttonColor={'white'}
-              onClick={openFilePicker}
-            />
-
-            <Button
-              x={(boxWidth - buttonWidth) / 2}
-              y={boxHeight - (buttonHeight + offset) * 4}
-              buttonWidth={buttonWidth}
-              buttonHeight={buttonHeight}
-              buttonText={'Credits'}
-              buttonColor={'white'}
-              onClick={() => setIsCredit(true)}
-            />
           </pixiContainer>
         </>
-      )}
-
-      {isWarning && (
-        <FinalWarning
-          appWidth={appWidth}
-          appHeight={appHeight}
-          onClick={() => setIsWarning(false)}
-        />
-      )}
-
-      {isCredit && (
-        <Credits
-          appWidth={appWidth}
-          appHeight={appHeight}
-          onClick={() => setIsCredit(false)}
-        />
       )}
     </>
   );

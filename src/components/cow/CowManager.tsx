@@ -176,37 +176,6 @@ export const CowManager = ({
     [isHarvest, selectedCow, handleHeartChange],
   );
 
-  useEffect(() => {
-    if (isHarvest) {
-      if (selectedCow) {
-        setSelectedCow(null);
-      }
-
-      Object.entries(cowRefs.current).forEach(([cowId, sprite]) => {
-        if (!sprite) return;
-        sprite.eventMode = 'none';
-
-        const cleanup = cleanupPointerHandlers.current[cowId];
-        cleanup?.();
-
-        cleanupPointerHandlers.current[cowId] = () => {};
-      });
-    } else {
-      cows.forEach((cow) => {
-        const sprite = cowRefs.current[cow.id];
-        if (!sprite) return;
-
-        sprite.eventMode = 'static';
-
-        const handlePetAnimation = petAnimMap.get(sprite);
-        if (!handlePetAnimation) return;
-
-        const cleanup = handleClick(cow, sprite, handlePetAnimation);
-        cleanupPointerHandlers.current[cow.id] = cleanup || (() => {});
-      });
-    }
-  }, [isHarvest, cows, handleClick]);
-
   const sortedCows = [...cows].sort(
     (a, b) => (cowPositions[a.id] ?? 0) - (cowPositions[b.id] ?? 0),
   );

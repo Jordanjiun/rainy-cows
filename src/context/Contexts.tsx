@@ -22,6 +22,11 @@ export interface ToastContexType {
   showToast: (text: string, color?: string) => void;
 }
 
+export interface MenuContextType {
+  selectedMenu: string | null;
+  setSelectedMenu: (menuOpened: string | null) => void;
+}
+
 export const SceneContext = createContext<SceneContextType | undefined>(
   undefined,
 );
@@ -30,3 +35,4 @@ export const FileInputContext = createContext<FileInputContextType | null>(
   null,
 );
 export const ToastContext = createContext<ToastContexType | null>(null);
+export const MenuContext = createContext<MenuContextType | null>(null);

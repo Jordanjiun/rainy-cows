@@ -4,3 +4,9 @@ export const gameUpgrades = {
   harvestDurationSeconds: 10,
   harvetDurationIncreasePerUpgrade: 10,
 };
+
+export const shopPrices = {
+  upgradeClick: {
+    1: 100,
+  },
+};

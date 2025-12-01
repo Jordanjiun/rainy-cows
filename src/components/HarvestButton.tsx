@@ -1,6 +1,7 @@
 import { extend } from '@pixi/react';
 import { Assets, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useMemo, useState, useEffect } from 'react';
+import { useCow, useMenu } from '../context/hooks';
 import { gameUpgrades } from '../data/gameData';
 import { useGameStore } from '../game/store';
 import { formatTimerText } from '../game/utils';
@@ -11,6 +12,8 @@ const buttonSize = 50;
 
 export const HarvestButton = ({ appHeight }: { appHeight: number }) => {
   const { lastHarvest } = useGameStore();
+  const { selectedCow, setSelectedCow } = useCow();
+  const { selectedMenu, setSelectedMenu } = useMenu();
   const [isHovered, setIsHovered] = useState(false);
   const [cooldownProgress, setCooldownProgress] = useState(1);
   const [clickImage, setClickImage] = useState<Texture | null>(null);
@@ -65,6 +68,12 @@ export const HarvestButton = ({ appHeight }: { appHeight: number }) => {
   function handleClick() {
     setIsHovered(false);
     useGameStore.setState({ lastHarvest: Date.now(), isHarvest: true });
+    if (selectedCow) {
+      setSelectedCow(null);
+    }
+    if (selectedMenu) {
+      setSelectedMenu(null);
+    }
     const timer = setTimeout(
       () => useGameStore.setState({ isHarvest: false }),
       gameUpgrades.harvestDurationSeconds * 1000,

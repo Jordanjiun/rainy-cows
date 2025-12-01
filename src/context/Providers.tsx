@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import {
   CowContext,
   FileInputContext,
+  MenuContext,
   SceneContext,
   ToastContext,
 } from './Contexts';
@@ -78,5 +79,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <ToastOverlay toasts={toasts} />
     </ToastContext.Provider>
+  );
+}
+
+export function MenuProvider({ children }: { children: ReactNode }) {
+  const [selectedMenu, setSelectedMenu] = useState<string | null>(null);
+
+  return (
+    <MenuContext.Provider value={{ selectedMenu, setSelectedMenu }}>
+      {children}
+    </MenuContext.Provider>
   );
 }

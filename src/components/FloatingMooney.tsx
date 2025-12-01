@@ -2,12 +2,15 @@ import { extend } from '@pixi/react';
 import { Assets, Graphics, Sprite, Texture } from 'pixi.js';
 import { useEffect, useState } from 'react';
 import { useGameStore } from '../game/store';
+import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Graphics, Sprite });
 
 const animationDuration = 1000;
 const fadeInDuration = 200;
 const fadeOutDuration = 300;
+
+const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
 type MooneyEffect = {
   x: number;
@@ -24,7 +27,7 @@ export const FloatingMooney = ({
   appWidth: number;
   appHeight: number;
 }) => {
-  const { isHarvest, addMooney } = useGameStore();
+  const { isHarvest, upgrades, addMooney } = useGameStore();
   const [moonies, setMoonies] = useState<MooneyEffect[]>([]);
   const [mooneyImage, setMooneyImage] = useState<Texture | null>(null);
 
@@ -71,7 +74,7 @@ export const FloatingMooney = ({
 
   function handleClick(event: any) {
     const { x, y } = event.data.global;
-    addMooney(1);
+    addMooney(upgrades.clickLevel);
     setMoonies((prev) => [
       ...prev,
       {
@@ -100,20 +103,32 @@ export const FloatingMooney = ({
         />
       ))}
       {isHarvest && (
-        <pixiGraphics
-          interactive={true}
-          onPointerTap={handleClick}
-          draw={(g) => {
-            g.clear();
-            g.rect(
-              0,
-              0,
-              appWidth,
-              appHeight - Number(import.meta.env.VITE_FOOTER_HEIGHT_PX),
-            );
-            g.fill({ alpha: 0 });
-          }}
-        />
+        <>
+          <pixiGraphics
+            interactive={true}
+            onPointerDown={(e: FederatedPointerEvent) => e.stopPropagation()}
+            onPointerUp={(e: FederatedPointerEvent) => e.stopPropagation()}
+            draw={(g) => {
+              g.clear();
+              g.rect(0, 0, appWidth, appHeight - footerHeight);
+              g.fill({ alpha: 0 });
+            }}
+          />
+          <pixiGraphics
+            interactive={true}
+            onPointerTap={handleClick}
+            draw={(g) => {
+              g.clear();
+              g.rect(
+                0,
+                0,
+                appWidth,
+                appHeight - Number(import.meta.env.VITE_FOOTER_HEIGHT_PX),
+              );
+              g.fill({ alpha: 0 });
+            }}
+          />
+        </>
       )}
     </>
   );

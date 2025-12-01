@@ -110,6 +110,7 @@ export class Cow {
   xp: number;
   hearts: number;
   lastPet: string;
+  lastDecayCheck: string;
 
   constructor(cows?: Cow[]) {
     this.id = crypto.randomUUID();
@@ -125,6 +126,10 @@ export class Cow {
     this.xp = 0;
     this.hearts = 1;
     this.lastPet = yesterday.toLocaleString(undefined, cowDateTimeOptions);
+    this.lastDecayCheck = yesterday.toLocaleString(
+      undefined,
+      cowDateTimeOptions,
+    );
   }
 
   eat() {
