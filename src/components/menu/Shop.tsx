@@ -1,13 +1,15 @@
 import { extend } from '@pixi/react';
 import { Assets, Graphics, Sprite, Text, Texture } from 'pixi.js';
-import { useCallback, useMemo, useState, useEffect } from 'react';
+import { Fragment, useCallback, useMemo, useState, useEffect } from 'react';
 import { useCow, useMenu } from '../../context/hooks';
+import { shopItemData } from '../../data/gameData';
+import { ShopItem } from './ShopItem';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Graphics, Sprite, Text });
 
-const boxHeight = 300;
-const boxWidth = 200;
+const boxHeight = 400;
+const boxWidth = 300;
 const buttonSize = 50;
 const crossSize = 20;
 const crossThickness = 4;
@@ -159,6 +161,24 @@ export const Shop = ({
               anchor={0.5}
               style={{ fontWeight: 'bold' }}
             />
+
+            {shopItemData.map((item, i) => {
+              const y = 55 + i * 25;
+              return (
+                <Fragment key={item.label}>
+                  <ShopItem
+                    x={offset}
+                    y={y}
+                    maxWidth={boxWidth}
+                    label={item.label}
+                    description={item.description}
+                    imageString={item.image}
+                    upgradeName={item.upgradeName}
+                    prices={item.prices}
+                  />
+                </Fragment>
+              );
+            })}
           </pixiContainer>
         </>
       )}

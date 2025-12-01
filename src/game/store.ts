@@ -50,6 +50,7 @@ function getSerializableState(state: GameState) {
     cows: state.cows,
     lastHarvest: state.lastHarvest,
     isHarvest: state.isHarvest,
+    upgrades: state.upgrades,
   };
 }
 
@@ -100,13 +101,6 @@ function restoreCows(data: Partial<GameState>) {
   });
 }
 
-interface Upgrades {
-  clickLevel: number;
-  farmLevel: number;
-  harvestCooldownLevel: number;
-  harvestDurationLevel: number;
-}
-
 interface GameState {
   mooney: number;
   cows: Cow[];
@@ -115,9 +109,25 @@ interface GameState {
   upgrades: Upgrades;
   addMooney: (amount: number) => void;
   addCow: (cow: Cow) => void;
+  addUpgrade: (key: keyof Upgrades) => void;
+  removeMooney: (amount: number) => void;
   loadData: (data: Partial<GameState>) => void;
   reset: () => void;
 }
+
+export interface Upgrades {
+  clickLevel: number;
+  farmLevel: number;
+  harvestCooldownLevel: number;
+  harvestDurationLevel: number;
+}
+
+export const upgrades: Upgrades = {
+  clickLevel: 1,
+  farmLevel: 1,
+  harvestCooldownLevel: 1,
+  harvestDurationLevel: 1,
+};
 
 export const useGameStore = create<GameState>((set, get) => {
   const harvestDuration = gameUpgrades.harvestDurationSeconds * 1000;
@@ -127,15 +137,19 @@ export const useGameStore = create<GameState>((set, get) => {
     cows: [],
     lastHarvest: null,
     isHarvest: false,
-    upgrades: {
-      clickLevel: 1,
-      farmLevel: 1,
-      harvestCooldownLevel: 1,
-      harvestDurationLevel: 1,
-    },
+    upgrades: upgrades,
 
     addMooney: (amount) => set({ mooney: get().mooney + amount }),
     addCow: (cow) => set((state) => ({ cows: [...state.cows, cow] })),
+    addUpgrade: (key: keyof Upgrades) =>
+      set((state) => ({
+        upgrades: {
+          ...state.upgrades,
+          [key]: (state.upgrades[key] || 0) + 1,
+        },
+      })),
+
+    removeMooney: (amount) => set({ mooney: get().mooney - amount }),
 
     loadData: (data) =>
       set((state) => {
@@ -168,7 +182,13 @@ export const useGameStore = create<GameState>((set, get) => {
       }),
 
     reset: () =>
-      set({ mooney: 0, cows: [], lastHarvest: null, isHarvest: false }),
+      set({
+        mooney: 0,
+        cows: [],
+        lastHarvest: null,
+        isHarvest: false,
+        upgrades: upgrades,
+      }),
   };
 });
 
