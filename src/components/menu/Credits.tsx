@@ -1,6 +1,6 @@
 import { extend } from '@pixi/react';
 import { Container, Graphics, Text } from 'pixi.js';
-import { Fragment, useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Container, Graphics, Text });
@@ -95,7 +95,7 @@ export const Credits = ({
         {infoRows.map((row, i) => {
           const y = 130 + i * 25;
           return (
-            <Fragment key={row.label}>
+            <pixiContainer key={row.label}>
               <pixiText
                 x={padding}
                 y={y}
@@ -109,7 +109,7 @@ export const Credits = ({
                 anchor={{ x: 1, y: 0 }}
                 style={{ fontSize: 18 }}
               />
-            </Fragment>
+            </pixiContainer>
           );
         })}
 

@@ -1,12 +1,13 @@
 import { extend } from '@pixi/react';
-import { Assets, Graphics, Sprite, Text, Texture } from 'pixi.js';
-import { Fragment, useCallback, useMemo, useState, useEffect } from 'react';
+import { Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useCow, useMenu } from '../../context/hooks';
-import { shopItemData } from '../../data/gameData';
+import { cowPrices, shopItemData } from '../../data/gameData';
+import { BuyCow } from './BuyCow';
 import { ShopItem } from './ShopItem';
 import type { FederatedPointerEvent } from 'pixi.js';
 
-extend({ Graphics, Sprite, Text });
+extend({ Container, Graphics, Sprite, Text });
 
 const boxHeight = 400;
 const boxWidth = 300;
@@ -14,6 +15,12 @@ const buttonSize = 50;
 const crossSize = 20;
 const crossThickness = 4;
 const offset = 20;
+const shopItemHeight = 130;
+const shopItemOffset = 80;
+const maskHeight = boxHeight - 80;
+const maxScroll = shopItemOffset + 200;
+const scrollBarWidth = 6;
+const scrollBarHeight = boxHeight - 2 * offset;
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
@@ -32,6 +39,12 @@ export const Shop = ({
   const [isHovered, setIsHovered] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
   const [shopImage, setShopImage] = useState<Texture | null>(null);
+  const [scrollY, setScrollY] = useState(0);
+
+  const maskRef = useRef<Graphics>(null);
+  const scrollContainerRef = useRef<Container>(null);
+  const dragging = useRef(false);
+  const lastY = useRef(0);
 
   const iconColor = isHovered ? 'yellow' : 'white';
 
@@ -49,19 +62,22 @@ export const Shop = ({
   }, []);
 
   function handleClick() {
-    if (selectedCow) {
-      setSelectedCow(null);
-    }
-    if (selectedMenu != 'shop') {
-      setSelectedMenu('shop');
-    } else {
+    if (selectedCow) setSelectedCow(null);
+    if (selectedMenu != 'shop') setSelectedMenu('shop');
+    else {
       setSelectedMenu(null);
+      setScrollY(0);
     }
+  }
+
+  function handleScroll(delta: number) {
+    setScrollY((prev) => Math.min(maxScroll, Math.max(0, prev + delta)));
   }
 
   function closeMenu() {
     setCloseHovered(false);
     setSelectedMenu(null);
+    setScrollY(0);
   }
 
   const drawButtonBase = useMemo(() => {
@@ -85,6 +101,27 @@ export const Shop = ({
     [boxWidth, boxHeight, boxColor],
   );
 
+  const drawScrollbar = useCallback(
+    (g: Graphics) => {
+      g.clear();
+      g.rect(
+        boxWidth - scrollBarWidth - 2,
+        offset,
+        scrollBarWidth,
+        scrollBarHeight,
+      );
+      g.fill({ color: 'grey', alpha: 0.5 });
+      g.rect(
+        boxWidth - scrollBarWidth - 2,
+        offset + scrollY,
+        scrollBarWidth,
+        scrollBarHeight - maxScroll,
+      );
+      g.fill({ color: 'grey' });
+    },
+    [boxWidth, boxHeight, scrollY],
+  );
+
   const drawCloseButton = useMemo(() => {
     return (g: Graphics) => {
       g.clear();
@@ -99,6 +136,12 @@ export const Shop = ({
       g.stroke();
     };
   }, [closeHovered]);
+
+  const drawMask = useCallback((g: Graphics) => {
+    g.clear();
+    g.rect(-5, -5, boxWidth - offset, maskHeight);
+    g.fill({ alpha: 0 });
+  }, []);
 
   if (!shopImage) return null;
 
@@ -127,8 +170,30 @@ export const Shop = ({
         <>
           <pixiGraphics
             interactive={true}
-            onPointerDown={(e: FederatedPointerEvent) => e.stopPropagation()}
-            onPointerUp={(e: FederatedPointerEvent) => e.stopPropagation()}
+            onPointerDown={(e: FederatedPointerEvent) => {
+              e.stopPropagation();
+              dragging.current = true;
+              lastY.current = e.global.y;
+            }}
+            onPointerMove={(e: FederatedPointerEvent) => {
+              if (!dragging.current) return;
+              e.stopPropagation();
+              const delta = e.global.y - lastY.current;
+              lastY.current = e.global.y;
+              handleScroll(-delta);
+            }}
+            onPointerUp={(e: FederatedPointerEvent) => {
+              e.stopPropagation();
+              dragging.current = false;
+            }}
+            onPointerUpOutside={(e: FederatedPointerEvent) => {
+              e.stopPropagation();
+              dragging.current = false;
+            }}
+            onWheel={(e: WheelEvent) => {
+              e.stopPropagation();
+              handleScroll(e.deltaY * 0.3);
+            }}
             draw={(g) => {
               g.clear();
               g.rect(0, 0, appWidth, appHeight - footerHeight);
@@ -141,6 +206,7 @@ export const Shop = ({
             y={(appHeight - boxHeight - footerHeight) / 2}
           >
             <pixiGraphics draw={drawBase} />
+            <pixiGraphics draw={drawScrollbar} />
 
             <pixiContainer
               x={offset}
@@ -162,23 +228,44 @@ export const Shop = ({
               style={{ fontWeight: 'bold' }}
             />
 
-            {shopItemData.map((item, i) => {
-              const y = 55 + i * 25;
-              return (
-                <Fragment key={item.label}>
-                  <ShopItem
-                    x={offset}
-                    y={y}
-                    maxWidth={boxWidth}
-                    label={item.label}
-                    description={item.description}
-                    imageString={item.image}
-                    upgradeName={item.upgradeName}
-                    prices={item.prices}
-                  />
-                </Fragment>
-              );
-            })}
+            <pixiContainer x={offset} y={60}>
+              <pixiGraphics
+                draw={drawMask}
+                ref={(g) => {
+                  maskRef.current = g;
+                  if (g && scrollContainerRef.current) {
+                    scrollContainerRef.current.mask = g;
+                  }
+                }}
+              />
+              <pixiContainer
+                ref={(c) => {
+                  scrollContainerRef.current = c;
+                  if (c && maskRef.current) {
+                    c.mask = maskRef.current;
+                  }
+                }}
+                y={-scrollY}
+              >
+                <BuyCow y={0} maxWidth={boxWidth} prices={cowPrices} />
+
+                {shopItemData.map((item, i) => {
+                  const y = shopItemOffset + i * shopItemHeight;
+                  return (
+                    <ShopItem
+                      key={item.label}
+                      y={y}
+                      maxWidth={boxWidth}
+                      label={item.label}
+                      description={item.description}
+                      imageString={item.image}
+                      upgradeName={item.upgradeName}
+                      prices={item.prices}
+                    />
+                  );
+                })}
+              </pixiContainer>
+            </pixiContainer>
           </pixiContainer>
         </>
       )}

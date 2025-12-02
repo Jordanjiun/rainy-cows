@@ -130,10 +130,14 @@ export const upgrades: Upgrades = {
 };
 
 export const useGameStore = create<GameState>((set, get) => {
-  const harvestDuration = gameUpgrades.harvestDurationSeconds * 1000;
+  const harvestDuration =
+    gameUpgrades.harvestDurationSeconds * 1000 +
+    gameUpgrades.harvetDurationIncreasePerUpgrade *
+      1000 *
+      (upgrades.harvestDurationLevel - 1);
 
   return {
-    mooney: 0,
+    mooney: 100,
     cows: [],
     lastHarvest: null,
     isHarvest: false,
@@ -183,7 +187,7 @@ export const useGameStore = create<GameState>((set, get) => {
 
     reset: () =>
       set({
-        mooney: 0,
+        mooney: 100,
         cows: [],
         lastHarvest: null,
         isHarvest: false,

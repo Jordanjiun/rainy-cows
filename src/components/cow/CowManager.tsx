@@ -19,7 +19,7 @@ export const CowManager = ({
   appWidth: number;
   appHeight: number;
 }) => {
-  const { cows, isHarvest, addCow } = useGameStore();
+  const { cows, isHarvest } = useGameStore();
   const { selectedCow, setSelectedCow } = useCow();
   const cowScale = getCowScale(appWidth * appHeight);
 
@@ -58,10 +58,6 @@ export const CowManager = ({
   const clearHeartEvents = useCallback(() => {
     setHeartEvents([]);
   }, []);
-
-  const handleAddCow = useCallback(() => {
-    addCow(new Cow(cows));
-  }, [addCow, cows]);
 
   const handlePositionUpdate = useCallback(
     (id: string, x: number, y: number) => {
@@ -184,13 +180,12 @@ export const CowManager = ({
     const handleRightClick = (e: PointerEvent) => {
       if (e.button === 2) {
         e.preventDefault();
-        handleAddCow();
       }
     };
 
     document.addEventListener('contextmenu', handleRightClick);
     return () => document.removeEventListener('contextmenu', handleRightClick);
-  }, [handleAddCow]);
+  }, []);
 
   const drawSelectedCowIndicator = useMemo(() => {
     if (!selectedCow) return null;

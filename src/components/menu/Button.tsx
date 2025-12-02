@@ -25,15 +25,6 @@ export const Button = ({
 }: ButtonProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  function handleClick() {
-    setIsHovered(false);
-    onClick();
-    const canvas = document.querySelector('canvas') as HTMLCanvasElement;
-    if (canvas) {
-      canvas.style.cursor = 'default';
-    }
-  }
-
   return (
     <pixiContainer
       x={x}
@@ -42,7 +33,7 @@ export const Button = ({
       cursor="pointer"
       onPointerOver={() => setIsHovered(true)}
       onPointerOut={() => setIsHovered(false)}
-      onPointerTap={handleClick}
+      onPointerTap={onClick}
     >
       <pixiGraphics
         draw={(g) => {

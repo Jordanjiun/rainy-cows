@@ -9,9 +9,9 @@ import {
   Texture,
 } from 'pixi.js';
 import { useEffect, useMemo, useState } from 'react';
-import { useGameStore, upgrades } from '../../game/store';
+import { useGameStore } from '../../game/store';
+import { Cow } from '../../models/cowModel';
 import { Button } from './Button';
-import type { Upgrades } from '../../game/store';
 
 extend({ Container, Graphics, Sprite, Text });
 
@@ -20,56 +20,31 @@ const buttonWidth = 60;
 const buttonHeight = 33;
 const maxFontSize = 22;
 
-const upgradeKeys = Object.keys(upgrades) as Array<keyof typeof upgrades>;
+const assetNames = ['mooney', 'cowIcon'];
 
 type NumberMap = { [key: number]: number | undefined };
 
-interface ShopItemProps {
+interface BuyCowProps {
   y: number;
   maxWidth: number;
-  label: string;
-  description: string;
-  imageString: string;
-  upgradeName: string;
   prices: NumberMap;
 }
 
-function isUpgradeKey(key: any): key is keyof Upgrades {
-  return upgradeKeys.includes(key);
-}
-
-export const ShopItem = ({
-  y,
-  maxWidth,
-  label,
-  description,
-  imageString,
-  upgradeName,
-  prices,
-}: ShopItemProps) => {
-  const { mooney, upgrades, addUpgrade, removeMooney } = useGameStore();
+export const BuyCow = ({ y, maxWidth, prices }: BuyCowProps) => {
+  const { cows, mooney, upgrades, addCow, removeMooney } = useGameStore();
 
   const [textures, setTextures] = useState<Record<string, Texture>>({});
   const [price, setPrice] = useState<number | null>(null);
   const [isMaxed, setIsMaxed] = useState(false);
   const [isMooneyEnough, setIsMooneyEnough] = useState(false);
 
-  const assetNames = ['mooney', imageString];
-
-  function getUpgradeLevel(upgradeName: string): number {
-    if (isUpgradeKey(upgradeName)) {
-      return upgrades[upgradeName];
-    }
-    return 0;
-  }
-
   const priceFontSize = useMemo(() => {
     let size = maxFontSize;
     setIsMaxed(false);
 
     while (size > 8) {
-      const newPrice = prices[getUpgradeLevel(upgradeName) + 1] ?? null;
-      if (!newPrice) {
+      const newPrice = prices[cows.length + 1] ?? null;
+      if (!newPrice || cows.length >= upgrades.farmLevel * 2) {
         setIsMaxed(true);
         return size;
       }
@@ -77,11 +52,11 @@ export const ShopItem = ({
 
       const style = new TextStyle({ fontSize: size });
       const temp = new Text({ text: newPrice, style });
-      if (temp.width <= maxWidth - buttonWidth - 110) break;
+      if (temp.width <= maxWidth - buttonWidth - 165) break;
       size -= 1;
     }
     return size;
-  }, [mooney, upgrades, prices]);
+  }, [mooney, upgrades.farmLevel, prices]);
 
   useEffect(() => {
     if (!isMaxed && price && mooney < price) setIsMooneyEnough(false);
@@ -108,66 +83,41 @@ export const ShopItem = ({
     };
   }, [boxSize]);
 
-  const drawBar = useMemo(() => {
-    return (g: Graphics) => {
-      const totalLevels = Object.keys(prices).length;
-      const currentLevel = getUpgradeLevel(upgradeName);
-      const barWidth = maxWidth - 45;
-      const barHeight = 8;
-      const segmentWidth = barWidth / totalLevels;
-
-      g.clear();
-      for (let i = 0; i < totalLevels; i++) {
-        g.rect(i * segmentWidth, boxSize + 48, segmentWidth - 3, barHeight);
-        g.fill({ color: i < currentLevel ? 'green' : 'black' });
-      }
-    };
-  }, [prices, upgrades, maxWidth]);
-
   function handleClick() {
-    if (price) removeMooney(price);
-    if (isUpgradeKey(upgradeName)) addUpgrade(upgradeName);
+    if (price) {
+      removeMooney(price);
+      addCow(new Cow(cows));
+    }
   }
 
-  if (!textures.mooney || !textures[imageString]) return null;
+  if (!textures.mooney || !textures.cowIcon) return null;
 
   return (
     <pixiContainer y={y}>
       <pixiGraphics draw={drawBox} />
       <pixiSprite
-        texture={textures[imageString]}
+        texture={textures.cowIcon}
         anchor={0.5}
         x={boxSize / 2}
         y={boxSize / 2}
         tint={'black'}
       />
 
-      <pixiText x={65} y={-3} text={label} style={{ fontSize: 18 }} />
-      <pixiText
-        x={65}
-        y={20}
-        text={description}
-        style={{
-          fontSize: 14,
-          align: 'left',
-          wordWrap: true,
-          wordWrapWidth: maxWidth - boxSize - 65,
-        }}
-      />
+      <pixiText x={65} y={-3} text={'Buy Cow'} style={{ fontSize: 18 }} />
+      <pixiSprite texture={textures.mooney} x={65} y={20} />
 
-      <pixiSprite texture={textures.mooney} y={boxSize + 8} />
       {!isMaxed && price ? (
         <pixiText
-          x={38}
-          y={boxSize + 24}
+          x={102}
+          y={35}
           anchor={{ x: 0, y: 0.5 }}
           text={price.toLocaleString('en-us')}
           style={{ fontSize: priceFontSize }}
         />
       ) : (
         <pixiText
-          x={38}
-          y={boxSize + 24}
+          x={102}
+          y={35}
           anchor={{ x: 0, y: 0.5 }}
           text={'Maxed'}
           style={{ fontSize: priceFontSize }}
@@ -175,7 +125,10 @@ export const ShopItem = ({
       )}
 
       {isMaxed || !isMooneyEnough ? (
-        <pixiContainer x={maxWidth - buttonWidth - 45} y={boxSize + 7}>
+        <pixiContainer
+          x={maxWidth - buttonWidth - 45}
+          y={(boxSize - buttonHeight) / 2}
+        >
           <pixiGraphics
             draw={(g) => {
               g.clear();
@@ -196,7 +149,7 @@ export const ShopItem = ({
       ) : (
         <Button
           x={maxWidth - buttonWidth - 45}
-          y={boxSize + 7}
+          y={(boxSize - buttonHeight) / 2}
           buttonWidth={buttonWidth}
           buttonHeight={buttonHeight}
           buttonText={'Buy'}
@@ -204,8 +157,6 @@ export const ShopItem = ({
           onClick={handleClick}
         />
       )}
-
-      <pixiGraphics draw={drawBar} />
     </pixiContainer>
   );
 };
