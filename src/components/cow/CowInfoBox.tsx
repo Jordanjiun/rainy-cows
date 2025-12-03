@@ -9,23 +9,28 @@ import {
   Texture,
 } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useMenu } from '../../context/hooks';
 import { cowXpPerLevel } from '../../data/cowData';
+import { Button } from '../menu/Button';
 import type { Cow } from '../../models/cowModel';
 
 extend({ Container, Graphics, Sprite, Text });
 
 const baseFontSize = 20;
-const boxWidth = 200;
+const boxWidth = 210;
+const boxHeight = 150;
 const crossSize = 15;
 const crossThickness = 4;
 const heartMaxNum = 10;
 const heartScale = 0.07;
-const heartSpacing = 0.7;
+const heartSpacing = 1.6;
 const heartY = 55;
 const offset = 10;
 const titleWidth = 160;
 const titleY = 18;
 const xpBarY = 35;
+const buttonWidth = 90;
+const buttonHeight = 35;
 
 const assetNames = ['heart', 'noHeart'];
 const boxColor = '#ebd9c0ff';
@@ -47,6 +52,8 @@ export const CowInfoBox = ({
   hearts,
   onClose,
 }: CowInfoBoxProps) => {
+  const { setSelectedMenu } = useMenu();
+
   const [isHovered, setIsHovered] = useState(false);
   const [scale, setScale] = useState(1);
   const [textures, setTextures] = useState<Record<string, Texture>>({});
@@ -67,9 +74,9 @@ export const CowInfoBox = ({
   const drawBox = useCallback(
     (g: Graphics) => {
       g.clear();
-      g.roundRect(0, 0, boxWidth, appHeight * 0.27, 10);
+      g.roundRect(0, 0, boxWidth, boxHeight, 10);
       g.fill({ color: boxColor });
-      g.roundRect(0, 0, boxWidth, appHeight * 0.27, 10);
+      g.roundRect(0, 0, boxWidth, boxHeight, 10);
       g.stroke({ width: 3, color: 'black' });
     },
     [appHeight],
@@ -77,8 +84,10 @@ export const CowInfoBox = ({
 
   const drawXpBar = useCallback(
     (g: Graphics) => {
-      const percentage = xp / cowXpPerLevel[cow.level];
       const barWidth = boxWidth - 2 * offset;
+      var percentage;
+      if (cowXpPerLevel[cow.level]) percentage = xp / cowXpPerLevel[cow.level];
+      else percentage = 1;
       g.clear();
       g.rect(offset, xpBarY, barWidth, 15);
       g.fill({ color: 'black' });
@@ -146,9 +155,8 @@ export const CowInfoBox = ({
   const drawXp = useMemo(() => {
     const cowLevel = cow.level;
     var xpText;
-    if (cowLevel == 10) {
-      xpText = 'Maxed';
-    } else {
+    if (cowLevel == 10 || !cowXpPerLevel[cowLevel]) xpText = 'Maxed';
+    else {
       xpText =
         xp.toLocaleString('en-US') +
         ` / ${cowXpPerLevel[cowLevel].toLocaleString('en-US')}`;
@@ -202,6 +210,24 @@ export const CowInfoBox = ({
     );
   }, [textures.noHeart, textures.heart, hearts]);
 
+  const drawDetails = useMemo(() => {
+    const base = cowXpPerLevel[cow.level - 1] ?? 0;
+    var value;
+    if (cow.level == 10) value = base;
+    else value = base + cow.xp;
+    return (
+      <>
+        <pixiText
+          x={boxWidth / 2}
+          y={75}
+          anchor={{ x: 0.5, y: 0 }}
+          text={`Value: ${value.toLocaleString('en-US')}`}
+          style={{ fontSize: 16 }}
+        />
+      </>
+    );
+  }, [cow, xp]);
+
   return (
     <pixiContainer x={appWidth - boxWidth - offset} y={offset}>
       <pixiGraphics draw={drawBox} />
@@ -209,6 +235,25 @@ export const CowInfoBox = ({
       {drawNameAndLevel}
       {drawXp}
       {drawHearts}
+      {drawDetails}
+      <Button
+        x={offset}
+        y={boxHeight - (buttonHeight + offset)}
+        buttonWidth={buttonWidth}
+        buttonHeight={buttonHeight}
+        buttonText={'Rename'}
+        buttonColor={'white'}
+        onClick={() => null} // feat: rename cow
+      />
+      <Button
+        x={boxWidth - buttonWidth - offset}
+        y={boxHeight - (buttonHeight + offset)}
+        buttonWidth={buttonWidth}
+        buttonHeight={buttonHeight}
+        buttonText={'Sell'}
+        buttonColor={'#E28C80'}
+        onClick={() => setSelectedMenu('sellCow')}
+      />
     </pixiContainer>
   );
 };

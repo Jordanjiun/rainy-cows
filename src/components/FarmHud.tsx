@@ -6,38 +6,39 @@ import { useGameStore } from '../game/store';
 extend({ Sprite, Text });
 
 const offset = 10;
+const assetNames = ['mooney', 'logo'];
 
 export const FarmHud = () => {
   const { cows, mooney, upgrades } = useGameStore();
-  const [mooneyImage, setMooneyImage] = useState<Texture | null>(null);
+  const [textures, setTextures] = useState<Record<string, Texture>>({});
 
   const amount = mooney.toLocaleString('en-US');
   const ratio = `${cows.length}/${upgrades.farmLevel * 2}`;
 
   useEffect(() => {
     let mounted = true;
-    async function loadMooneyImage() {
-      const loaded = await Assets.load<Texture>('mooney');
-      loaded.source.scaleMode = 'nearest';
-      if (mounted) setMooneyImage(loaded);
+    async function loadTextures() {
+      const loaded: Record<string, Texture> = await Assets.load(assetNames);
+      if (mounted) setTextures(loaded);
     }
-    loadMooneyImage();
+    loadTextures();
     return () => {
       mounted = false;
     };
   }, []);
 
-  if (!mooneyImage) return null;
+  if (!textures.mooney || !textures.logo) return null;
 
   return (
     <>
-      <pixiSprite texture={mooneyImage} x={offset} y={offset} scale={1} />
+      <pixiSprite texture={textures.mooney} x={offset} y={offset} scale={1} />
       <pixiText
         x={32 + 1.5 * offset}
         y={offset}
         text={amount}
         style={{ fill: 'black' }}
       />
+      <pixiSprite texture={textures.logo} x={offset} y={offset * 5} scale={1} />
       <pixiText
         x={32 + 1.5 * offset}
         y={offset * 5}

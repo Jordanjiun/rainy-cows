@@ -212,17 +212,6 @@ export const CowManager = ({
 
   return (
     <>
-      {selectedCow && (
-        <CowInfoBox
-          appWidth={appWidth}
-          appHeight={appHeight}
-          cow={selectedCow}
-          xp={cowXps[selectedCow.id] ?? selectedCow.xp}
-          hearts={cowHearts[selectedCow.id] ?? selectedCow.hearts}
-          onClose={() => setSelectedCow(null)}
-        />
-      )}
-
       {sortedCows.map((cow) => (
         <CowComponent
           key={cow.id}
@@ -246,6 +235,17 @@ export const CowManager = ({
       {drawSelectedCowIndicator}
 
       <FloatingHearts heartEvents={heartEvents} onConsumed={clearHeartEvents} />
+
+      {selectedCow && (
+        <CowInfoBox
+          appWidth={appWidth}
+          appHeight={appHeight}
+          cow={selectedCow}
+          xp={cowXps[selectedCow.id] ?? selectedCow.xp}
+          hearts={cowHearts[selectedCow.id] ?? selectedCow.hearts}
+          onClose={() => setSelectedCow(null)}
+        />
+      )}
     </>
   );
 };

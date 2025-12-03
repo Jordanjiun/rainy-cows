@@ -93,7 +93,7 @@ function restoreCows(data: Partial<GameState>) {
       const newDecay = Math.min(decayDays, daysSinceDecay);
 
       if (newDecay > 0) {
-        cow.hearts = Math.max(1, cow.hearts - newDecay);
+        cow.hearts = Math.max(0, cow.hearts - newDecay);
         cow.lastDecayCheck = now.toISOString();
       }
     }
@@ -111,6 +111,7 @@ interface GameState {
   addCow: (cow: Cow) => void;
   addUpgrade: (key: keyof Upgrades) => void;
   removeMooney: (amount: number) => void;
+  removeCow: (cowId: string) => void;
   loadData: (data: Partial<GameState>) => void;
   reset: () => void;
 }
@@ -154,6 +155,10 @@ export const useGameStore = create<GameState>((set, get) => {
       })),
 
     removeMooney: (amount) => set({ mooney: get().mooney - amount }),
+    removeCow: (cowId: string) =>
+      set((state) => ({
+        cows: state.cows.filter((cow) => cow.id !== cowId),
+      })),
 
     loadData: (data) =>
       set((state) => {

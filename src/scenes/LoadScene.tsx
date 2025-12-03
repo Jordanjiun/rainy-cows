@@ -40,6 +40,7 @@ const manifest = {
       assets: [
         { alias: 'heart', src: '/assets/others/heart.png' },
         { alias: 'noHeart', src: '/assets/others/noHeart.png' },
+        { alias: 'logo', src: '/assets/others/logo.png' },
         { alias: 'mooney', src: '/assets/others/mooney.png' },
       ],
     },

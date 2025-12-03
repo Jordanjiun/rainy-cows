@@ -106,13 +106,13 @@ export const cowConfig = {
 export const cowXpPerLevel: Record<number, number> = {
   1: 100,
   2: 500,
-  3: 1000,
-  4: 5000,
-  5: 10000,
-  6: 50000,
-  7: 100000,
-  8: 500000,
-  9: 1000000,
+  3: 1e3,
+  4: 5e3,
+  5: 1e4,
+  6: 5e4,
+  7: 1e5,
+  8: 5e5,
+  9: 1e6,
 };
 
 export const cowDateTimeOptions: Intl.DateTimeFormatOptions = {

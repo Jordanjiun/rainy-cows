@@ -7,6 +7,7 @@ import { FarmHud } from '../components/FarmHud';
 import { FloatingMooney } from '../components/FloatingMooney';
 import { HarvestButton } from '../components/HarvestButton';
 import { MainMenu } from '../components/menu/MainMenu';
+import { SellCow } from '../components/menu/SellCow';
 import { Shop } from '../components/menu/Shop';
 import { CowProvider, MenuProvider, ToastProvider } from '../context/Providers';
 
@@ -45,6 +46,7 @@ export const MainScene = () => {
             <FloatingMooney appWidth={size.width} appHeight={size.height} />
             <Shop appWidth={size.width} appHeight={size.height} />
             <MainMenu appWidth={size.width} appHeight={size.height} />
+            <SellCow appWidth={size.width} appHeight={size.height} />
           </CowProvider>
         </MenuProvider>
       </ToastProvider>
