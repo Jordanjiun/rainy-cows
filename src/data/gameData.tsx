@@ -1,7 +1,7 @@
 export const gameUpgrades = {
   harvestCooldownMinutes: 90,
   harvestCooldownDecreasePerUpgrade: 5,
-  harvestDurationSeconds: 5,
+  harvestDurationSeconds: 10,
   harvetDurationIncreasePerUpgrade: 5,
 };
 
@@ -115,7 +115,6 @@ export const shopItemData = [
       9: 2e4,
       10: 5e4,
       11: 1e5,
-      12: 3e5,
     },
   },
 ];

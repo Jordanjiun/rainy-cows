@@ -134,7 +134,7 @@ export class Cow {
 
   eat() {
     const mooneyGained = this.level + this.hearts;
-    if (!cowXpPerLevel[this.level]) return { newXp: this.xp, mooneyGained };
+    if (!cowXpPerLevel[this.level]) return mooneyGained;
 
     this.xp += mooneyGained;
     if (this.xp >= cowXpPerLevel[this.level]) {
@@ -143,7 +143,7 @@ export class Cow {
       this.level++;
     }
 
-    return { newXp: this.xp, mooneyGained };
+    return mooneyGained;
   }
 
   pet() {

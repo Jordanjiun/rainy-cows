@@ -14,7 +14,6 @@ interface CowComponentProps {
   appHeight: number;
   cow: Cow;
   onPositionUpdate?: (id: string, x: number, y: number) => void;
-  onXpUpdate?: (id: string, xp: number) => void;
   registerRef?: (
     layerRefs: Record<string, AnimatedSprite | null>,
     handlePetAnimation: () => void,
@@ -26,7 +25,6 @@ export const CowComponent = ({
   appHeight,
   cow,
   onPositionUpdate,
-  onXpUpdate,
   registerRef,
 }: CowComponentProps) => {
   const { addMooney } = useGameStore();
@@ -38,7 +36,6 @@ export const CowComponent = ({
 
   const [currentAnim, setCurrentAnim] = useState('idle');
   const [queuedAnim, setQueuedAnim] = useState<string | null>(null);
-  const [xp, setXp] = useState(cow.xp);
 
   const layerRefs = useRef<Record<string, AnimatedSprite | null>>({});
   const containerRef = useRef<Container>(null);
@@ -87,15 +84,9 @@ export const CowComponent = ({
   }, [animation, animations]);
 
   useEffect(() => {
-    onXpUpdate?.(cow.id, xp);
-  }, [xp]);
-
-  useEffect(() => {
     if (currentAnim === 'eat') {
       const timer = setTimeout(() => {
-        const { newXp, mooneyGained } = cow.eat();
-        setXp(newXp);
-        addMooney(mooneyGained);
+        addMooney(cow.eat());
       }, cowConfig.msEatCheck);
       return () => clearTimeout(timer);
     }

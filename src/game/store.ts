@@ -112,6 +112,7 @@ interface GameState {
   addUpgrade: (key: keyof Upgrades) => void;
   removeMooney: (amount: number) => void;
   removeCow: (cowId: string) => void;
+  updateCowName: (cowId: string, newName: string) => void;
   loadData: (data: Partial<GameState>) => void;
   reset: () => void;
 }
@@ -158,6 +159,16 @@ export const useGameStore = create<GameState>((set, get) => {
     removeCow: (cowId: string) =>
       set((state) => ({
         cows: state.cows.filter((cow) => cow.id !== cowId),
+      })),
+
+    updateCowName: (cowId: string, newName: string) =>
+      set((state) => ({
+        cows: state.cows.map((cow) => {
+          if (cow.id === cowId) {
+            cow.name = newName;
+          }
+          return cow;
+        }),
       })),
 
     loadData: (data) =>

@@ -27,8 +27,7 @@ export const CowManager = ({
   const [cowXY, setCowXY] = useState<Record<string, { x: number; y: number }>>(
     {},
   );
-  const [cowXps, setCowXps] = useState<Record<string, number>>({});
-  const [cowHearts, setCowHearts] = useState<Record<string, number>>({});
+  const [_, setCowHearts] = useState<Record<string, number>>({});
   const [heartEvents, setHeartEvents] = useState<
     { id: string; x: number; y: number }[]
   >([]);
@@ -51,7 +50,6 @@ export const CowManager = ({
       initialHearts[cow.id] = cow.hearts;
     });
 
-    setCowXps(initialXps);
     setCowHearts(initialHearts);
   }, [cows, appWidth, appHeight]);
 
@@ -70,10 +68,6 @@ export const CowManager = ({
     },
     [],
   );
-
-  const handleXpChange = useCallback((id: string, xp: number) => {
-    setCowXps((prev) => ({ ...prev, [id]: xp }));
-  }, []);
 
   const handleHeartChange = useCallback((id: string, hearts: number) => {
     setCowHearts((prev) => {
@@ -219,7 +213,6 @@ export const CowManager = ({
           appWidth={appWidth}
           appHeight={appHeight}
           onPositionUpdate={handlePositionUpdate}
-          onXpUpdate={handleXpChange}
           registerRef={(layerRefs, handlePetAnimation) => {
             const baseLayer = Object.values(layerRefs)[0];
             if (!baseLayer) return;
@@ -241,8 +234,6 @@ export const CowManager = ({
           appWidth={appWidth}
           appHeight={appHeight}
           cow={selectedCow}
-          xp={cowXps[selectedCow.id] ?? selectedCow.xp}
-          hearts={cowHearts[selectedCow.id] ?? selectedCow.hearts}
           onClose={() => setSelectedCow(null)}
         />
       )}

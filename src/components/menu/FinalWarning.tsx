@@ -104,7 +104,7 @@ export const FinalWarning = ({
               g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
               g.fill({ color: noHovered ? 'yellow' : '#E28C80' });
               g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-              g.stroke({ width: 3, color: 'black' });
+              g.stroke({ width: 2, color: 'black' });
             }}
           />
           <pixiText
@@ -131,7 +131,7 @@ export const FinalWarning = ({
               g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
               g.fill({ color: yesHovered ? 'yellow' : '#80E28C' });
               g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-              g.stroke({ width: 3, color: 'black' });
+              g.stroke({ width: 2, color: 'black' });
             }}
           />
           <pixiText
