@@ -3,7 +3,6 @@ import { Container, Graphics, Text } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { gameUpgrades } from '../data/gameData';
 import { useGameStore } from '../game/store';
-import { formatTimerText } from '../game/utils';
 
 extend({ Container, Graphics, Text });
 
@@ -17,7 +16,7 @@ export const Farm = ({
   appWidth: number;
   appHeight: number;
 }) => {
-  const { isHarvest, lastHarvest } = useGameStore();
+  const { isHarvest, lastHarvest, upgrades } = useGameStore();
   const [remainingTime, setRemainingTime] = useState(0);
 
   useEffect(() => {
@@ -25,7 +24,11 @@ export const Farm = ({
       if (!lastHarvest) return setRemainingTime(0);
 
       const now = Date.now();
-      const harvestDuration = gameUpgrades.harvestDurationSeconds * 1000;
+      const harvestDuration =
+        gameUpgrades.harvestDurationSeconds * 1000 +
+        gameUpgrades.harvetDurationIncreasePerUpgrade *
+          1000 *
+          (upgrades.harvestDurationLevel - 1);
       const timeLeft = Math.max(
         0,
         Math.ceil((lastHarvest + harvestDuration - now) / 1000),
@@ -63,9 +66,12 @@ export const Farm = ({
 
   const drawHarvestTime = useMemo(
     () => (
-      <pixiContainer x={appWidth / 2} y={(appHeight * (1 - landRatio)) / 2}>
+      <pixiContainer
+        x={appWidth / 2}
+        y={10 + (appHeight * (1 - landRatio)) / 2}
+      >
         <pixiText
-          text={`Harvest time! (${formatTimerText(remainingTime)})`}
+          text={`Harvest time! (${remainingTime}s)`}
           anchor={0.5}
           style={{ fontSize: 28, fill: 'black', fontWeight: 'bold' }}
         />

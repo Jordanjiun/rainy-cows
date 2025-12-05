@@ -19,7 +19,7 @@ export const CowManager = ({
   appWidth: number;
   appHeight: number;
 }) => {
-  const { cows, isHarvest, addCow } = useGameStore();
+  const { cows, isHarvest } = useGameStore();
   const { selectedCow, setSelectedCow } = useCow();
   const cowScale = getCowScale(appWidth * appHeight);
 
@@ -27,8 +27,7 @@ export const CowManager = ({
   const [cowXY, setCowXY] = useState<Record<string, { x: number; y: number }>>(
     {},
   );
-  const [cowXps, setCowXps] = useState<Record<string, number>>({});
-  const [cowHearts, setCowHearts] = useState<Record<string, number>>({});
+  const [_, setCowHearts] = useState<Record<string, number>>({});
   const [heartEvents, setHeartEvents] = useState<
     { id: string; x: number; y: number }[]
   >([]);
@@ -51,17 +50,12 @@ export const CowManager = ({
       initialHearts[cow.id] = cow.hearts;
     });
 
-    setCowXps(initialXps);
     setCowHearts(initialHearts);
   }, [cows, appWidth, appHeight]);
 
   const clearHeartEvents = useCallback(() => {
     setHeartEvents([]);
   }, []);
-
-  const handleAddCow = useCallback(() => {
-    addCow(new Cow(cows));
-  }, [addCow, cows]);
 
   const handlePositionUpdate = useCallback(
     (id: string, x: number, y: number) => {
@@ -74,10 +68,6 @@ export const CowManager = ({
     },
     [],
   );
-
-  const handleXpChange = useCallback((id: string, xp: number) => {
-    setCowXps((prev) => ({ ...prev, [id]: xp }));
-  }, []);
 
   const handleHeartChange = useCallback((id: string, hearts: number) => {
     setCowHearts((prev) => {
@@ -176,37 +166,6 @@ export const CowManager = ({
     [isHarvest, selectedCow, handleHeartChange],
   );
 
-  useEffect(() => {
-    if (isHarvest) {
-      if (selectedCow) {
-        setSelectedCow(null);
-      }
-
-      Object.entries(cowRefs.current).forEach(([cowId, sprite]) => {
-        if (!sprite) return;
-        sprite.eventMode = 'none';
-
-        const cleanup = cleanupPointerHandlers.current[cowId];
-        cleanup?.();
-
-        cleanupPointerHandlers.current[cowId] = () => {};
-      });
-    } else {
-      cows.forEach((cow) => {
-        const sprite = cowRefs.current[cow.id];
-        if (!sprite) return;
-
-        sprite.eventMode = 'static';
-
-        const handlePetAnimation = petAnimMap.get(sprite);
-        if (!handlePetAnimation) return;
-
-        const cleanup = handleClick(cow, sprite, handlePetAnimation);
-        cleanupPointerHandlers.current[cow.id] = cleanup || (() => {});
-      });
-    }
-  }, [isHarvest, cows, handleClick]);
-
   const sortedCows = [...cows].sort(
     (a, b) => (cowPositions[a.id] ?? 0) - (cowPositions[b.id] ?? 0),
   );
@@ -215,13 +174,12 @@ export const CowManager = ({
     const handleRightClick = (e: PointerEvent) => {
       if (e.button === 2) {
         e.preventDefault();
-        handleAddCow();
       }
     };
 
     document.addEventListener('contextmenu', handleRightClick);
     return () => document.removeEventListener('contextmenu', handleRightClick);
-  }, [handleAddCow]);
+  }, []);
 
   const drawSelectedCowIndicator = useMemo(() => {
     if (!selectedCow) return null;
@@ -248,17 +206,6 @@ export const CowManager = ({
 
   return (
     <>
-      {selectedCow && (
-        <CowInfoBox
-          appWidth={appWidth}
-          appHeight={appHeight}
-          cow={selectedCow}
-          xp={cowXps[selectedCow.id] ?? selectedCow.xp}
-          hearts={cowHearts[selectedCow.id] ?? selectedCow.hearts}
-          onClose={() => setSelectedCow(null)}
-        />
-      )}
-
       {sortedCows.map((cow) => (
         <CowComponent
           key={cow.id}
@@ -266,7 +213,6 @@ export const CowManager = ({
           appWidth={appWidth}
           appHeight={appHeight}
           onPositionUpdate={handlePositionUpdate}
-          onXpUpdate={handleXpChange}
           registerRef={(layerRefs, handlePetAnimation) => {
             const baseLayer = Object.values(layerRefs)[0];
             if (!baseLayer) return;
@@ -282,6 +228,15 @@ export const CowManager = ({
       {drawSelectedCowIndicator}
 
       <FloatingHearts heartEvents={heartEvents} onConsumed={clearHeartEvents} />
+
+      {selectedCow && (
+        <CowInfoBox
+          appWidth={appWidth}
+          appHeight={appHeight}
+          cow={selectedCow}
+          onClose={() => setSelectedCow(null)}
+        />
+      )}
     </>
   );
 };

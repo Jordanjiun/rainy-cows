@@ -25,8 +25,14 @@ const manifest = {
     {
       name: 'icons',
       assets: [
+        { alias: 'cowIcon', src: '/assets/icons/cow-head.png' },
         { alias: 'click', src: '/assets/icons/mouse-pointer-click.png' },
+        { alias: 'clockDown', src: '/assets/icons/clock-arrow-down.png' },
+        { alias: 'clockPlus', src: '/assets/icons/clock-plus.png' },
+        { alias: 'housePlus', src: '/assets/icons/house-plus.png' },
+        { alias: 'upgradeClick', src: '/assets/icons/mouse-pointer-2.png' },
         { alias: 'menu', src: '/assets/icons/settings.png' },
+        { alias: 'store', src: '/assets/icons/store.png' },
       ],
     },
     {
@@ -34,6 +40,7 @@ const manifest = {
       assets: [
         { alias: 'heart', src: '/assets/others/heart.png' },
         { alias: 'noHeart', src: '/assets/others/noHeart.png' },
+        { alias: 'logo', src: '/assets/others/logo.png' },
         { alias: 'mooney', src: '/assets/others/mooney.png' },
       ],
     },

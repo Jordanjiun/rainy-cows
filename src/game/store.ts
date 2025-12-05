@@ -50,6 +50,7 @@ function getSerializableState(state: GameState) {
     cows: state.cows,
     lastHarvest: state.lastHarvest,
     isHarvest: state.isHarvest,
+    upgrades: state.upgrades,
   };
 }
 
@@ -76,18 +77,24 @@ function restoreCows(data: Partial<GameState>) {
       crypto.randomUUID().replace(/-/g, '').slice(0, 12),
       16,
     );
+    const now = new Date();
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const lastDecay = c.lastDecayCheck ? new Date(c.lastDecayCheck) : null;
 
     if (cow.lastPet) {
       const lastPetDate = new Date(cow.lastPet);
-      const now = new Date();
-      const msPerDay = 24 * 60 * 60 * 1000;
-      const daysPassed = Math.floor(
+      const daysSincePet = Math.floor(
         (now.getTime() - lastPetDate.getTime()) / msPerDay,
       );
+      const daysSinceDecay = lastDecay
+        ? Math.floor((now.getTime() - lastDecay.getTime()) / msPerDay)
+        : daysSincePet;
+      const decayDays = Math.max(0, daysSincePet - 1);
+      const newDecay = Math.min(decayDays, daysSinceDecay);
 
-      if (daysPassed > 2) {
-        const decay = daysPassed - 2;
-        cow.hearts = Math.max(1, cow.hearts - decay);
+      if (newDecay > 0) {
+        cow.hearts = Math.max(0, cow.hearts - newDecay);
+        cow.lastDecayCheck = now.toISOString();
       }
     }
     return cow;
@@ -99,23 +106,70 @@ interface GameState {
   cows: Cow[];
   lastHarvest: number | null;
   isHarvest: boolean;
+  upgrades: Upgrades;
   addMooney: (amount: number) => void;
   addCow: (cow: Cow) => void;
+  addUpgrade: (key: keyof Upgrades) => void;
+  removeMooney: (amount: number) => void;
+  removeCow: (cowId: string) => void;
+  updateCowName: (cowId: string, newName: string) => void;
   loadData: (data: Partial<GameState>) => void;
   reset: () => void;
 }
 
+export interface Upgrades {
+  clickLevel: number;
+  farmLevel: number;
+  harvestCooldownLevel: number;
+  harvestDurationLevel: number;
+}
+
+export const upgrades: Upgrades = {
+  clickLevel: 1,
+  farmLevel: 1,
+  harvestCooldownLevel: 1,
+  harvestDurationLevel: 1,
+};
+
 export const useGameStore = create<GameState>((set, get) => {
-  const harvestDuration = gameUpgrades.harvestDurationSeconds * 1000;
+  const harvestDuration =
+    gameUpgrades.harvestDurationSeconds * 1000 +
+    gameUpgrades.harvetDurationIncreasePerUpgrade *
+      1000 *
+      (upgrades.harvestDurationLevel - 1);
 
   return {
-    mooney: 0,
+    mooney: 100,
     cows: [],
     lastHarvest: null,
     isHarvest: false,
+    upgrades: upgrades,
 
     addMooney: (amount) => set({ mooney: get().mooney + amount }),
     addCow: (cow) => set((state) => ({ cows: [...state.cows, cow] })),
+    addUpgrade: (key: keyof Upgrades) =>
+      set((state) => ({
+        upgrades: {
+          ...state.upgrades,
+          [key]: (state.upgrades[key] || 0) + 1,
+        },
+      })),
+
+    removeMooney: (amount) => set({ mooney: get().mooney - amount }),
+    removeCow: (cowId: string) =>
+      set((state) => ({
+        cows: state.cows.filter((cow) => cow.id !== cowId),
+      })),
+
+    updateCowName: (cowId: string, newName: string) =>
+      set((state) => ({
+        cows: state.cows.map((cow) => {
+          if (cow.id === cowId) {
+            cow.name = newName;
+          }
+          return cow;
+        }),
+      })),
 
     loadData: (data) =>
       set((state) => {
@@ -143,11 +197,18 @@ export const useGameStore = create<GameState>((set, get) => {
           cows: restoredCows,
           lastHarvest,
           isHarvest,
+          upgrades: data.upgrades ?? state.upgrades,
         };
       }),
 
     reset: () =>
-      set({ mooney: 0, cows: [], lastHarvest: null, isHarvest: false }),
+      set({
+        mooney: 100,
+        cows: [],
+        lastHarvest: null,
+        isHarvest: false,
+        upgrades: upgrades,
+      }),
   };
 });
 

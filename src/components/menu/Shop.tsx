@@ -1,0 +1,274 @@
+import { extend } from '@pixi/react';
+import { Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCow, useMenu } from '../../context/hooks';
+import { cowPrices, shopItemData } from '../../data/gameData';
+import { BuyCow } from './BuyCow';
+import { ShopItem } from './ShopItem';
+import type { FederatedPointerEvent } from 'pixi.js';
+
+extend({ Container, Graphics, Sprite, Text });
+
+const boxHeight = 400;
+const boxWidth = 300;
+const buttonSize = 50;
+const crossSize = 20;
+const crossThickness = 4;
+const offset = 20;
+const shopItemHeight = 130;
+const shopItemOffset = 80;
+const maskHeight = boxHeight - 80;
+const maxScroll = shopItemOffset + 200;
+const scrollBarWidth = 6;
+const scrollBarHeight = boxHeight - 2 * offset;
+
+const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
+
+const boxColor = '#ebd9c0ff';
+
+export const Shop = ({
+  appWidth,
+  appHeight,
+}: {
+  appWidth: number;
+  appHeight: number;
+}) => {
+  const { selectedCow, setSelectedCow } = useCow();
+  const { selectedMenu, setSelectedMenu } = useMenu();
+
+  const [isHovered, setIsHovered] = useState(false);
+  const [closeHovered, setCloseHovered] = useState(false);
+  const [shopImage, setShopImage] = useState<Texture | null>(null);
+  const [scrollY, setScrollY] = useState(0);
+
+  const maskRef = useRef<Graphics>(null);
+  const scrollContainerRef = useRef<Container>(null);
+  const dragging = useRef(false);
+  const lastY = useRef(0);
+
+  const iconColor = isHovered ? 'yellow' : 'white';
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadShopImage() {
+      const loaded = await Assets.load<Texture>('store');
+      loaded.source.scaleMode = 'linear';
+      if (mounted) setShopImage(loaded);
+    }
+    loadShopImage();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  function handleClick() {
+    if (selectedCow) setSelectedCow(null);
+    if (selectedMenu != 'shop') setSelectedMenu('shop');
+    else {
+      setSelectedMenu(null);
+      setScrollY(0);
+    }
+  }
+
+  function handleScroll(delta: number) {
+    setScrollY((prev) => Math.min(maxScroll, Math.max(0, prev + delta)));
+  }
+
+  function closeMenu() {
+    setCloseHovered(false);
+    setSelectedMenu(null);
+    setScrollY(0);
+  }
+
+  const drawButtonBase = useMemo(() => {
+    return (g: Graphics) => {
+      g.clear();
+      g.roundRect(0, 0, buttonSize, buttonSize, 10);
+      g.fill({ alpha: 0 });
+      g.roundRect(0, 0, buttonSize, buttonSize, 10);
+      g.stroke({ width: 2, color: isHovered ? 'yellow' : 'white' });
+    };
+  }, [isHovered]);
+
+  const drawBase = useCallback(
+    (g: Graphics) => {
+      g.clear();
+      g.roundRect(0, 0, boxWidth, boxHeight, 10);
+      g.fill({ color: boxColor });
+      g.roundRect(0, 0, boxWidth, boxHeight, 10);
+      g.stroke({ width: 3, color: 'black' });
+    },
+    [boxWidth, boxHeight, boxColor],
+  );
+
+  const drawScrollbar = useCallback(
+    (g: Graphics) => {
+      g.clear();
+      g.rect(
+        boxWidth - scrollBarWidth - 2,
+        offset,
+        scrollBarWidth,
+        scrollBarHeight,
+      );
+      g.fill({ color: 'grey', alpha: 0.5 });
+      g.rect(
+        boxWidth - scrollBarWidth - 2,
+        offset + scrollY,
+        scrollBarWidth,
+        scrollBarHeight - maxScroll,
+      );
+      g.fill({ color: 'grey' });
+    },
+    [boxWidth, boxHeight, scrollY],
+  );
+
+  const drawCloseButton = useMemo(() => {
+    return (g: Graphics) => {
+      g.clear();
+      g.rect(0, 0, crossSize, crossSize);
+      g.fill({ alpha: 0 });
+      const stroke = closeHovered ? 'red' : 'black';
+      g.setStrokeStyle({ width: crossThickness, color: stroke });
+      g.moveTo(0, 0);
+      g.lineTo(crossSize, crossSize);
+      g.moveTo(crossSize, 0);
+      g.lineTo(0, crossSize);
+      g.stroke();
+    };
+  }, [closeHovered]);
+
+  const drawMask = useCallback((g: Graphics) => {
+    g.clear();
+    g.rect(-5, -5, boxWidth - offset, maskHeight);
+    g.fill({ alpha: 0 });
+  }, []);
+
+  if (!shopImage) return null;
+
+  return (
+    <>
+      <pixiContainer
+        x={appWidth - (buttonSize + 10) * 2}
+        y={appHeight - buttonSize - 10}
+        interactive={true}
+        cursor="pointer"
+        onPointerOver={() => setIsHovered(true)}
+        onPointerOut={() => setIsHovered(false)}
+        onPointerTap={handleClick}
+      >
+        <pixiGraphics draw={drawButtonBase} />
+        <pixiSprite
+          texture={shopImage}
+          anchor={0.5}
+          x={buttonSize / 2}
+          y={buttonSize / 2}
+          tint={iconColor}
+        />
+      </pixiContainer>
+
+      {selectedMenu == 'shop' && (
+        <>
+          <pixiGraphics
+            interactive={true}
+            onPointerDown={(e: FederatedPointerEvent) => {
+              e.stopPropagation();
+              dragging.current = true;
+              lastY.current = e.global.y;
+            }}
+            onPointerMove={(e: FederatedPointerEvent) => {
+              if (!dragging.current) return;
+              e.stopPropagation();
+              const delta = e.global.y - lastY.current;
+              lastY.current = e.global.y;
+              handleScroll(-delta);
+            }}
+            onPointerUp={(e: FederatedPointerEvent) => {
+              e.stopPropagation();
+              dragging.current = false;
+            }}
+            onPointerUpOutside={(e: FederatedPointerEvent) => {
+              e.stopPropagation();
+              dragging.current = false;
+            }}
+            onWheel={(e: WheelEvent) => {
+              e.stopPropagation();
+              handleScroll(e.deltaY * 0.3);
+            }}
+            draw={(g) => {
+              g.clear();
+              g.rect(0, 0, appWidth, appHeight - footerHeight);
+              g.fill({ alpha: 0 });
+            }}
+          />
+
+          <pixiContainer
+            x={(appWidth - boxWidth) / 2}
+            y={(appHeight - boxHeight - footerHeight) / 2}
+          >
+            <pixiGraphics draw={drawBase} />
+            <pixiGraphics draw={drawScrollbar} />
+
+            <pixiContainer
+              x={offset}
+              y={offset}
+              interactive={true}
+              cursor="pointer"
+              onPointerOver={() => setCloseHovered(true)}
+              onPointerOut={() => setCloseHovered(false)}
+              onPointerTap={closeMenu}
+            >
+              <pixiGraphics draw={drawCloseButton} />
+            </pixiContainer>
+
+            <pixiText
+              x={boxWidth / 2}
+              y={30}
+              text={'Shop'}
+              anchor={0.5}
+              style={{ fontWeight: 'bold' }}
+            />
+
+            <pixiContainer x={offset} y={60}>
+              <pixiGraphics
+                draw={drawMask}
+                ref={(g) => {
+                  maskRef.current = g;
+                  if (g && scrollContainerRef.current) {
+                    scrollContainerRef.current.mask = g;
+                  }
+                }}
+              />
+              <pixiContainer
+                ref={(c) => {
+                  scrollContainerRef.current = c;
+                  if (c && maskRef.current) {
+                    c.mask = maskRef.current;
+                  }
+                }}
+                y={-scrollY}
+              >
+                <BuyCow y={0} maxWidth={boxWidth} prices={cowPrices} />
+
+                {shopItemData.map((item, i) => {
+                  const y = shopItemOffset + i * shopItemHeight;
+                  return (
+                    <ShopItem
+                      key={item.label}
+                      y={y}
+                      maxWidth={boxWidth}
+                      label={item.label}
+                      description={item.description}
+                      imageString={item.image}
+                      upgradeName={item.upgradeName}
+                      prices={item.prices}
+                    />
+                  );
+                })}
+              </pixiContainer>
+            </pixiContainer>
+          </pixiContainer>
+        </>
+      )}
+    </>
+  );
+};

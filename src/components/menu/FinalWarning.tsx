@@ -11,7 +11,6 @@ const boxWidth = 250;
 const buttonWidth = 80;
 const buttonHeight = 40;
 const buttonOffset = 20;
-const boxColor = '#ebd9c0ff';
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
@@ -32,11 +31,11 @@ export const FinalWarning = ({
     (g: Graphics) => {
       g.clear();
       g.roundRect(0, 0, boxWidth, boxHeight, 10);
-      g.fill({ color: boxColor });
+      g.fill({ color: '#ebd9c0ff' });
       g.roundRect(0, 0, boxWidth, boxHeight, 10);
       g.stroke({ width: 3, color: 'black' });
     },
-    [boxWidth, boxHeight, boxColor],
+    [boxWidth, boxHeight],
   );
 
   function handleClick(isDelete: boolean = false) {
@@ -105,7 +104,7 @@ export const FinalWarning = ({
               g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
               g.fill({ color: noHovered ? 'yellow' : '#E28C80' });
               g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-              g.stroke({ width: 3, color: 'black' });
+              g.stroke({ width: 2, color: 'black' });
             }}
           />
           <pixiText
@@ -132,7 +131,7 @@ export const FinalWarning = ({
               g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
               g.fill({ color: yesHovered ? 'yellow' : '#80E28C' });
               g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-              g.stroke({ width: 3, color: 'black' });
+              g.stroke({ width: 2, color: 'black' });
             }}
           />
           <pixiText

@@ -1,14 +1,14 @@
 import { extend } from '@pixi/react';
-import { Assets, Graphics, Sprite, Texture } from 'pixi.js';
+import { Assets, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useCallback, useMemo, useState, useEffect } from 'react';
-import { useCow, useFileInput, useToast } from '../../context/hooks';
-import { useGameStore, exportGameSave, importGameSave } from '../../game/store';
+import { useCow, useFileInput, useMenu, useToast } from '../../context/hooks';
+import { exportGameSave, importGameSave } from '../../game/store';
 import { Button } from './Button';
 import { FinalWarning } from './FinalWarning';
 import type { FederatedPointerEvent } from 'pixi.js';
 import { Credits } from './Credits';
 
-extend({ Graphics, Sprite });
+extend({ Graphics, Sprite, Text });
 
 const boxHeight = 300;
 const boxWidth = 200;
@@ -32,8 +32,8 @@ export const MainMenu = ({
   appWidth: number;
   appHeight: number;
 }) => {
-  const { isHarvest } = useGameStore();
   const { selectedCow, setSelectedCow } = useCow();
+  const { selectedMenu, setSelectedMenu } = useMenu();
   const { openFilePicker, onFileSelected } = useFileInput();
   const { showToast } = useToast();
 
@@ -41,7 +41,6 @@ export const MainMenu = ({
   const [isWarning, setIsWarning] = useState(false);
   const [isCredit, setIsCredit] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
-  const [menuOpened, setMenuOpened] = useState(false);
   const [menuImage, setMenuImage] = useState<Texture | null>(null);
 
   const iconColor = isHovered ? 'yellow' : 'white';
@@ -65,7 +64,7 @@ export const MainMenu = ({
     const result = await importGameSave(file);
     if (result.success) {
       showToast('Save file imported successfully!', greenColor);
-      setMenuOpened(false);
+      setSelectedMenu(null);
     } else showToast('Error: File could not be imported', redColor);
   }
 
@@ -78,18 +77,21 @@ export const MainMenu = ({
     if (selectedCow) {
       setSelectedCow(null);
     }
-    setIsHovered(false);
-    setMenuOpened(!menuOpened);
+    if (selectedMenu != 'menu') {
+      setSelectedMenu('menu');
+    } else {
+      setSelectedMenu(null);
+    }
   }
 
   function handleDeleteButton() {
-    setMenuOpened(false);
+    setSelectedMenu(null);
     setIsWarning(true);
   }
 
   function closeMenu() {
     setCloseHovered(false);
-    setMenuOpened(false);
+    setSelectedMenu(null);
   }
 
   const drawButtonBase = useMemo(() => {
@@ -128,14 +130,6 @@ export const MainMenu = ({
     };
   }, [closeHovered]);
 
-  useEffect(() => {
-    if (isHarvest) {
-      if (menuOpened) {
-        setMenuOpened(false);
-      }
-    }
-  }, [isHarvest]);
-
   if (!menuImage) return null;
 
   return (
@@ -159,7 +153,7 @@ export const MainMenu = ({
         />
       </pixiContainer>
 
-      {menuOpened && (
+      {selectedMenu == 'menu' && (
         <>
           <pixiGraphics
             interactive={true}

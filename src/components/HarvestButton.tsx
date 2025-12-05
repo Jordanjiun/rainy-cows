@@ -1,6 +1,7 @@
 import { extend } from '@pixi/react';
 import { Assets, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useMemo, useState, useEffect } from 'react';
+import { useCow, useMenu } from '../context/hooks';
 import { gameUpgrades } from '../data/gameData';
 import { useGameStore } from '../game/store';
 import { formatTimerText } from '../game/utils';
@@ -10,12 +11,18 @@ extend({ Graphics, Sprite, Text });
 const buttonSize = 50;
 
 export const HarvestButton = ({ appHeight }: { appHeight: number }) => {
-  const { lastHarvest } = useGameStore();
+  const { lastHarvest, upgrades } = useGameStore();
+  const { selectedCow, setSelectedCow } = useCow();
+  const { selectedMenu, setSelectedMenu } = useMenu();
   const [isHovered, setIsHovered] = useState(false);
   const [cooldownProgress, setCooldownProgress] = useState(1);
   const [clickImage, setClickImage] = useState<Texture | null>(null);
 
-  const cooldownMs = gameUpgrades.harvestCooldownMinutes * 6e4;
+  const cooldownMs =
+    gameUpgrades.harvestCooldownMinutes * 6e4 -
+    gameUpgrades.harvestCooldownDecreasePerUpgrade *
+      6e4 *
+      (upgrades.harvestCooldownLevel - 1);
   const iconColor = isHovered ? 'yellow' : 'white';
 
   useEffect(() => {
@@ -60,14 +67,23 @@ export const HarvestButton = ({ appHeight }: { appHeight: number }) => {
 
     frame = requestAnimationFrame(update);
     return () => cancelAnimationFrame(frame);
-  }, [lastHarvest]);
+  }, [lastHarvest, upgrades.harvestCooldownLevel]);
 
   function handleClick() {
     setIsHovered(false);
     useGameStore.setState({ lastHarvest: Date.now(), isHarvest: true });
+    if (selectedCow) {
+      setSelectedCow(null);
+    }
+    if (selectedMenu) {
+      setSelectedMenu(null);
+    }
     const timer = setTimeout(
       () => useGameStore.setState({ isHarvest: false }),
-      gameUpgrades.harvestDurationSeconds * 1000,
+      gameUpgrades.harvestDurationSeconds * 1000 +
+        gameUpgrades.harvetDurationIncreasePerUpgrade *
+          1000 *
+          (upgrades.harvestDurationLevel - 1),
     );
     return () => clearTimeout(timer);
   }
@@ -101,9 +117,12 @@ export const HarvestButton = ({ appHeight }: { appHeight: number }) => {
   }, [cooldownProgress]);
 
   const cooldownText = useMemo(() => {
-    const totalSeconds = Math.ceil(
-      (1 - cooldownProgress) * gameUpgrades.harvestCooldownMinutes * 60,
-    );
+    const cooldownSeconds =
+      gameUpgrades.harvestCooldownMinutes * 60 -
+      gameUpgrades.harvestCooldownDecreasePerUpgrade *
+        60 *
+        (upgrades.harvestCooldownLevel - 1);
+    const totalSeconds = Math.ceil((1 - cooldownProgress) * cooldownSeconds);
     return formatTimerText(totalSeconds);
   }, [cooldownProgress]);
 

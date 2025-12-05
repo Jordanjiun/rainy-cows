@@ -110,6 +110,7 @@ export class Cow {
   xp: number;
   hearts: number;
   lastPet: string;
+  lastDecayCheck: string;
 
   constructor(cows?: Cow[]) {
     this.id = crypto.randomUUID();
@@ -123,21 +124,26 @@ export class Cow {
     this.name = createName(rng, cows);
     this.level = 1;
     this.xp = 0;
-    this.hearts = 1;
+    this.hearts = 0;
     this.lastPet = yesterday.toLocaleString(undefined, cowDateTimeOptions);
+    this.lastDecayCheck = yesterday.toLocaleString(
+      undefined,
+      cowDateTimeOptions,
+    );
   }
 
   eat() {
-    const mooneyGained = this.level * this.hearts;
-    this.xp += mooneyGained;
+    const mooneyGained = this.level + this.hearts;
+    if (!cowXpPerLevel[this.level]) return mooneyGained;
 
+    this.xp += mooneyGained;
     if (this.xp >= cowXpPerLevel[this.level]) {
       const excess = this.xp - cowXpPerLevel[this.level];
       this.xp = excess;
       this.level++;
     }
 
-    return { newXp: this.xp, mooneyGained };
+    return mooneyGained;
   }
 
   pet() {
