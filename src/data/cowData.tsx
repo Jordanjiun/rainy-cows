@@ -73,13 +73,35 @@ export const cowBrightnessRange = [0.6, 1.5];
 export const cowContrastRange = [0, 0.5];
 export const cowHueRange = [0, 360];
 export const cowSaturateRange = [0.5, 1.5];
+export const cowStatRanges = {
+  common: {
+    eatChance: [1, 1],
+    extraMooney: [0, 0],
+    valueMultiplier: [1, 1],
+  },
+  uncommon: {
+    eatChance: [1, 1.33],
+    extraMooney: [1, 3],
+    valueMultiplier: [1, 2],
+  },
+  rare: {
+    eatChance: [1.33, 1.66],
+    extraMooney: [3, 6],
+    valueMultiplier: [2, 3],
+  },
+  legendary: {
+    eatChance: [1.66, 2],
+    extraMooney: [6, 10],
+    valueMultiplier: [3, 4],
+  },
+};
 
 export const cowBaseColors = {
-  Black: 0.1,
-  Brown: 0.1,
-  Grey: 0.6,
-  White: 0.1,
-  Yellow: 0.1,
+  Black: 0.125,
+  Brown: 0.125,
+  Grey: 0.5,
+  White: 0.125,
+  Yellow: 0.125,
 };
 
 export const cowConfig = {
@@ -101,6 +123,13 @@ export const cowConfig = {
   numberOfSheetCols: 4,
   speed: 1,
   spotChance: 0.4,
+};
+
+export const cowRarities = {
+  common: 0,
+  uncommon: 0.6,
+  rare: 0.3,
+  legendary: 0.1,
 };
 
 export const cowXpPerLevel: Record<number, number> = {

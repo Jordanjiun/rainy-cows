@@ -1,3 +1,4 @@
+import { Text, TextStyle } from 'pixi.js';
 import { cowConfig } from '../data/cowData';
 
 export function createSeededRNG(seed: number) {
@@ -25,3 +26,12 @@ export function getCowScale(input: number) {
       (cowConfig.maxArea - cowConfig.minArea)
   );
 }
+
+export const measureText = (text: string, style: any = {}) => {
+  const obj = new Text({
+    text,
+    style: new TextStyle(style),
+  });
+
+  return obj.width;
+};

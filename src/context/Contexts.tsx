@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { Cow } from '../models/cowModel';
+import type { Cow } from '../game/cowModel';
 
 export type SceneKey = 'LoadScreen' | 'MainScene';
 

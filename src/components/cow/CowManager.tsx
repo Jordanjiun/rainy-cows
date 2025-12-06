@@ -8,7 +8,7 @@ import { useCow } from '../../context/hooks';
 import { cowConfig } from '../../data/cowData';
 import { useGameStore } from '../../game/store';
 import { getCowScale } from '../../game/utils';
-import { Cow } from '../../models/cowModel';
+import { Cow } from '../../game/cowModel';
 
 extend({ AnimatedSprite, Container, Graphics });
 

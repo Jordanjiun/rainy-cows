@@ -10,7 +10,7 @@ import { ToastOverlay } from '../components/Toast';
 import type { ReactNode } from 'react';
 import type { SceneKey } from './Contexts';
 import type { ToastMessage } from '../components/Toast';
-import type { Cow } from '../models/cowModel';
+import type { Cow } from '../game/cowModel';
 
 export const SceneProvider = ({ children }: { children: ReactNode }) => {
   const [currentScene, setCurrentScene] = useState<SceneKey>('LoadScreen');

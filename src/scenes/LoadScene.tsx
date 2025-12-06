@@ -33,6 +33,7 @@ const manifest = {
         { alias: 'upgradeClick', src: '/assets/icons/mouse-pointer-2.png' },
         { alias: 'menu', src: '/assets/icons/settings.png' },
         { alias: 'store', src: '/assets/icons/store.png' },
+        { alias: 'pen', src: '/assets/icons/square-pen.png' },
       ],
     },
     {

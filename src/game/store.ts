@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
 import { useEffect } from 'react';
 import { gameUpgrades } from '../data/gameData';
-import { Cow } from '../models/cowModel';
+import { Cow } from './cowModel';
 
 const dbName = String(import.meta.env.VITE_DB_NAME);
 const storeName = String(import.meta.env.VITE_DB_STORE_NAME);

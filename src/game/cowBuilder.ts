@@ -1,7 +1,7 @@
 import { Assets, ColorMatrixFilter, Rectangle, Texture } from 'pixi.js';
 import { useEffect, useState } from 'react';
 import { cowConfig } from '../data/cowData';
-import type { SpriteInfo } from '../models/cowModel';
+import type { SpriteInfo } from './cowModel';
 
 const frameSize = cowConfig.frameSize;
 const cowSheetCols = cowConfig.numberOfSheetCols;

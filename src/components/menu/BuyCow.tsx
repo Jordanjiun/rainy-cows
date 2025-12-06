@@ -10,7 +10,7 @@ import {
 } from 'pixi.js';
 import { useEffect, useMemo, useState } from 'react';
 import { useGameStore } from '../../game/store';
-import { Cow } from '../../models/cowModel';
+import { Cow } from '../../game/cowModel';
 import { Button } from './Button';
 
 extend({ Container, Graphics, Sprite, Text });

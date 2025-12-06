@@ -5,7 +5,7 @@ import { cowConfig } from '../../data/cowData';
 import { useCowActions } from '../../game/cowLogic';
 import { useCowAnimations, useCowFilter } from '../../game/cowBuilder';
 import { useGameStore } from '../../game/store';
-import type { Cow } from '../../models/cowModel';
+import type { Cow } from '../../game/cowModel';
 
 extend({ AnimatedSprite, Container });
 
@@ -29,7 +29,7 @@ export const CowComponent = ({
 }: CowComponentProps) => {
   const { addMooney } = useGameStore();
   const { pos, cowScale, animation, direction, handlePetAnimation } =
-    useCowActions(appWidth, appHeight, cow.seed);
+    useCowActions(appWidth, appHeight, cow);
   const animations = useCowAnimations(cow.sprite.layers);
   const layerFilters = useCowFilter(cow.sprite);
   const scale = { x: cowScale * direction, y: cowScale };
@@ -86,7 +86,7 @@ export const CowComponent = ({
   useEffect(() => {
     if (currentAnim === 'eat') {
       const timer = setTimeout(() => {
-        addMooney(cow.eat());
+        addMooney(cow.eat() + cow.stats.extraMooney);
       }, cowConfig.msEatCheck);
       return () => clearTimeout(timer);
     }

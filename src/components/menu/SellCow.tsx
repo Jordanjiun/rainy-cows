@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useCow, useMenu } from '../../context/hooks';
 import { cowXpPerLevel } from '../../data/cowData';
 import { useGameStore } from '../../game/store';
+import { measureText } from '../../game/utils';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Container, Graphics, Sprite, Text });
@@ -55,8 +56,8 @@ export const SellCow = ({
     [boxWidth, boxHeight],
   );
 
-  function handleClick(isSell: boolean = false, amount?: number) {
-    if (isSell && amount && selectedCow) {
+  function handleClick(isSell: boolean = false, amount: number) {
+    if (isSell && selectedCow) {
       const cowId = selectedCow.id;
       addMooney(amount);
       setSelectedCow(null);
@@ -75,8 +76,19 @@ export const SellCow = ({
 
   const base = cowXpPerLevel[selectedCow.level - 1] ?? 0;
   var value: number;
-  if (selectedCow.level == 10) value = base;
-  else value = base + selectedCow.xp;
+  if (selectedCow.level == 10)
+    value = Math.round(base * selectedCow.stats.valueMultiplier);
+  else
+    value = Math.round(
+      (base + selectedCow.xp) * selectedCow.stats.valueMultiplier,
+    );
+
+  const iconWidth = mooneyImage.width;
+  const textWidth = measureText(value.toLocaleString('en-US'), {
+    fontSize: 18,
+  });
+  const totalWidthDynamic = iconWidth + textWidth;
+  const startX = (boxWidth - totalWidthDynamic) / 2;
 
   return (
     <>
@@ -107,8 +119,8 @@ export const SellCow = ({
             />
             <pixiText
               x={boxWidth / 2}
-              y={boxHeight / 2 - 8}
-              text={`Do you want to sell ${selectedCow.name} for: ${value.toLocaleString('en-US')}?`}
+              y={boxHeight / 2 - 25}
+              text={`Do you want to sell ${selectedCow.name} for:`}
               anchor={0.5}
               style={{
                 fontSize: 18,
@@ -117,6 +129,15 @@ export const SellCow = ({
                 wordWrapWidth: boxWidth - 40,
               }}
             />
+            <pixiContainer x={-3} y={101}>
+              <pixiSprite texture={mooneyImage} x={startX - 2} />
+              <pixiText
+                x={startX + iconWidth + 2}
+                y={7}
+                text={value.toLocaleString('en-US')}
+                style={{ fontSize: 18 }}
+              />
+            </pixiContainer>
 
             <pixiContainer
               x={boxWidth - buttonWidth - buttonOffset}
@@ -125,7 +146,7 @@ export const SellCow = ({
               cursor="pointer"
               onPointerOver={() => setNoHovered(true)}
               onPointerOut={() => setNoHovered(false)}
-              onPointerTap={() => handleClick(false)}
+              onPointerTap={() => handleClick(false, 0)}
             >
               <pixiGraphics
                 draw={(g) => {

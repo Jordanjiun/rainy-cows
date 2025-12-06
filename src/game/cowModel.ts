@@ -1,4 +1,4 @@
-import { createSeededRNG } from '../game/utils';
+import { createSeededRNG } from './utils';
 import {
   cowBaseColors,
   cowBrightnessRange,
@@ -7,7 +7,9 @@ import {
   cowDateTimeOptions,
   cowHueRange,
   cowNames,
+  cowRarities,
   cowSaturateRange,
+  cowStatRanges,
   cowSpotLayers,
   cowXpPerLevel,
 } from '../data/cowData';
@@ -17,6 +19,13 @@ interface FilterSettings {
   saturate: number;
   contrast: number;
   brightness: number;
+}
+
+interface CowStats {
+  rarity: CowRarity;
+  eatChance: number;
+  extraMooney: number;
+  valueMultiplier: number;
 }
 
 export interface SpriteInfo {
@@ -101,6 +110,49 @@ function createName(rng: Function, cows?: Cow[] | null): string {
   return newName;
 }
 
+export type CowRarity = keyof typeof cowRarities;
+export type CowStat = keyof (typeof cowStatRanges)[CowRarity];
+
+function getRandomStat(
+  rng: Function,
+  rarity: CowRarity,
+  stat: CowStat,
+  getInt: boolean = false,
+) {
+  const [low, high] = cowStatRanges[rarity][stat];
+  const value = low + (high - low) * rng();
+  if (getInt) return Math.round(value);
+  return Math.round(value * 100) / 100;
+}
+
+function createStats(rng: Function, sprite: SpriteInfo): CowStats {
+  var stats: CowStats = {
+    rarity: 'common',
+    eatChance: 1,
+    extraMooney: 0,
+    valueMultiplier: 1,
+  };
+
+  if (Object.keys(sprite.filters).length == 0) return stats;
+
+  const entries = Object.entries(cowRarities) as [CowRarity, number][];
+  const totalWeight = entries.reduce((sum, [, weight]) => sum + weight, 0);
+
+  let cumulative = 0;
+  for (const [type, weight] of entries) {
+    cumulative += weight / totalWeight;
+    if (rng() <= cumulative) {
+      stats.rarity = type;
+      break;
+    }
+  }
+
+  stats.eatChance = getRandomStat(rng, stats.rarity, 'eatChance');
+  stats.extraMooney = getRandomStat(rng, stats.rarity, 'extraMooney', true);
+  stats.valueMultiplier = getRandomStat(rng, stats.rarity, 'valueMultiplier');
+  return stats;
+}
+
 export class Cow {
   id: string;
   seed: number;
@@ -111,6 +163,7 @@ export class Cow {
   hearts: number;
   lastPet: string;
   lastDecayCheck: string;
+  stats: CowStats;
 
   constructor(cows?: Cow[]) {
     this.id = crypto.randomUUID();
@@ -122,6 +175,7 @@ export class Cow {
 
     this.sprite = createSpriteInfo(rng);
     this.name = createName(rng, cows);
+    this.stats = createStats(rng, this.sprite);
     this.level = 1;
     this.xp = 0;
     this.hearts = 0;
