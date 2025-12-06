@@ -1,8 +1,8 @@
 import { extend } from '@pixi/react';
 import { Container, Graphics, Text } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { gameUpgrades } from '../data/gameData';
-import { useGameStore } from '../game/store';
+import { gameUpgrades } from '../../data/gameData';
+import { useGameStore } from '../../game/store';
 
 extend({ Container, Graphics, Text });
 
@@ -46,7 +46,7 @@ export const Farm = ({
     return () => clearInterval(interval);
   }, [lastHarvest, isHarvest]);
 
-  const drawBackground = useCallback(
+  const drawDefaultBackground = useCallback(
     (g: Graphics) => {
       g.clear();
       g.rect(0, 0, appWidth, appHeight * (1 - landRatio));
@@ -82,7 +82,7 @@ export const Farm = ({
 
   return (
     <>
-      <pixiGraphics draw={drawBackground} />
+      <pixiGraphics draw={drawDefaultBackground} />
       {isHarvest && drawHarvestTime}
     </>
   );

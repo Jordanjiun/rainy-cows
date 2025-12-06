@@ -1,7 +1,7 @@
 import { extend } from '@pixi/react';
 import { Assets, Graphics, Sprite, Texture } from 'pixi.js';
 import { useEffect, useState } from 'react';
-import { useGameStore } from '../game/store';
+import { useGameStore } from '../../game/store';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Graphics, Sprite });

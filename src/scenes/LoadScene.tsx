@@ -2,7 +2,7 @@ import { extend, useApplication } from '@pixi/react';
 import { Assets, Container } from 'pixi.js';
 import { useEffect, useState } from 'react';
 import { useScene } from '../context/hooks';
-import { LoadingBar } from '../components/LoadingBar';
+import { LoadingBar } from '../components/others/LoadingBar';
 
 extend({ Container });
 
@@ -43,6 +43,7 @@ const manifest = {
         { alias: 'noHeart', src: '/assets/others/noHeart.png' },
         { alias: 'logo', src: '/assets/others/logo.png' },
         { alias: 'mooney', src: '/assets/others/mooney.png' },
+        { alias: 'grass', src: '/assets/others/grassTile.png' },
       ],
     },
   ],

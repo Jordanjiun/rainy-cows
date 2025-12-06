@@ -6,10 +6,10 @@ import {
   SceneContext,
   ToastContext,
 } from './Contexts';
-import { ToastOverlay } from '../components/Toast';
+import { ToastOverlay } from '../components/others/Toast';
 import type { ReactNode } from 'react';
 import type { SceneKey } from './Contexts';
-import type { ToastMessage } from '../components/Toast';
+import type { ToastMessage } from '../components/others/Toast';
 import type { Cow } from '../game/cowModel';
 
 export const SceneProvider = ({ children }: { children: ReactNode }) => {

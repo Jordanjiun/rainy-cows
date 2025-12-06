@@ -1,7 +1,7 @@
 import { extend } from '@pixi/react';
 import { Assets, Sprite, Text, Texture } from 'pixi.js';
 import { useEffect, useState } from 'react';
-import { useGameStore } from '../game/store';
+import { useGameStore } from '../../game/store';
 
 extend({ Sprite, Text });
 

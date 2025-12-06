@@ -1,10 +1,10 @@
 import { extend } from '@pixi/react';
 import { Assets, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useMemo, useState, useEffect } from 'react';
-import { useCow, useMenu } from '../context/hooks';
-import { gameUpgrades } from '../data/gameData';
-import { useGameStore } from '../game/store';
-import { formatTimerText } from '../game/utils';
+import { useCow, useMenu } from '../../context/hooks';
+import { gameUpgrades } from '../../data/gameData';
+import { useGameStore } from '../../game/store';
+import { formatTimerText } from '../../game/utils';
 
 extend({ Graphics, Sprite, Text });
 
