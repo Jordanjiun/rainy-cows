@@ -105,7 +105,7 @@ export const HarvestButton = ({ appHeight }: { appHeight: number }) => {
     return (g: Graphics) => {
       const lineWidth = 4;
       const center = buttonSize / 2;
-      const radius = center - lineWidth / 2;
+      const radius = center - lineWidth / 2 + 4;
 
       const start = -Math.PI / 2;
       const end = start + Math.PI * 2 * cooldownProgress;
@@ -150,10 +150,10 @@ export const HarvestButton = ({ appHeight }: { appHeight: number }) => {
   ) : (
     <>
       <pixiText
-        x={65}
-        y={appHeight - buttonSize - 4}
+        x={70}
+        y={appHeight - buttonSize - 7}
         text={'Harvest\nCooldown'}
-        style={{ fontSize: 16, fill: 'white', fontWeight: 'bold' }}
+        style={{ fontSize: 20, fill: 'white', fontFamily: 'pixelFont' }}
       />
       <pixiContainer x={10} y={appHeight - buttonSize - 10}>
         <pixiGraphics draw={cooldownArcDraw} />
@@ -162,7 +162,7 @@ export const HarvestButton = ({ appHeight }: { appHeight: number }) => {
           y={buttonSize / 2 - 1}
           text={cooldownText}
           anchor={0.5}
-          style={{ fontSize: 14, fill: 'white', fontWeight: 'bold' }}
+          style={{ fontSize: 16, fill: 'white', fontFamily: 'pixelFont' }}
         />
       </pixiContainer>
     </>

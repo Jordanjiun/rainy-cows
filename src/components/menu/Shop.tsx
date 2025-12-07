@@ -19,7 +19,7 @@ const shopItemHeight = 130;
 const shopItemOffset = 80;
 const maskHeight = boxHeight - 80;
 const maxScroll = shopItemOffset + 200;
-const scrollBarWidth = 6;
+const scrollBarWidth = 5;
 const scrollBarHeight = boxHeight - 2 * offset;
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
@@ -222,10 +222,10 @@ export const Shop = ({
 
             <pixiText
               x={boxWidth / 2}
-              y={30}
+              y={29}
               text={'Shop'}
               anchor={0.5}
-              style={{ fontWeight: 'bold' }}
+              style={{ fontSize: 28, fontFamily: 'pixelFont' }}
             />
 
             <pixiContainer x={offset} y={60}>

@@ -50,9 +50,9 @@ export const BuyCow = ({ y, maxWidth, prices }: BuyCowProps) => {
       }
       setPrice(newPrice);
 
-      const style = new TextStyle({ fontSize: size });
+      const style = new TextStyle({ fontSize: size, fontFamily: 'pixelFont' });
       const temp = new Text({ text: newPrice, style });
-      if (temp.width <= maxWidth - buttonWidth - 165) break;
+      if (temp.width <= maxWidth - buttonWidth - 160) break;
       size -= 1;
     }
     return size;
@@ -79,7 +79,7 @@ export const BuyCow = ({ y, maxWidth, prices }: BuyCowProps) => {
     return (g: Graphics) => {
       g.clear();
       g.roundRect(0, 0, boxSize, boxSize, 10);
-      g.stroke({ width: 2, color: 'black' });
+      g.stroke({ width: 3, color: 'black' });
     };
   }, [boxSize]);
 
@@ -103,7 +103,12 @@ export const BuyCow = ({ y, maxWidth, prices }: BuyCowProps) => {
         tint={'black'}
       />
 
-      <pixiText x={65} y={-3} text={'Buy Cow'} style={{ fontSize: 18 }} />
+      <pixiText
+        x={65}
+        y={-3}
+        text={'Buy Cow'}
+        style={{ fontSize: 20, fontFamily: 'pixelFont' }}
+      />
       <pixiSprite texture={textures.mooney} x={65} y={20} />
 
       {!isMaxed && price ? (
@@ -112,7 +117,7 @@ export const BuyCow = ({ y, maxWidth, prices }: BuyCowProps) => {
           y={35}
           anchor={{ x: 0, y: 0.5 }}
           text={price.toLocaleString('en-us')}
-          style={{ fontSize: priceFontSize }}
+          style={{ fontSize: priceFontSize, fontFamily: 'pixelFont' }}
         />
       ) : (
         <pixiText
@@ -120,13 +125,13 @@ export const BuyCow = ({ y, maxWidth, prices }: BuyCowProps) => {
           y={35}
           anchor={{ x: 0, y: 0.5 }}
           text={'Maxed'}
-          style={{ fontSize: priceFontSize }}
+          style={{ fontSize: priceFontSize, fontFamily: 'pixelFont' }}
         />
       )}
 
       {isMaxed || !isMooneyEnough ? (
         <pixiContainer
-          x={maxWidth - buttonWidth - 45}
+          x={maxWidth - buttonWidth - 40}
           y={(boxSize - buttonHeight) / 2}
         >
           <pixiGraphics
@@ -135,7 +140,7 @@ export const BuyCow = ({ y, maxWidth, prices }: BuyCowProps) => {
               g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
               g.fill({ color: 'grey' });
               g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-              g.stroke({ width: 2, color: 'black' });
+              g.stroke({ width: 3, color: 'black' });
             }}
           />
           <pixiText
@@ -143,12 +148,12 @@ export const BuyCow = ({ y, maxWidth, prices }: BuyCowProps) => {
             y={buttonHeight / 2 - 1}
             text={'Buy'}
             anchor={0.5}
-            style={{ fontSize: 22 }}
+            style={{ fontSize: 22, fontFamily: 'pixelFont' }}
           />
         </pixiContainer>
       ) : (
         <Button
-          x={maxWidth - buttonWidth - 45}
+          x={maxWidth - buttonWidth - 40}
           y={(boxSize - buttonHeight) / 2}
           buttonWidth={buttonWidth}
           buttonHeight={buttonHeight}

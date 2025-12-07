@@ -126,7 +126,7 @@ function getRandomStat(
 }
 
 function createStats(rng: Function, sprite: SpriteInfo): CowStats {
-  var stats: CowStats = {
+  let stats: CowStats = {
     rarity: 'common',
     eatChance: 1,
     extraMooney: 0,

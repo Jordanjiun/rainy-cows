@@ -21,6 +21,9 @@ export const Farm = ({
   const { isHarvest, lastHarvest, upgrades } = useGameStore();
   const [remainingTime, setRemainingTime] = useState(0);
 
+  let harvestTimeYoffset = 25;
+  if (appWidth > 600) harvestTimeYoffset = 0;
+
   useEffect(() => {
     const updateTime = () => {
       if (!lastHarvest) return setRemainingTime(0);
@@ -77,12 +80,18 @@ export const Farm = ({
     () => (
       <pixiContainer
         x={appWidth / 2}
-        y={10 + (appHeight * (1 - landRatio)) / 2}
+        y={(appHeight * (1 - landRatio)) / 2 + harvestTimeYoffset}
       >
         <pixiText
-          text={`Harvest time! (${remainingTime}s)`}
+          text={`Harvest time!\n(${remainingTime} seconds left)`}
           anchor={0.5}
-          style={{ fontSize: 28, fill: 'black', fontWeight: 'bold' }}
+          style={{
+            fontSize: 32,
+            fontFamily: 'pixelFont',
+            align: 'center',
+            wordWrap: true,
+            wordWrapWidth: appWidth,
+          }}
         />
       </pixiContainer>
     ),

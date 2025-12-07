@@ -33,17 +33,17 @@ export const FarmHud = () => {
     <>
       <pixiSprite texture={textures.mooney} x={offset} y={offset} />
       <pixiText
-        x={32 + 1.5 * offset}
+        x={34 + 1.5 * offset}
         y={offset}
         text={amount}
-        style={{ fill: 'black' }}
+        style={{ fontFamily: 'pixelFont' }}
       />
       <pixiSprite texture={textures.logo} x={offset} y={offset * 5} />
       <pixiText
-        x={32 + 1.5 * offset}
-        y={offset * 5}
+        x={34 + 1.5 * offset}
+        y={offset * 5 + 1}
         text={ratio}
-        style={{ fill: 'black' }}
+        style={{ fontFamily: 'pixelFont' }}
       />
     </>
   );

@@ -19,6 +19,7 @@ const boxSize = 50;
 const buttonWidth = 60;
 const buttonHeight = 33;
 const maxFontSize = 22;
+const rightOffset = 40;
 
 const upgradeKeys = Object.keys(upgrades) as Array<keyof typeof upgrades>;
 
@@ -75,7 +76,7 @@ export const ShopItem = ({
       }
       setPrice(newPrice);
 
-      const style = new TextStyle({ fontSize: size });
+      const style = new TextStyle({ fontSize: size, fontFamily: 'pixelFont' });
       const temp = new Text({ text: newPrice, style });
       if (temp.width <= maxWidth - buttonWidth - 110) break;
       size -= 1;
@@ -104,7 +105,7 @@ export const ShopItem = ({
     return (g: Graphics) => {
       g.clear();
       g.roundRect(0, 0, boxSize, boxSize, 10);
-      g.stroke({ width: 2, color: 'black' });
+      g.stroke({ width: 3, color: 'black' });
     };
   }, [boxSize]);
 
@@ -112,7 +113,7 @@ export const ShopItem = ({
     return (g: Graphics) => {
       const totalLevels = Object.keys(prices).length;
       const currentLevel = getUpgradeLevel(upgradeName);
-      const barWidth = maxWidth - 45;
+      const barWidth = maxWidth - rightOffset;
       const barHeight = 8;
       const segmentWidth = barWidth / totalLevels;
 
@@ -142,16 +143,22 @@ export const ShopItem = ({
         tint={'black'}
       />
 
-      <pixiText x={65} y={-3} text={label} style={{ fontSize: 18 }} />
       <pixiText
         x={65}
-        y={20}
+        y={-3}
+        text={label}
+        style={{ fontSize: 20, fontFamily: 'pixelFont' }}
+      />
+      <pixiText
+        x={65}
+        y={18}
         text={description}
         style={{
           fontSize: 14,
+          fontFamily: 'pixelFont',
           align: 'left',
           wordWrap: true,
-          wordWrapWidth: maxWidth - boxSize - 65,
+          wordWrapWidth: maxWidth - boxSize - 60,
         }}
       />
 
@@ -162,7 +169,7 @@ export const ShopItem = ({
           y={boxSize + 24}
           anchor={{ x: 0, y: 0.5 }}
           text={price.toLocaleString('en-us')}
-          style={{ fontSize: priceFontSize }}
+          style={{ fontSize: priceFontSize, fontFamily: 'pixelFont' }}
         />
       ) : (
         <pixiText
@@ -170,19 +177,19 @@ export const ShopItem = ({
           y={boxSize + 24}
           anchor={{ x: 0, y: 0.5 }}
           text={'Maxed'}
-          style={{ fontSize: priceFontSize }}
+          style={{ fontSize: priceFontSize, fontFamily: 'pixelFont' }}
         />
       )}
 
       {isMaxed || !isMooneyEnough ? (
-        <pixiContainer x={maxWidth - buttonWidth - 45} y={boxSize + 7}>
+        <pixiContainer x={maxWidth - buttonWidth - rightOffset} y={boxSize + 7}>
           <pixiGraphics
             draw={(g) => {
               g.clear();
               g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
               g.fill({ color: 'grey' });
               g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-              g.stroke({ width: 2, color: 'black' });
+              g.stroke({ width: 3, color: 'black' });
             }}
           />
           <pixiText
@@ -190,17 +197,18 @@ export const ShopItem = ({
             y={buttonHeight / 2 - 1}
             text={'Buy'}
             anchor={0.5}
-            style={{ fontSize: 22 }}
+            style={{ fontSize: 22, fontFamily: 'pixelFont' }}
           />
         </pixiContainer>
       ) : (
         <Button
-          x={maxWidth - buttonWidth - 45}
+          x={maxWidth - buttonWidth - rightOffset}
           y={boxSize + 7}
           buttonWidth={buttonWidth}
           buttonHeight={buttonHeight}
           buttonText={'Buy'}
           buttonColor={'white'}
+          ignorePointer={true}
           onClick={handleClick}
         />
       )}

@@ -14,6 +14,7 @@ import { brightnessByTime } from '../../game/utils';
 extend({ Container, Graphics, Sprite });
 
 const numOfCloudTypes = 20;
+const maxClouds = 20;
 const landRatio = Number(import.meta.env.VITE_LAND_RATIO);
 
 type Cloud = {
@@ -121,10 +122,14 @@ export const Sky = ({
   useEffect(() => {
     const interval = setInterval(
       () => {
-        setClouds((c) => [...c, spawnCloud()]);
+        setClouds((currentClouds) => {
+          if (currentClouds.length >= maxClouds) return currentClouds;
+          return [...currentClouds, spawnCloud()];
+        });
       },
       2000 + Math.random() * 2000,
     );
+
     return () => clearInterval(interval);
   }, [textures]);
 
@@ -133,7 +138,8 @@ export const Sky = ({
     setClouds((c) =>
       c
         .map((cloud) => ({ ...cloud, x: cloud.x + cloud.speed * delta }))
-        .filter((cloud) => cloud.x < appWidth + 200),
+        .filter((cloud) => cloud.x < appWidth + 200)
+        .slice(-maxClouds),
     );
   };
 

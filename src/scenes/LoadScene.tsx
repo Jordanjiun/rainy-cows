@@ -74,6 +74,8 @@ const manifest = {
   ],
 };
 
+const fonts = [{ name: 'pixelFont', url: '/assets/fonts/04B_03__.TTF' }];
+
 await Assets.init({ manifest });
 
 export const LoadScreen = () => {
@@ -109,21 +111,45 @@ export const LoadScreen = () => {
     };
   }, [app]);
 
-  // Simulate loading progress
   useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        const next = prev + 10;
-        if (next >= 100) {
-          clearInterval(interval);
-          setTimeout(() => switchScene('MainScene'), 100);
-        }
-        return next;
-      });
-    }, 10);
+    let isCancelled = false;
+    const loadAssets = async () => {
+      if (!app) return;
+      const totalAssets = manifest.bundles.reduce(
+        (sum, bundle) => sum + bundle.assets.length,
+        0,
+      );
 
-    return () => clearInterval(interval);
-  }, [switchScene]);
+      const totalLoadables = totalAssets + fonts.length;
+      let loadedCount = 0;
+
+      for (const bundle of manifest.bundles) {
+        for (const asset of bundle.assets) {
+          await Assets.load(asset.src);
+          if (isCancelled) return;
+          loadedCount += 1;
+          setProgress(Math.floor((loadedCount / totalLoadables) * 100));
+        }
+      }
+
+      for (const font of fonts) {
+        const fontFace = new FontFace(font.name, `url(${font.url})`);
+        await fontFace.load();
+        document.fonts.add(fontFace);
+        if (isCancelled) return;
+        loadedCount += 1;
+        setProgress(Math.floor((loadedCount / totalLoadables) * 100));
+      }
+
+      if (!isCancelled) switchScene('MainScene');
+    };
+
+    loadAssets();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [app, switchScene]);
 
   if (!app) return null;
 

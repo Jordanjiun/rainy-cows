@@ -5,12 +5,14 @@ import { useCow, useMenu } from '../../context/hooks';
 import { cowXpPerLevel } from '../../data/cowData';
 import { useGameStore } from '../../game/store';
 import { measureText } from '../../game/utils';
+import { Button } from './Button';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Container, Graphics, Sprite, Text });
 
+const baseFontSize = 20;
 const boxHeight = 200;
-const boxWidth = 250;
+const boxWidth = 260;
 const buttonWidth = 80;
 const buttonHeight = 40;
 const buttonOffset = 20;
@@ -29,8 +31,6 @@ export const SellCow = ({
   const { selectedCow, setSelectedCow } = useCow();
   const { addMooney, removeCow } = useGameStore();
 
-  const [noHovered, setNoHovered] = useState(false);
-  const [yesHovered, setYesHovered] = useState(false);
   const [mooneyImage, setMooneyImage] = useState<Texture | null>(null);
 
   useEffect(() => {
@@ -63,8 +63,6 @@ export const SellCow = ({
       setSelectedCow(null);
       removeCow(cowId);
     }
-    setNoHovered(false);
-    setYesHovered(false);
     setSelectedMenu(null);
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;
     if (canvas) {
@@ -75,7 +73,7 @@ export const SellCow = ({
   if (!mooneyImage || !selectedCow) return null;
 
   const base = cowXpPerLevel[selectedCow.level - 1] ?? 0;
-  var value: number;
+  let value: number;
   if (selectedCow.level == 10)
     value = Math.round(base * selectedCow.stats.valueMultiplier);
   else
@@ -85,7 +83,8 @@ export const SellCow = ({
 
   const iconWidth = mooneyImage.width;
   const textWidth = measureText(value.toLocaleString('en-US'), {
-    fontSize: 18,
+    fontSize: baseFontSize,
+    fontFamily: 'pixelFont',
   });
   const totalWidthDynamic = iconWidth + textWidth;
   const startX = (boxWidth - totalWidthDynamic) / 2;
@@ -115,83 +114,51 @@ export const SellCow = ({
               y={30}
               text={'Sell Cow?'}
               anchor={0.5}
-              style={{ fontWeight: 'bold', fill: 'red' }}
+              style={{ fill: 'red', fontSize: 28, fontFamily: 'pixelFont' }}
             />
             <pixiText
               x={boxWidth / 2}
-              y={boxHeight / 2 - 25}
+              y={boxHeight / 2 - 26}
               text={`Do you want to sell ${selectedCow.name} for:`}
               anchor={0.5}
               style={{
-                fontSize: 18,
+                fontSize: baseFontSize,
+                fontFamily: 'pixelFont',
                 align: 'center',
                 wordWrap: true,
-                wordWrapWidth: boxWidth - 40,
+                wordWrapWidth: boxWidth - 30,
               }}
             />
             <pixiContainer x={-3} y={101}>
               <pixiSprite texture={mooneyImage} x={startX - 2} />
               <pixiText
-                x={startX + iconWidth + 2}
-                y={7}
+                x={startX + iconWidth + 3}
+                y={5}
                 text={value.toLocaleString('en-US')}
-                style={{ fontSize: 18 }}
+                style={{ fontSize: baseFontSize, fontFamily: 'pixelFont' }}
               />
             </pixiContainer>
 
-            <pixiContainer
+            <Button
               x={boxWidth - buttonWidth - buttonOffset}
               y={buttonY}
-              interactive={true}
-              cursor="pointer"
-              onPointerOver={() => setNoHovered(true)}
-              onPointerOut={() => setNoHovered(false)}
-              onPointerTap={() => handleClick(false, 0)}
-            >
-              <pixiGraphics
-                draw={(g) => {
-                  g.clear();
-                  g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-                  g.fill({ color: noHovered ? 'yellow' : '#E28C80' });
-                  g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-                  g.stroke({ width: 2, color: 'black' });
-                }}
-              />
-              <pixiText
-                x={buttonWidth / 2}
-                y={buttonHeight / 2 - 1}
-                text={'No'}
-                anchor={0.5}
-                style={{ fontSize: 22 }}
-              />
-            </pixiContainer>
-
-            <pixiContainer
+              buttonWidth={buttonWidth}
+              buttonHeight={buttonHeight}
+              buttonText={'No'}
+              fontsize={28}
+              buttonColor={'#E28C80'}
+              onClick={() => handleClick(false, 0)}
+            />
+            <Button
               x={buttonOffset}
               y={buttonY}
-              interactive={true}
-              cursor="pointer"
-              onPointerOver={() => setYesHovered(true)}
-              onPointerOut={() => setYesHovered(false)}
-              onPointerTap={() => handleClick(true, value)}
-            >
-              <pixiGraphics
-                draw={(g) => {
-                  g.clear();
-                  g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-                  g.fill({ color: yesHovered ? 'yellow' : '#80E28C' });
-                  g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-                  g.stroke({ width: 2, color: 'black' });
-                }}
-              />
-              <pixiText
-                x={buttonWidth / 2}
-                y={buttonHeight / 2 - 1}
-                text={'Yes'}
-                anchor={0.5}
-                style={{ fontSize: 22 }}
-              />
-            </pixiContainer>
+              buttonWidth={buttonWidth}
+              buttonHeight={buttonHeight}
+              buttonText={'Yes'}
+              fontsize={28}
+              buttonColor={'#80E28C'}
+              onClick={() => handleClick(true, value)}
+            />
           </pixiContainer>
         </>
       )}

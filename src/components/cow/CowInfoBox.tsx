@@ -18,18 +18,19 @@ import type { Cow, CowStat } from '../../game/cowModel';
 
 extend({ Container, Graphics, Sprite, Text });
 
-const baseFontSize = 20;
+const baseFontSize = 24;
 const boxWidth = 210;
-const boxHeight = 150;
+const boxHeight = 170;
 const crossSize = 15;
 const crossThickness = 4;
+const offset = 10;
+const titleWidth = 140;
 const heartMaxNum = 10;
 const heartScale = 0.07;
 const heartSpacing = 1.6;
-const heartY = 55;
-const offset = 10;
-const titleWidth = 145;
-const xpBarY = 35;
+const heartY = 75;
+const xpBarY = 55;
+const infoY = 52;
 const buttonWidth = 90;
 const buttonHeight = 30;
 const maxNameLength = 12;
@@ -75,7 +76,7 @@ export const CowInfoBox = ({
   const renameTextRef = useRef<any>(null);
 
   const base = cowXpPerLevel[cow.level - 1] ?? 0;
-  var value: number;
+  let value: number;
   if (cow.level == 10) value = Math.round(base * cow.stats.valueMultiplier);
   else value = Math.round((base + cow.xp) * cow.stats.valueMultiplier);
 
@@ -173,7 +174,7 @@ export const CowInfoBox = ({
   const drawXpBar = useCallback(
     (g: Graphics) => {
       const barWidth = boxWidth - 2 * offset;
-      var percentage;
+      let percentage;
       if (cowXpPerLevel[cow.level])
         percentage = cow.xp / cowXpPerLevel[cow.level];
       else percentage = 1;
@@ -219,7 +220,10 @@ export const CowInfoBox = ({
 
   useEffect(() => {
     if (!textRef.current) return;
-    textRef.current.style = new TextStyle({ fontSize: baseFontSize });
+    textRef.current.style = new TextStyle({
+      fontSize: baseFontSize,
+      fontFamily: 'pixelFont',
+    });
     const bounds = textRef.current.getLocalBounds();
     const textWidth = bounds.width;
     const newScale = textWidth > titleWidth ? titleWidth / textWidth : 1;
@@ -227,30 +231,46 @@ export const CowInfoBox = ({
   }, [cow.name, titleWidth]);
 
   useEffect(() => {
-    const textWidth = measureText(tempName, { fontSize: 20 });
+    const textWidth = measureText(tempName, {
+      fontSize: baseFontSize,
+      fontFamily: 'pixelFont',
+    });
     const maxWidth = titleWidth - 2;
     const newScale = textWidth > maxWidth ? maxWidth / textWidth : 1;
     setRenameScale(newScale);
   }, [tempName, cursorVisible, titleWidth]);
 
-  const drawNameAndLevel = useMemo(
+  const drawName = useMemo(
     () => (
       <pixiText
         ref={textRef}
         x={boxWidth / 2}
         y={17}
-        text={`${cow.name} (Lvl. ${cow.level})`}
+        text={`${cow.name}`}
         anchor={0.5}
         scale={{ x: scale, y: scale }}
-        style={{ fontSize: baseFontSize }}
+        style={{ fontSize: baseFontSize, fontFamily: 'pixelFont' }}
       />
     ),
-    [cow.name, cow.level, scale],
+    [cow.name, scale],
+  );
+
+  const drawLevel = useMemo(
+    () => (
+      <pixiText
+        x={boxWidth / 2}
+        y={40}
+        text={`(Lvl. ${cow.level})`}
+        anchor={0.5}
+        style={{ fontSize: 20, fontFamily: 'pixelFont' }}
+      />
+    ),
+    [cow.level],
   );
 
   const drawXp = useMemo(() => {
     const cowLevel = cow.level;
-    var xpText;
+    let xpText;
     if (cowLevel == 10 || !cowXpPerLevel[cowLevel]) xpText = 'Maxed';
     else {
       xpText =
@@ -266,7 +286,7 @@ export const CowInfoBox = ({
           y={xpBarY + 7}
           text={`${xpText}`}
           anchor={0.5}
-          style={{ fontSize: 14, fill: 'white' }}
+          style={{ fontSize: 14, fill: 'white', fontFamily: 'pixelFont' }}
         />
       </>
     );
@@ -315,18 +335,18 @@ export const CowInfoBox = ({
     const totalWidthDynamic = iconWidth + textWidth;
     const startX = (boxWidth - totalWidthDynamic) / 2;
     return (
-      <pixiContainer x={-3}>
+      <pixiContainer x={-6}>
         <pixiSprite
           texture={textures.mooney}
-          x={startX - 2}
-          y={77}
+          x={startX - 3}
+          y={97}
           scale={0.8}
         />
         <pixiText
           x={startX + iconWidth + 2}
-          y={80}
+          y={99}
           text={value.toLocaleString('en-US')}
-          style={{ fontSize: 18 }}
+          style={{ fontSize: 20, fontFamily: 'pixelFont' }}
         />
       </pixiContainer>
     );
@@ -338,23 +358,25 @@ export const CowInfoBox = ({
       ...infoRows.map((row) => `${row.label}: ${cow.stats[row.value]}`),
     ];
     const maxWidth = Math.max(
-      ...lines.map((line) => measureText(line, { fontSize: 14 })),
+      ...lines.map((line) =>
+        measureText(line, { fontSize: 16, fontFamily: 'pixelFont' }),
+      ),
     );
     return (
       <pixiContainer x={(boxWidth - maxWidth) / 2}>
         <pixiText
-          y={35}
+          y={infoY}
           text={`Rarity: ${cow.stats.rarity.charAt(0).toUpperCase() + cow.stats.rarity.slice(1)}`}
-          style={{ fontSize: 14 }}
+          style={{ fontSize: 16, fontFamily: 'pixelFont' }}
         />
         {infoRows.map((row, i) => {
-          const y = 35 + (i + 1) * 16;
+          const y = infoY + (i + 1) * 16;
           return (
             <pixiContainer key={row.label}>
               <pixiText
                 y={y}
                 text={`${row.label}: ${cow.stats[row.value]}`}
-                style={{ fontSize: 14 }}
+                style={{ fontSize: 16, fontFamily: 'pixelFont' }}
               />
             </pixiContainer>
           );
@@ -369,7 +391,8 @@ export const CowInfoBox = ({
     <pixiContainer x={appWidth - boxWidth - offset} y={offset}>
       <pixiGraphics draw={drawBox} />
       {drawCloseButton}
-      {!isRenaming && drawNameAndLevel}
+      {!isRenaming && drawName}
+      {drawLevel}
 
       {!isInfo ? (
         <>
@@ -388,7 +411,10 @@ export const CowInfoBox = ({
                   text={tempName}
                   anchor={{ x: 0.5, y: 0.5 }}
                   scale={{ x: renameScale, y: renameScale }}
-                  style={{ fill: 'black', fontSize: 20 }}
+                  style={{
+                    fontSize: baseFontSize,
+                    fontFamily: 'pixelFont',
+                  }}
                 />
                 {cursorVisible && (
                   <pixiText
@@ -396,7 +422,10 @@ export const CowInfoBox = ({
                     x={renameTextRef.current?.width / 2 || 0}
                     anchor={{ x: 0, y: 0.5 }}
                     scale={{ x: renameScale, y: renameScale }}
-                    style={{ fill: 'black', fontSize: 20 }}
+                    style={{
+                      fontSize: baseFontSize,
+                      fontFamily: 'pixelFont',
+                    }}
                   />
                 )}
               </pixiContainer>
@@ -426,7 +455,7 @@ export const CowInfoBox = ({
             buttonHeight={buttonHeight}
             buttonText={'Info'}
             buttonColor={'white'}
-            fontsize={20}
+            ignorePointer={true}
             onClick={() => {
               if (isRenaming) setIsRenaming(false);
               setIsInfo(true);
@@ -439,7 +468,6 @@ export const CowInfoBox = ({
             buttonHeight={buttonHeight}
             buttonText={'Sell'}
             buttonColor={'#E28C80'}
-            fontsize={20}
             onClick={() => setSelectedMenu('sellCow')}
           />
         </>
@@ -453,7 +481,7 @@ export const CowInfoBox = ({
             buttonHeight={buttonHeight}
             buttonText={'Back'}
             buttonColor={'white'}
-            fontsize={20}
+            ignorePointer={true}
             onClick={() => setIsInfo(false)}
           />
         </>

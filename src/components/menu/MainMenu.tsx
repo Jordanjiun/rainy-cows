@@ -186,10 +186,10 @@ export const MainMenu = ({
 
             <pixiText
               x={boxWidth / 2}
-              y={30}
+              y={29}
               text={'Menu'}
               anchor={0.5}
-              style={{ fontWeight: 'bold' }}
+              style={{ fontSize: 28, fontFamily: 'pixelFont' }}
             />
 
             <Button
