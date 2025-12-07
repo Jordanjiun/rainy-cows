@@ -1,6 +1,7 @@
 import { extend } from '@pixi/react';
 import { AnimatedSprite, Container, Texture } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
+import { useMooney } from '../../context/hooks';
 import { cowConfig } from '../../data/cowData';
 import { gameUpgrades } from '../../data/gameData';
 import { useCowActions } from '../../game/cowLogic';
@@ -29,17 +30,19 @@ export const CowComponent = ({
   registerRef,
 }: CowComponentProps) => {
   const { addMooney, isHarvest, upgrades } = useGameStore();
+  const { addMooneyEffect } = useMooney();
   const { pos, cowScale, animation, direction, handlePetAnimation } =
     useCowActions(appWidth, appHeight, cow);
   const animations = useCowAnimations(cow.sprite.layers);
   const layerFilters = useCowFilter(cow.sprite);
-  const scale = { x: cowScale * direction, y: cowScale };
 
   const [currentAnim, setCurrentAnim] = useState('idle');
   const [queuedAnim, setQueuedAnim] = useState<string | null>(null);
 
   const layerRefs = useRef<Record<string, AnimatedSprite | null>>({});
   const containerRef = useRef<Container>(null);
+
+  const scale = { x: cowScale * direction, y: cowScale };
 
   const handleAnimationChange = (animation: string) => {
     if (!animations) return;
@@ -95,6 +98,7 @@ export const CowComponent = ({
               gameUpgrades.harvestMultiplierIncreasePerUpgrade *
                 (upgrades.harvestMultiplierLevel - 1));
         addMooney(base);
+        addMooneyEffect(pos.x + 20 * direction, pos.y + 20, base);
       }, cowConfig.msEatCheck);
       return () => clearTimeout(timer);
     }

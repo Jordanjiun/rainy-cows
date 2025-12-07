@@ -1,16 +1,21 @@
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   CowContext,
   FileInputContext,
   MenuContext,
+  MooneyContext,
   SceneContext,
   ToastContext,
 } from './Contexts';
 import { ToastOverlay } from '../components/others/Toast';
 import type { ReactNode } from 'react';
-import type { SceneKey } from './Contexts';
+import type { SceneKey, MooneyEffect } from './Contexts';
 import type { ToastMessage } from '../components/others/Toast';
 import type { Cow } from '../game/cowModel';
+
+const animationDuration = 1000;
+const fadeInDuration = 200;
+const fadeOutDuration = 300;
 
 export const SceneProvider = ({ children }: { children: ReactNode }) => {
   const [currentScene, setCurrentScene] = useState<SceneKey>('LoadScreen');
@@ -91,3 +96,61 @@ export function MenuProvider({ children }: { children: ReactNode }) {
     </MenuContext.Provider>
   );
 }
+
+export const MooneyProvider = ({ children }: { children: ReactNode }) => {
+  const [moonies, setMoonies] = useState<MooneyEffect[]>([]);
+
+  const addMooneyEffect = (x: number, y: number, amount: number) => {
+    setMoonies((prev) => [
+      ...prev,
+      {
+        x,
+        y,
+        alpha: 0,
+        vy: -1,
+        start: performance.now(),
+        amount: amount,
+      },
+    ]);
+  };
+
+  useEffect(() => {
+    let frame: number;
+
+    const animate = () => {
+      setMoonies((prev) =>
+        prev
+          .map((m) => {
+            const elapsed = performance.now() - m.start;
+
+            let alpha = 1;
+            if (elapsed < fadeInDuration) alpha = elapsed / fadeInDuration;
+            else if (elapsed > animationDuration - fadeOutDuration)
+              alpha = (animationDuration - elapsed) / fadeOutDuration;
+
+            return {
+              ...m,
+              y: m.y + m.vy,
+              alpha: Math.max(0, Math.min(1, alpha)),
+            };
+          })
+          .filter((m) => performance.now() - m.start < animationDuration),
+      );
+      frame = requestAnimationFrame(animate);
+    };
+
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  return (
+    <MooneyContext.Provider
+      value={{
+        moonies,
+        addMooneyEffect,
+      }}
+    >
+      {children}
+    </MooneyContext.Provider>
+  );
+};

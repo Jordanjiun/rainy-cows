@@ -2,6 +2,14 @@ import { createContext } from 'react';
 import type { Cow } from '../game/cowModel';
 
 export type SceneKey = 'LoadScreen' | 'MainScene';
+export type MooneyEffect = {
+  x: number;
+  y: number;
+  alpha: number;
+  vy: number;
+  start: number;
+  amount: number;
+};
 
 export interface SceneContextType {
   currentScene: SceneKey;
@@ -27,6 +35,11 @@ export interface MenuContextType {
   setSelectedMenu: (menuOpened: string | null) => void;
 }
 
+export interface MooneyContextType {
+  moonies: MooneyEffect[];
+  addMooneyEffect: (x: number, y: number, amount: number) => void;
+}
+
 export const SceneContext = createContext<SceneContextType | undefined>(
   undefined,
 );
@@ -36,3 +49,4 @@ export const FileInputContext = createContext<FileInputContextType | null>(
 );
 export const ToastContext = createContext<ToastContexType | null>(null);
 export const MenuContext = createContext<MenuContextType | null>(null);
+export const MooneyContext = createContext<MooneyContextType | null>(null);

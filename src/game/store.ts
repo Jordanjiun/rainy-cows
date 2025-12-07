@@ -134,11 +134,13 @@ export const upgrades: Upgrades = {
 };
 
 export const useGameStore = create<GameState>((set, get) => {
-  const harvestDuration =
-    gameUpgrades.harvestDurationSeconds * 1000 +
-    gameUpgrades.harvetDurationIncreasePerUpgrade *
-      1000 *
-      (upgrades.harvestDurationLevel - 1);
+  const getHarvestDuration = () => {
+    const level = get().upgrades.harvestDurationLevel || 1;
+    return (
+      gameUpgrades.harvestDurationSeconds * 1000 +
+      gameUpgrades.harvetDurationIncreasePerUpgrade * 1000 * (level - 1)
+    );
+  };
 
   return {
     mooney: 100,
@@ -148,21 +150,13 @@ export const useGameStore = create<GameState>((set, get) => {
     upgrades: upgrades,
 
     addMooney: (amount) => set({ mooney: get().mooney + amount }),
-    addCow: (cow) => set((state) => ({ cows: [...state.cows, cow] })),
-    addUpgrade: (key: keyof Upgrades) =>
-      set((state) => ({
-        upgrades: {
-          ...state.upgrades,
-          [key]: (state.upgrades[key] || 0) + 1,
-        },
-      })),
-
     removeMooney: (amount) => set({ mooney: get().mooney - amount }),
+
+    addCow: (cow) => set((state) => ({ cows: [...state.cows, cow] })),
     removeCow: (cowId: string) =>
       set((state) => ({
         cows: state.cows.filter((cow) => cow.id !== cowId),
       })),
-
     updateCowName: (cowId: string, newName: string) =>
       set((state) => ({
         cows: state.cows.map((cow) => {
@@ -173,20 +167,27 @@ export const useGameStore = create<GameState>((set, get) => {
         }),
       })),
 
+    addUpgrade: (key: keyof Upgrades) =>
+      set((state) => ({
+        upgrades: {
+          ...state.upgrades,
+          [key]: (state.upgrades[key] || 0) + 1,
+        },
+      })),
+
     loadData: (data) =>
       set((state) => {
         let restoredCows = state.cows;
-
         if (data.cows) {
           restoredCows = restoreCows(data);
         }
 
         const now = Date.now();
+        const harvestDuration = getHarvestDuration();
         let lastHarvest =
           typeof data.lastHarvest === 'number'
             ? data.lastHarvest
             : state.lastHarvest;
-
         let isHarvest = data.isHarvest ?? state.isHarvest;
 
         if (lastHarvest && lastHarvest + harvestDuration < now) {
