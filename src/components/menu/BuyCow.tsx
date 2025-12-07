@@ -104,16 +104,16 @@ export const BuyCow = ({ y, maxWidth, prices }: BuyCowProps) => {
       />
 
       <pixiText
-        x={65}
-        y={-3}
+        x={60}
+        y={-8}
         text={'Buy Cow'}
-        style={{ fontSize: 20, fontFamily: 'pixelFont' }}
+        style={{ fontSize: 22, fontFamily: 'pixelFont' }}
       />
-      <pixiSprite texture={textures.mooney} x={65} y={20} />
+      <pixiSprite texture={textures.mooney} x={60} y={20} />
 
       {!isMaxed && price ? (
         <pixiText
-          x={102}
+          x={98}
           y={35}
           anchor={{ x: 0, y: 0.5 }}
           text={price.toLocaleString('en-us')}
@@ -121,7 +121,7 @@ export const BuyCow = ({ y, maxWidth, prices }: BuyCowProps) => {
         />
       ) : (
         <pixiText
-          x={102}
+          x={98}
           y={35}
           anchor={{ x: 0, y: 0.5 }}
           text={'Maxed'}

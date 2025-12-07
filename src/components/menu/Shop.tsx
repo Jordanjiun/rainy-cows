@@ -10,15 +10,14 @@ import type { FederatedPointerEvent } from 'pixi.js';
 extend({ Container, Graphics, Sprite, Text });
 
 const boxHeight = 400;
-const boxWidth = 300;
+const boxWidth = 325;
 const buttonSize = 50;
 const crossSize = 20;
 const crossThickness = 4;
 const offset = 20;
-const shopItemHeight = 130;
-const shopItemOffset = 80;
+const shopItemHeight = 160;
+const shopItemOffset = 70;
 const maskHeight = boxHeight - 80;
-const maxScroll = shopItemOffset + 200;
 const scrollBarWidth = 5;
 const scrollBarHeight = boxHeight - 2 * offset;
 
@@ -47,6 +46,14 @@ export const Shop = ({
   const lastY = useRef(0);
 
   const iconColor = isHovered ? 'yellow' : 'white';
+  const contentHeight = shopItemOffset + shopItemData.length * shopItemHeight;
+  const maxScroll = Math.max(0, contentHeight - maskHeight);
+  const trackHeight = scrollBarHeight;
+  const thumbHeight = Math.max(
+    20,
+    (maskHeight / contentHeight) * trackHeight * 0.6,
+  );
+  const thumbY = offset + (scrollY / maxScroll) * (trackHeight - thumbHeight);
 
   useEffect(() => {
     let mounted = true;
@@ -108,18 +115,20 @@ export const Shop = ({
         boxWidth - scrollBarWidth - 2,
         offset,
         scrollBarWidth,
-        scrollBarHeight,
+        trackHeight,
       );
       g.fill({ color: 'grey', alpha: 0.5 });
-      g.rect(
-        boxWidth - scrollBarWidth - 2,
-        offset + scrollY,
-        scrollBarWidth,
-        scrollBarHeight - maxScroll,
-      );
-      g.fill({ color: 'grey' });
+      if (maxScroll > 0) {
+        g.rect(
+          boxWidth - scrollBarWidth - 2,
+          thumbY,
+          scrollBarWidth,
+          thumbHeight,
+        );
+        g.fill({ color: 'grey' });
+      }
     },
-    [boxWidth, boxHeight, scrollY],
+    [scrollY, maskHeight, contentHeight],
   );
 
   const drawCloseButton = useMemo(() => {
@@ -180,7 +189,7 @@ export const Shop = ({
               e.stopPropagation();
               const delta = e.global.y - lastY.current;
               lastY.current = e.global.y;
-              handleScroll(-delta);
+              handleScroll(-delta * 1.5);
             }}
             onPointerUp={(e: FederatedPointerEvent) => {
               e.stopPropagation();
@@ -192,7 +201,7 @@ export const Shop = ({
             }}
             onWheel={(e: WheelEvent) => {
               e.stopPropagation();
-              handleScroll(e.deltaY * 0.3);
+              handleScroll(e.deltaY * 0.6);
             }}
             draw={(g) => {
               g.clear();
@@ -258,6 +267,7 @@ export const Shop = ({
                       maxWidth={boxWidth}
                       label={item.label}
                       description={item.description}
+                      levelText={item.levelText}
                       imageString={item.image}
                       upgradeName={item.upgradeName}
                       prices={item.prices}

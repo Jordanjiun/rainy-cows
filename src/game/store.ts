@@ -122,6 +122,7 @@ export interface Upgrades {
   farmLevel: number;
   harvestCooldownLevel: number;
   harvestDurationLevel: number;
+  harvestMultiplierLevel: number;
 }
 
 export const upgrades: Upgrades = {
@@ -129,6 +130,7 @@ export const upgrades: Upgrades = {
   farmLevel: 1,
   harvestCooldownLevel: 1,
   harvestDurationLevel: 1,
+  harvestMultiplierLevel: 1,
 };
 
 export const useGameStore = create<GameState>((set, get) => {
@@ -197,7 +199,10 @@ export const useGameStore = create<GameState>((set, get) => {
           cows: restoredCows,
           lastHarvest,
           isHarvest,
-          upgrades: data.upgrades ?? state.upgrades,
+          upgrades: {
+            ...upgrades,
+            ...(data.upgrades ?? {}),
+          },
         };
       }),
 

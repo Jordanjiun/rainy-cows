@@ -2,6 +2,7 @@ import { extend } from '@pixi/react';
 import { AnimatedSprite, Container, Texture } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
 import { cowConfig } from '../../data/cowData';
+import { gameUpgrades } from '../../data/gameData';
 import { useCowActions } from '../../game/cowLogic';
 import { useCowAnimations, useCowFilter } from '../../game/cowBuilder';
 import { useGameStore } from '../../game/store';
@@ -27,7 +28,7 @@ export const CowComponent = ({
   onPositionUpdate,
   registerRef,
 }: CowComponentProps) => {
-  const { addMooney } = useGameStore();
+  const { addMooney, isHarvest, upgrades } = useGameStore();
   const { pos, cowScale, animation, direction, handlePetAnimation } =
     useCowActions(appWidth, appHeight, cow);
   const animations = useCowAnimations(cow.sprite.layers);
@@ -86,7 +87,14 @@ export const CowComponent = ({
   useEffect(() => {
     if (currentAnim === 'eat') {
       const timer = setTimeout(() => {
-        addMooney(cow.eat() + cow.stats.extraMooney);
+        let base = cow.eat() + cow.stats.extraMooney;
+        if (isHarvest)
+          base =
+            base *
+            (gameUpgrades.harvestMultiplier +
+              gameUpgrades.harvestMultiplierIncreasePerUpgrade *
+                (upgrades.harvestMultiplierLevel - 1));
+        addMooney(base);
       }, cowConfig.msEatCheck);
       return () => clearTimeout(timer);
     }

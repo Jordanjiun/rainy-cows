@@ -10,6 +10,7 @@ import {
 } from 'pixi.js';
 import { useEffect, useMemo, useState } from 'react';
 import { useGameStore, upgrades } from '../../game/store';
+import { gameUpgrades } from '../../data/gameData';
 import { Button } from './Button';
 import type { Upgrades } from '../../game/store';
 
@@ -30,6 +31,7 @@ interface ShopItemProps {
   maxWidth: number;
   label: string;
   description: string;
+  levelText: string;
   imageString: string;
   upgradeName: string;
   prices: NumberMap;
@@ -44,6 +46,7 @@ export const ShopItem = ({
   maxWidth,
   label,
   description,
+  levelText,
   imageString,
   upgradeName,
   prices,
@@ -64,12 +67,40 @@ export const ShopItem = ({
     return 0;
   }
 
+  const level = getUpgradeLevel(upgradeName);
+  const upgradeFormatters = {
+    farmLevel: () => `${levelText} ${level * 2}`,
+    harvestCooldownLevel: () =>
+      `${levelText} ${
+        gameUpgrades.harvestCooldownMinutes -
+        (level - 1) * gameUpgrades.harvestCooldownDecreasePerUpgrade
+      } mins`,
+    harvestDurationLevel: () =>
+      `${levelText} ${
+        gameUpgrades.harvestDurationSeconds +
+        (level - 1) * gameUpgrades.harvetDurationIncreasePerUpgrade
+      } secs`,
+    harvestMultiplierLevel: () =>
+      `${levelText} x${
+        gameUpgrades.harvestMultiplier +
+        (level - 1) * gameUpgrades.harvestMultiplierIncreasePerUpgrade
+      }`,
+  } as const;
+
+  let finalLevelText: string;
+  if (upgradeName in upgradeFormatters) {
+    finalLevelText =
+      upgradeFormatters[upgradeName as keyof typeof upgradeFormatters]();
+  } else {
+    finalLevelText = `${levelText} ${level}`;
+  }
+
   const priceFontSize = useMemo(() => {
     let size = maxFontSize;
     setIsMaxed(false);
 
     while (size > 8) {
-      const newPrice = prices[getUpgradeLevel(upgradeName) + 1] ?? null;
+      const newPrice = prices[level + 1] ?? null;
       if (!newPrice) {
         setIsMaxed(true);
         return size;
@@ -82,7 +113,7 @@ export const ShopItem = ({
       size -= 1;
     }
     return size;
-  }, [mooney, upgrades, prices]);
+  }, [mooney, upgrades, level, prices]);
 
   useEffect(() => {
     if (!isMaxed && price && mooney < price) setIsMooneyEnough(false);
@@ -104,7 +135,7 @@ export const ShopItem = ({
   const drawBox = useMemo(() => {
     return (g: Graphics) => {
       g.clear();
-      g.roundRect(0, 0, boxSize, boxSize, 10);
+      g.roundRect(0, 33, boxSize, boxSize, 10);
       g.stroke({ width: 3, color: 'black' });
     };
   }, [boxSize]);
@@ -119,7 +150,7 @@ export const ShopItem = ({
 
       g.clear();
       for (let i = 0; i < totalLevels; i++) {
-        g.rect(i * segmentWidth, boxSize + 48, segmentWidth - 3, barHeight);
+        g.rect(i * segmentWidth, boxSize + 80, segmentWidth - 3, barHeight);
         g.fill({ color: i < currentLevel ? 'green' : 'black' });
       }
     };
@@ -139,22 +170,32 @@ export const ShopItem = ({
         texture={textures[imageString]}
         anchor={0.5}
         x={boxSize / 2}
-        y={boxSize / 2}
+        y={boxSize / 2 + 33}
         tint={'black'}
       />
 
       <pixiText
-        x={65}
-        y={-3}
         text={label}
-        style={{ fontSize: 20, fontFamily: 'pixelFont' }}
+        style={{ fontSize: 22, fontFamily: 'pixelFont' }}
       />
       <pixiText
-        x={65}
-        y={18}
+        x={60}
+        y={28}
         text={description}
         style={{
-          fontSize: 14,
+          fontSize: 16,
+          fontFamily: 'pixelFont',
+          align: 'left',
+          wordWrap: true,
+          wordWrapWidth: maxWidth - boxSize - 60,
+        }}
+      />
+      <pixiText
+        x={60}
+        y={66}
+        text={`(${finalLevelText})`}
+        style={{
+          fontSize: 16,
           fontFamily: 'pixelFont',
           align: 'left',
           wordWrap: true,
@@ -162,11 +203,11 @@ export const ShopItem = ({
         }}
       />
 
-      <pixiSprite texture={textures.mooney} y={boxSize + 8} />
+      <pixiSprite texture={textures.mooney} y={boxSize + 41} />
       {!isMaxed && price ? (
         <pixiText
           x={38}
-          y={boxSize + 24}
+          y={boxSize + 57}
           anchor={{ x: 0, y: 0.5 }}
           text={price.toLocaleString('en-us')}
           style={{ fontSize: priceFontSize, fontFamily: 'pixelFont' }}
@@ -174,7 +215,7 @@ export const ShopItem = ({
       ) : (
         <pixiText
           x={38}
-          y={boxSize + 24}
+          y={boxSize + 57}
           anchor={{ x: 0, y: 0.5 }}
           text={'Maxed'}
           style={{ fontSize: priceFontSize, fontFamily: 'pixelFont' }}
@@ -182,7 +223,10 @@ export const ShopItem = ({
       )}
 
       {isMaxed || !isMooneyEnough ? (
-        <pixiContainer x={maxWidth - buttonWidth - rightOffset} y={boxSize + 7}>
+        <pixiContainer
+          x={maxWidth - buttonWidth - rightOffset}
+          y={boxSize + 40}
+        >
           <pixiGraphics
             draw={(g) => {
               g.clear();
@@ -203,7 +247,7 @@ export const ShopItem = ({
       ) : (
         <Button
           x={maxWidth - buttonWidth - rightOffset}
-          y={boxSize + 7}
+          y={boxSize + 40}
           buttonWidth={buttonWidth}
           buttonHeight={buttonHeight}
           buttonText={'Buy'}
