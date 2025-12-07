@@ -5,7 +5,7 @@ import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Container, Graphics, Text });
 
-const boxHeight = 320;
+const boxHeight = 350;
 const boxWidth = 300;
 const buttonWidth = 80;
 const buttonHeight = 40;
@@ -17,7 +17,8 @@ const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 const infoRows = [
   { label: 'Developer:', value: 'Jordan Tay' },
   { label: 'Pixel Cows:', value: 'Pop Shop Packs' },
-  { label: 'Pixel Grass:', value: 'SciGho' },
+  { label: 'Pixel Grass:', value: 'Bonsaiheldin' },
+  { label: 'Pixel Clouds:', value: 'Kass' },
   { label: 'Music:', value: 'TBA' },
   { label: 'Audio:', value: 'TBA' },
 ];

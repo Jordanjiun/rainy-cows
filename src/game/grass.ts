@@ -2,7 +2,7 @@ import { Assets, Rectangle, Texture } from 'pixi.js';
 import { useEffect, useState } from 'react';
 
 const frameSize = 16;
-const numOfCols = 25;
+const numOfCols = 8;
 
 export function useGrassFrame(indexes: number[]) {
   const [frames, setFrames] = useState<Texture[]>([]);
@@ -11,7 +11,7 @@ export function useGrassFrame(indexes: number[]) {
     let mounted = true;
 
     async function load() {
-      const baseTexture = await Assets.load<Texture>('grassTile');
+      const baseTexture = await Assets.load<Texture>('grass');
       const newFrames: Texture[] = [];
       for (const index of indexes) {
         const row = Math.floor(index / numOfCols);

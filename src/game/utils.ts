@@ -1,6 +1,23 @@
 import { Text, TextStyle } from 'pixi.js';
 import { cowConfig } from '../data/cowData';
 
+export function brightnessByTime(): number {
+  const now = new Date();
+  const hour = now.getHours() + now.getMinutes() / 60;
+  const minBrightness = 0.6;
+  const maxBrightness = 1;
+  let brightness: number;
+  if (hour < 9) {
+    brightness = minBrightness + (maxBrightness - minBrightness) * (hour / 9);
+  } else if (hour >= 9 && hour <= 15) {
+    brightness = maxBrightness;
+  } else {
+    brightness =
+      maxBrightness - (maxBrightness - minBrightness) * ((hour - 15) / 9);
+  }
+  return brightness;
+}
+
 export function createSeededRNG(seed: number) {
   let state = seed;
   return () => {

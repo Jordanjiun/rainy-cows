@@ -3,6 +3,8 @@ import { Container, Graphics, Text } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { gameUpgrades } from '../../data/gameData';
 import { useGameStore } from '../../game/store';
+import { Grass } from './Grass';
+import { Sky } from './Sky';
 
 extend({ Container, Graphics, Text });
 
@@ -58,6 +60,13 @@ export const Farm = ({
         appHeight * landRatio - footerHeight,
       );
       g.fill({ color: '#32CD32' });
+    },
+    [appWidth, appHeight],
+  );
+
+  const drawFooter = useCallback(
+    (g: Graphics) => {
+      g.clear();
       g.rect(0, appHeight - footerHeight, appWidth, footerHeight);
       g.fill({ color: '#A0522D' });
     },
@@ -83,7 +92,10 @@ export const Farm = ({
   return (
     <>
       <pixiGraphics draw={drawDefaultBackground} />
+      <Sky appWidth={appWidth} appHeight={appHeight} />
+      <Grass appWidth={appWidth} appHeight={appHeight} />
       {isHarvest && drawHarvestTime}
+      <pixiGraphics draw={drawFooter} />
     </>
   );
 };
