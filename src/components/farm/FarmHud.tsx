@@ -1,6 +1,7 @@
 import { extend } from '@pixi/react';
 import { Assets, Sprite, Text, Texture } from 'pixi.js';
 import { useEffect, useState } from 'react';
+import { useToast } from '../../context/hooks';
 import { useGameStore } from '../../game/store';
 
 extend({ Sprite, Text });
@@ -9,7 +10,9 @@ const offset = 10;
 const assetNames = ['mooney', 'logo'];
 
 export const FarmHud = () => {
-  const { cows, mooney, upgrades } = useGameStore();
+  const { showToast } = useToast();
+  const { cows, mooney, upgrades, lastExportReminder, setLastExportReminder } =
+    useGameStore();
   const [textures, setTextures] = useState<Record<string, Texture>>({});
 
   const amount = mooney.toLocaleString('en-US');
@@ -22,8 +25,22 @@ export const FarmHud = () => {
       if (mounted) setTextures(loaded);
     }
     loadTextures();
+
+    const timeoutId = setTimeout(() => {
+      const now = Date.now();
+      const diff = now - lastExportReminder;
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+      if (diff > sevenDays) {
+        showToast(
+          `Don't forget to periodically export your save to avoid losing data!`,
+        );
+        setLastExportReminder(now);
+      }
+    }, 2000);
+
     return () => {
       mounted = false;
+      clearTimeout(timeoutId);
     };
   }, []);
 

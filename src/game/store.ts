@@ -49,9 +49,10 @@ function getSerializableState(state: GameState) {
     mooney: state.mooney,
     cows: state.cows,
     lastHarvest: state.lastHarvest,
+    lastExportReminder: state.lastExportReminder,
+    volume: state.volume,
     isHarvest: state.isHarvest,
     upgrades: state.upgrades,
-    volume: state.volume,
   };
 }
 
@@ -106,10 +107,12 @@ interface GameState {
   mooney: number;
   cows: Cow[];
   lastHarvest: number | null;
+  lastExportReminder: number;
+  volume: number;
   isHarvest: boolean;
   upgrades: Upgrades;
-  volume: number;
   setVolume: (volume: number) => void;
+  setLastExportReminder: (datetime: number) => void;
   addMooney: (amount: number) => void;
   addCow: (cow: Cow) => void;
   addUpgrade: (key: keyof Upgrades) => void;
@@ -151,9 +154,12 @@ export const useGameStore = create<GameState>((set, get) => {
     lastHarvest: null,
     isHarvest: false,
     upgrades: upgrades,
+    lastExportReminder: Date.now(),
     volume: 1,
 
     setVolume: (newVolume: number) => set({ volume: newVolume }),
+    setLastExportReminder: (datetime: number) =>
+      set({ lastExportReminder: datetime }),
 
     addMooney: (amount) => set({ mooney: get().mooney + amount }),
     removeMooney: (amount) => set({ mooney: get().mooney - amount }),
@@ -211,6 +217,8 @@ export const useGameStore = create<GameState>((set, get) => {
             ...(data.upgrades ?? {}),
           },
           volume: data.volume ?? state.volume,
+          lastExportReminder:
+            data.lastExportReminder ?? state.lastExportReminder,
         };
       }),
 
@@ -222,6 +230,7 @@ export const useGameStore = create<GameState>((set, get) => {
         isHarvest: false,
         upgrades: upgrades,
         volume: 1,
+        lastExportReminder: Date.now(),
       }),
   };
 });

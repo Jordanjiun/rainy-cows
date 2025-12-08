@@ -39,6 +39,7 @@ export const MainMenu = ({
   appWidth: number;
   appHeight: number;
 }) => {
+  const { setLastExportReminder } = useGameStore();
   const { audioMap, setGlobalVolume } = useAudio();
   const { selectedCow, setSelectedCow } = useCow();
   const { selectedMenu, setSelectedMenu } = useMenu();
@@ -83,6 +84,7 @@ export const MainMenu = ({
 
   function handleExport() {
     audioMap.type.play();
+    setLastExportReminder(Date.now());
     exportGameSave();
     showToast('Save file exported', greenColor);
   }
