@@ -8,15 +8,16 @@ import {
   useMenu,
   useToast,
 } from '../../context/hooks';
-import { exportGameSave, importGameSave } from '../../game/store';
+import { exportGameSave, importGameSave, useGameStore } from '../../game/store';
+import { AudioBar } from './AudioBar';
 import { Button } from './Button';
+import { Credits } from './Credits';
 import { FinalWarning } from './FinalWarning';
 import type { FederatedPointerEvent } from 'pixi.js';
-import { Credits } from './Credits';
 
 extend({ Graphics, Sprite, Text });
 
-const boxHeight = 300;
+const boxHeight = 353;
 const boxWidth = 200;
 const buttonWidth = 170;
 const buttonHeight = 40;
@@ -38,7 +39,7 @@ export const MainMenu = ({
   appWidth: number;
   appHeight: number;
 }) => {
-  const { audioMap } = useAudio();
+  const { audioMap, setGlobalVolume } = useAudio();
   const { selectedCow, setSelectedCow } = useCow();
   const { selectedMenu, setSelectedMenu } = useMenu();
   const { openFilePicker, onFileSelected } = useFileInput();
@@ -70,6 +71,7 @@ export const MainMenu = ({
   async function handleImport(file: File) {
     const result = await importGameSave(file);
     if (result.success) {
+      setGlobalVolume(useGameStore.getState().volume);
       audioMap.powerup.play();
       showToast('Save file imported successfully!', greenColor);
       setSelectedMenu(null);
@@ -172,7 +174,7 @@ export const MainMenu = ({
         />
       </pixiContainer>
 
-      {selectedMenu == 'menu' && (
+      {selectedMenu == 'menu' && !isCredit && (
         <>
           <pixiGraphics
             interactive={true}
@@ -209,6 +211,12 @@ export const MainMenu = ({
               text={'Menu'}
               anchor={0.5}
               style={{ fontSize: 28, fontFamily: 'pixelFont' }}
+            />
+
+            <AudioBar
+              x={(boxWidth - buttonWidth) / 2}
+              y={50}
+              width={buttonWidth}
             />
 
             <Button

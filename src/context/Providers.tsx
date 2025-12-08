@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import {
   AudioContext,
   CowContext,
@@ -10,6 +10,7 @@ import {
 } from './Contexts';
 import { Howl } from 'howler';
 import { ToastOverlay } from '../components/others/Toast';
+import { useGameStore } from '../game/store';
 import type { ReactNode } from 'react';
 import type { SceneKey, MooneyEffect, AudioAsset } from './Contexts';
 import type { ToastMessage } from '../components/others/Toast';
@@ -158,24 +159,44 @@ export const MooneyProvider = ({ children }: { children: ReactNode }) => {
 };
 
 export const AudioProvider = ({ children }: { children: ReactNode }) => {
+  const { volume: globalVolume, setVolume } = useGameStore();
   const [audioMap, setAudioMap] = useState<Record<string, Howl>>({});
+  const [originalVolumes, setOriginalVolumes] = useState<
+    Record<string, number>
+  >({});
 
   const loadAudio = async (audioManifest: AudioAsset[]) => {
     const map: Record<string, Howl> = {};
+    const volumes: Record<string, number> = {};
 
     for (const audio of audioManifest) {
+      volumes[audio.alias] = audio.volume ?? 1;
       map[audio.alias] = new Howl({
         src: [audio.src],
-        volume: audio.volume ?? 1,
+        volume: (audio.volume ?? 1) * globalVolume,
       });
     }
 
     setAudioMap(map);
+    setOriginalVolumes(volumes);
     return map;
   };
 
+  const setGlobalVolume = useCallback(
+    (volume: number) => {
+      setVolume(volume);
+      Object.entries(audioMap).forEach(([alias, howl]) => {
+        const originalVolume = originalVolumes[alias] ?? 1;
+        howl.volume(originalVolume * volume);
+      });
+    },
+    [audioMap, originalVolumes],
+  );
+
   return (
-    <AudioContext.Provider value={{ audioMap, loadAudio }}>
+    <AudioContext.Provider
+      value={{ audioMap, globalVolume, loadAudio, setGlobalVolume }}
+    >
       {children}
     </AudioContext.Provider>
   );

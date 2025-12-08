@@ -161,6 +161,7 @@ export class Cow {
   level: number;
   xp: number;
   hearts: number;
+  pitch: number;
   lastPet: string;
   lastDecayCheck: string;
   stats: CowStats;
@@ -179,6 +180,7 @@ export class Cow {
     this.level = 1;
     this.xp = 0;
     this.hearts = 0;
+    this.pitch = Math.round((0.8 + 0.8 * rng()) * 100) / 100;
     this.lastPet = yesterday.toLocaleString(undefined, cowDateTimeOptions);
     this.lastDecayCheck = yesterday.toLocaleString(
       undefined,

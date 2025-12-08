@@ -51,6 +51,7 @@ function getSerializableState(state: GameState) {
     lastHarvest: state.lastHarvest,
     isHarvest: state.isHarvest,
     upgrades: state.upgrades,
+    volume: state.volume,
   };
 }
 
@@ -107,6 +108,8 @@ interface GameState {
   lastHarvest: number | null;
   isHarvest: boolean;
   upgrades: Upgrades;
+  volume: number;
+  setVolume: (volume: number) => void;
   addMooney: (amount: number) => void;
   addCow: (cow: Cow) => void;
   addUpgrade: (key: keyof Upgrades) => void;
@@ -148,6 +151,9 @@ export const useGameStore = create<GameState>((set, get) => {
     lastHarvest: null,
     isHarvest: false,
     upgrades: upgrades,
+    volume: 1,
+
+    setVolume: (newVolume: number) => set({ volume: newVolume }),
 
     addMooney: (amount) => set({ mooney: get().mooney + amount }),
     removeMooney: (amount) => set({ mooney: get().mooney - amount }),
@@ -204,6 +210,7 @@ export const useGameStore = create<GameState>((set, get) => {
             ...upgrades,
             ...(data.upgrades ?? {}),
           },
+          volume: data.volume ?? state.volume,
         };
       }),
 
@@ -214,6 +221,7 @@ export const useGameStore = create<GameState>((set, get) => {
         lastHarvest: null,
         isHarvest: false,
         upgrades: upgrades,
+        volume: 1,
       }),
   };
 });

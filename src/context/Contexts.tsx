@@ -48,7 +48,9 @@ export interface MooneyContextType {
 
 export interface AudioContextType {
   audioMap: Record<string, Howl>;
+  globalVolume: number;
   loadAudio: (audioManifest: AudioAsset[]) => Promise<Record<string, Howl>>;
+  setGlobalVolume: (volume: number) => void;
 }
 
 export const SceneContext = createContext<SceneContextType | undefined>(

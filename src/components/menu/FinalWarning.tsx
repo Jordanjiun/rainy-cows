@@ -26,7 +26,7 @@ export const FinalWarning = ({
   appHeight: number;
   onClick: () => void;
 }) => {
-  const { audioMap } = useAudio();
+  const { audioMap, setGlobalVolume } = useAudio();
 
   const drawBase = useCallback(
     (g: Graphics) => {
@@ -43,6 +43,7 @@ export const FinalWarning = ({
     if (isDelete) {
       audioMap.whoosh.play();
       purgeGameData();
+      setGlobalVolume(1);
     } else {
       audioMap.type.play();
     }

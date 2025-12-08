@@ -104,7 +104,8 @@ export function useCowActions(appWidth: number, appHeight: number, cow: Cow) {
 
   const handlePetAnimation = () => {
     if (isBeingPetted.current) return;
-    audioMap.moo.play();
+    var soundId = audioMap.moo.play();
+    audioMap.moo.rate(cow.pitch ?? 1, soundId);
     isBeingPetted.current = true;
     playAnimation('pet');
     setTimeout(() => {
