@@ -9,8 +9,9 @@ import {
   Texture,
 } from 'pixi.js';
 import { useEffect, useMemo, useState } from 'react';
-import { useGameStore, upgrades } from '../../game/store';
+import { useAudio } from '../../context/hooks';
 import { gameUpgrades } from '../../data/gameData';
+import { useGameStore, upgrades } from '../../game/store';
 import { Button } from './Button';
 import type { Upgrades } from '../../game/store';
 
@@ -52,6 +53,7 @@ export const ShopItem = ({
   prices,
 }: ShopItemProps) => {
   const { mooney, upgrades, addUpgrade, removeMooney } = useGameStore();
+  const { audioMap } = useAudio();
 
   const [textures, setTextures] = useState<Record<string, Texture>>({});
   const [price, setPrice] = useState<number | null>(null);
@@ -157,7 +159,10 @@ export const ShopItem = ({
   }, [prices, upgrades, maxWidth]);
 
   function handleClick() {
-    if (price) removeMooney(price);
+    if (price) {
+      audioMap.coin.play();
+      removeMooney(price);
+    }
     if (isUpgradeKey(upgradeName)) addUpgrade(upgradeName);
   }
 

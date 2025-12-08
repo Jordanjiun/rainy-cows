@@ -6,7 +6,7 @@ import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Container, Graphics, Text });
 
-const boxHeight = 320;
+const boxHeight = 300;
 const boxWidth = 300;
 const buttonWidth = 80;
 const buttonHeight = 40;
@@ -20,8 +20,7 @@ const infoRows = [
   { label: 'Pixel Cows:', value: 'Pop Shop Packs' },
   { label: 'Pixel Grass:', value: 'Bonsaiheldin' },
   { label: 'Pixel Clouds:', value: 'Kass' },
-  { label: 'Music:', value: 'TBA' },
-  { label: 'Audio:', value: 'TBA' },
+  { label: 'Audio:', value: 'Pixabay' },
 ];
 
 export const Credits = ({

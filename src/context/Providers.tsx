@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import {
+  AudioContext,
   CowContext,
   FileInputContext,
   MenuContext,
@@ -7,9 +8,10 @@ import {
   SceneContext,
   ToastContext,
 } from './Contexts';
+import { Howl } from 'howler';
 import { ToastOverlay } from '../components/others/Toast';
 import type { ReactNode } from 'react';
-import type { SceneKey, MooneyEffect } from './Contexts';
+import type { SceneKey, MooneyEffect, AudioAsset } from './Contexts';
 import type { ToastMessage } from '../components/others/Toast';
 import type { Cow } from '../game/cowModel';
 
@@ -152,5 +154,29 @@ export const MooneyProvider = ({ children }: { children: ReactNode }) => {
     >
       {children}
     </MooneyContext.Provider>
+  );
+};
+
+export const AudioProvider = ({ children }: { children: ReactNode }) => {
+  const [audioMap, setAudioMap] = useState<Record<string, Howl>>({});
+
+  const loadAudio = async (audioManifest: AudioAsset[]) => {
+    const map: Record<string, Howl> = {};
+
+    for (const audio of audioManifest) {
+      map[audio.alias] = new Howl({
+        src: [audio.src],
+        volume: audio.volume ?? 1,
+      });
+    }
+
+    setAudioMap(map);
+    return map;
+  };
+
+  return (
+    <AudioContext.Provider value={{ audioMap, loadAudio }}>
+      {children}
+    </AudioContext.Provider>
   );
 };

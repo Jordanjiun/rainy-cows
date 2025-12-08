@@ -1,7 +1,7 @@
 import { extend } from '@pixi/react';
 import { Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useCow, useMenu } from '../../context/hooks';
+import { useAudio, useCow, useMenu } from '../../context/hooks';
 import { cowPrices, shopItemData } from '../../data/gameData';
 import { BuyCow } from './BuyCow';
 import { ShopItem } from './ShopItem';
@@ -32,6 +32,7 @@ export const Shop = ({
   appWidth: number;
   appHeight: number;
 }) => {
+  const { audioMap } = useAudio();
   const { selectedCow, setSelectedCow } = useCow();
   const { selectedMenu, setSelectedMenu } = useMenu();
 
@@ -69,6 +70,7 @@ export const Shop = ({
   }, []);
 
   function handleClick() {
+    audioMap.click.play();
     if (selectedCow) setSelectedCow(null);
     if (selectedMenu != 'shop') setSelectedMenu('shop');
     else {
@@ -82,9 +84,14 @@ export const Shop = ({
   }
 
   function closeMenu() {
+    audioMap.click.play();
     setCloseHovered(false);
     setSelectedMenu(null);
     setScrollY(0);
+    const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+    if (canvas) {
+      canvas.style.cursor = 'default';
+    }
   }
 
   const drawButtonBase = useMemo(() => {

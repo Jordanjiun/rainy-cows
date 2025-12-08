@@ -1,5 +1,6 @@
 import { useContext } from 'react';
 import {
+  AudioContext,
   CowContext,
   FileInputContext,
   MenuContext,
@@ -44,5 +45,11 @@ export function useMenu() {
 export function useMooney() {
   const ctx = useContext(MooneyContext);
   if (!ctx) throw new Error('useMooney must be used inside a MooneyProvider');
+  return ctx;
+}
+
+export function useAudio() {
+  const ctx = useContext(AudioContext);
+  if (!ctx) throw new Error('useAudio must be used inside a AudioProvider');
   return ctx;
 }

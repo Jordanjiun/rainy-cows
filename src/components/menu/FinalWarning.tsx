@@ -1,6 +1,7 @@
 import { extend } from '@pixi/react';
 import { Container, Graphics, Text } from 'pixi.js';
 import { useCallback } from 'react';
+import { useAudio } from '../../context/hooks';
 import { purgeGameData } from '../../game/store';
 import { Button } from './Button';
 import type { FederatedPointerEvent } from 'pixi.js';
@@ -25,6 +26,8 @@ export const FinalWarning = ({
   appHeight: number;
   onClick: () => void;
 }) => {
+  const { audioMap } = useAudio();
+
   const drawBase = useCallback(
     (g: Graphics) => {
       g.clear();
@@ -38,7 +41,10 @@ export const FinalWarning = ({
 
   function handleClick(isDelete: boolean = false) {
     if (isDelete) {
+      audioMap.whoosh.play();
       purgeGameData();
+    } else {
+      audioMap.type.play();
     }
     onClick();
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;

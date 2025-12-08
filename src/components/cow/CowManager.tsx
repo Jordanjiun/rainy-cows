@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { CowComponent } from './CowComponent';
 import { CowInfoBox } from './CowInfoBox';
 import { FloatingHearts } from './FloatingHeart';
-import { useCow } from '../../context/hooks';
+import { useAudio, useCow, useMenu } from '../../context/hooks';
 import { cowConfig } from '../../data/cowData';
 import { useGameStore } from '../../game/store';
 import { getCowScale } from '../../game/utils';
@@ -19,6 +19,8 @@ export const CowManager = ({
   appWidth: number;
   appHeight: number;
 }) => {
+  const { audioMap } = useAudio();
+  const { selectedMenu } = useMenu();
   const { cows, isHarvest } = useGameStore();
   const { selectedCow, setSelectedCow } = useCow();
   const cowScale = getCowScale(appWidth * appHeight);
@@ -36,6 +38,25 @@ export const CowManager = ({
   const cowRefs = useRef<Record<string, AnimatedSprite | null>>({});
   const petAnimMap = useRef(new WeakMap<AnimatedSprite, () => void>()).current;
   const cleanupPointerHandlers = useRef<Record<string, () => void>>({});
+  const lastCowIdRef = useRef<string | null>(null);
+
+  const handleSetCow = useCallback(
+    (cow: Cow) => {
+      if (lastCowIdRef.current === cow.id) {
+        return;
+      }
+      lastCowIdRef.current = cow.id;
+      if (selectedCow?.id !== cow.id) {
+        audioMap.click.play();
+        setSelectedCow(cow);
+      }
+    },
+    [selectedCow],
+  );
+
+  useEffect(() => {
+    lastCowIdRef.current = null;
+  }, [isHarvest, selectedMenu]);
 
   useEffect(() => {
     cowXYRef.current = cowXY;
@@ -112,7 +133,7 @@ export const CowManager = ({
 
         longPressTimeout = window.setTimeout(() => {
           if (!isHarvest && selectedCow?.id !== cow.id) {
-            setSelectedCow(cow);
+            handleSetCow(cow);
           }
           longPressTimeout = null;
         }, holdThreshold);
@@ -234,7 +255,17 @@ export const CowManager = ({
           appWidth={appWidth}
           appHeight={appHeight}
           cow={selectedCow}
-          onClose={() => setSelectedCow(null)}
+          onClose={() => {
+            lastCowIdRef.current = null;
+            audioMap.click.play();
+            const canvas = document.querySelector(
+              'canvas',
+            ) as HTMLCanvasElement;
+            if (canvas) {
+              canvas.style.cursor = 'default';
+            }
+            setSelectedCow(null);
+          }}
         />
       )}
     </>

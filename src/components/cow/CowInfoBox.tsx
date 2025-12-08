@@ -9,7 +9,7 @@ import {
   Texture,
 } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useMenu } from '../../context/hooks';
+import { useAudio, useMenu } from '../../context/hooks';
 import { cowXpPerLevel } from '../../data/cowData';
 import { useGameStore } from '../../game/store';
 import { measureText } from '../../game/utils';
@@ -58,6 +58,7 @@ export const CowInfoBox = ({
   cow,
   onClose,
 }: CowInfoBoxProps) => {
+  const { audioMap } = useAudio();
   const { updateCowName } = useGameStore();
   const { setSelectedMenu } = useMenu();
 
@@ -104,6 +105,7 @@ export const CowInfoBox = ({
     if (!isRenaming) return;
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
+        audioMap.type.play();
         updateCowName(cow.id, tempName.trim() || cow.name);
         setIsRenaming(false);
         return;
@@ -443,6 +445,7 @@ export const CowInfoBox = ({
             onPointerOver={() => setEditNameTint('green')}
             onPointerOut={() => setEditNameTint('black')}
             onPointerTap={() => {
+              audioMap.type.play();
               setTempName('');
               setIsRenaming(!isRenaming);
             }}
@@ -457,6 +460,7 @@ export const CowInfoBox = ({
             buttonColor={'white'}
             ignorePointer={true}
             onClick={() => {
+              audioMap.type.play();
               if (isRenaming) setIsRenaming(false);
               setIsInfo(true);
             }}
@@ -468,7 +472,10 @@ export const CowInfoBox = ({
             buttonHeight={buttonHeight}
             buttonText={'Sell'}
             buttonColor={'#E28C80'}
-            onClick={() => setSelectedMenu('sellCow')}
+            onClick={() => {
+              audioMap.type.play();
+              setSelectedMenu('sellCow');
+            }}
           />
         </>
       ) : (
@@ -482,7 +489,10 @@ export const CowInfoBox = ({
             buttonText={'Back'}
             buttonColor={'white'}
             ignorePointer={true}
-            onClick={() => setIsInfo(false)}
+            onClick={() => {
+              audioMap.type.play();
+              setIsInfo(false);
+            }}
           />
         </>
       )}

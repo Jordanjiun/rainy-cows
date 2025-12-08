@@ -1,5 +1,5 @@
 import { Application } from '@pixi/react';
-import { FileInputProvider } from './context/Providers';
+import { AudioProvider, FileInputProvider } from './context/Providers';
 import { useScene } from './context/hooks';
 import type { SceneKey } from './context/Contexts';
 import { LoadScreen } from './scenes/LoadScene';
@@ -70,14 +70,16 @@ export const AppContent = () => {
         </button>
 
         <FileInputProvider>
-          <Application
-            antialias={true}
-            className="canvas"
-            resizeTo={window}
-            roundPixels={false}
-          >
-            {renderScene(currentScene)}
-          </Application>
+          <AudioProvider>
+            <Application
+              antialias={true}
+              className="canvas"
+              resizeTo={window}
+              roundPixels={false}
+            >
+              {renderScene(currentScene)}
+            </Application>
+          </AudioProvider>
         </FileInputProvider>
       </div>
     </>

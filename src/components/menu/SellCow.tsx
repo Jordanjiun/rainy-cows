@@ -1,7 +1,7 @@
 import { extend } from '@pixi/react';
 import { Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useCallback, useEffect, useState } from 'react';
-import { useCow, useMenu } from '../../context/hooks';
+import { useAudio, useCow, useMenu } from '../../context/hooks';
 import { cowXpPerLevel } from '../../data/cowData';
 import { useGameStore } from '../../game/store';
 import { measureText } from '../../game/utils';
@@ -27,8 +27,9 @@ export const SellCow = ({
   appWidth: number;
   appHeight: number;
 }) => {
-  const { selectedMenu, setSelectedMenu } = useMenu();
+  const { audioMap } = useAudio();
   const { selectedCow, setSelectedCow } = useCow();
+  const { selectedMenu, setSelectedMenu } = useMenu();
   const { addMooney, removeCow } = useGameStore();
 
   const [mooneyImage, setMooneyImage] = useState<Texture | null>(null);
@@ -58,10 +59,13 @@ export const SellCow = ({
 
   function handleClick(isSell: boolean = false, amount: number) {
     if (isSell && selectedCow) {
+      audioMap.coin.play();
       const cowId = selectedCow.id;
       addMooney(amount);
       setSelectedCow(null);
       removeCow(cowId);
+    } else {
+      audioMap.type.play();
     }
     setSelectedMenu(null);
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;

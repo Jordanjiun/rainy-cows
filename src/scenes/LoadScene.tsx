@@ -1,10 +1,20 @@
 import { extend, useApplication } from '@pixi/react';
 import { Assets, Container } from 'pixi.js';
 import { useEffect, useState } from 'react';
-import { useScene } from '../context/hooks';
+import { useAudio, useScene } from '../context/hooks';
 import { LoadingBar } from '../components/others/LoadingBar';
 
 extend({ Container });
+
+const audioManifest = [
+  { alias: 'coin', src: '/assets/audio/coin.mp3', volume: 1 },
+  { alias: 'click', src: '/assets/audio/click.mp3', volume: 1 },
+  { alias: 'moo', src: '/assets/audio/moo.mp3', volume: 0.3 },
+  { alias: 'type', src: '/assets/audio/type.mp3', volume: 0.5 },
+  { alias: 'powerup', src: '/assets/audio/powerup.mp3', volume: 0.3 },
+  { alias: 'whoosh', src: '/assets/audio/whoosh.mp3', volume: 0.5 },
+  { alias: 'wrong', src: '/assets/audio/wrong.mp3', volume: 0.5 },
+];
 
 const manifest = {
   bundles: [
@@ -80,9 +90,11 @@ const fonts = [{ name: 'pixelFont', url: '/assets/fonts/04B_03__.TTF' }];
 await Assets.init({ manifest });
 
 export const LoadScreen = () => {
-  const [progress, setProgress] = useState(0);
-  const { switchScene } = useScene();
   const { app } = useApplication();
+  const { loadAudio } = useAudio();
+  const { switchScene } = useScene();
+
+  const [progress, setProgress] = useState(0);
   const [size, setSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
@@ -116,12 +128,14 @@ export const LoadScreen = () => {
     let isCancelled = false;
     const loadAssets = async () => {
       if (!app) return;
-      const totalAssets = manifest.bundles.reduce(
-        (sum, bundle) => sum + bundle.assets.length,
-        0,
-      );
 
-      const totalLoadables = totalAssets + fonts.length;
+      const totalAssets =
+        manifest.bundles.reduce(
+          (sum, bundle) => sum + bundle.assets.length,
+          0,
+        ) +
+        fonts.length +
+        audioManifest.length;
       let loadedCount = 0;
 
       for (const bundle of manifest.bundles) {
@@ -129,7 +143,7 @@ export const LoadScreen = () => {
           await Assets.load(asset.src);
           if (isCancelled) return;
           loadedCount += 1;
-          setProgress(Math.floor((loadedCount / totalLoadables) * 100));
+          setProgress(Math.floor((loadedCount / totalAssets) * 100));
         }
       }
 
@@ -139,8 +153,13 @@ export const LoadScreen = () => {
         document.fonts.add(fontFace);
         if (isCancelled) return;
         loadedCount += 1;
-        setProgress(Math.floor((loadedCount / totalLoadables) * 100));
+        setProgress(Math.floor((loadedCount / totalAssets) * 100));
       }
+
+      await loadAudio(audioManifest);
+      if (isCancelled) return;
+      loadedCount += audioManifest.length;
+      setProgress(Math.floor((loadedCount / totalAssets) * 100));
 
       if (!isCancelled) switchScene('MainScene');
     };
@@ -150,7 +169,7 @@ export const LoadScreen = () => {
     return () => {
       isCancelled = true;
     };
-  }, [app, switchScene]);
+  }, [app, switchScene, useAudio]);
 
   if (!app) return null;
 
