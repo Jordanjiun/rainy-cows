@@ -1,8 +1,10 @@
 import { extend } from '@pixi/react';
 import { Container, Graphics, Text } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { gameUpgrades } from '../data/gameData';
-import { useGameStore } from '../game/store';
+import { gameUpgrades } from '../../data/gameData';
+import { useGameStore } from '../../game/store';
+import { Grass } from './Grass';
+import { Sky } from './Sky';
 
 extend({ Container, Graphics, Text });
 
@@ -18,6 +20,9 @@ export const Farm = ({
 }) => {
   const { isHarvest, lastHarvest, upgrades } = useGameStore();
   const [remainingTime, setRemainingTime] = useState(0);
+
+  let harvestTimeYoffset = 25;
+  if (appWidth > 600) harvestTimeYoffset = 0;
 
   useEffect(() => {
     const updateTime = () => {
@@ -46,7 +51,7 @@ export const Farm = ({
     return () => clearInterval(interval);
   }, [lastHarvest, isHarvest]);
 
-  const drawBackground = useCallback(
+  const drawDefaultBackground = useCallback(
     (g: Graphics) => {
       g.clear();
       g.rect(0, 0, appWidth, appHeight * (1 - landRatio));
@@ -58,6 +63,13 @@ export const Farm = ({
         appHeight * landRatio - footerHeight,
       );
       g.fill({ color: '#32CD32' });
+    },
+    [appWidth, appHeight],
+  );
+
+  const drawFooter = useCallback(
+    (g: Graphics) => {
+      g.clear();
       g.rect(0, appHeight - footerHeight, appWidth, footerHeight);
       g.fill({ color: '#A0522D' });
     },
@@ -68,12 +80,18 @@ export const Farm = ({
     () => (
       <pixiContainer
         x={appWidth / 2}
-        y={10 + (appHeight * (1 - landRatio)) / 2}
+        y={(appHeight * (1 - landRatio)) / 2 + harvestTimeYoffset}
       >
         <pixiText
-          text={`Harvest time! (${remainingTime}s)`}
+          text={`Harvest time!\n(${remainingTime} seconds left)`}
           anchor={0.5}
-          style={{ fontSize: 28, fill: 'black', fontWeight: 'bold' }}
+          style={{
+            fontSize: 32,
+            fontFamily: 'pixelFont',
+            align: 'center',
+            wordWrap: true,
+            wordWrapWidth: appWidth,
+          }}
         />
       </pixiContainer>
     ),
@@ -82,8 +100,11 @@ export const Farm = ({
 
   return (
     <>
-      <pixiGraphics draw={drawBackground} />
+      <pixiGraphics draw={drawDefaultBackground} />
+      <Sky appWidth={appWidth} appHeight={appHeight} />
+      <Grass appWidth={appWidth} appHeight={appHeight} />
       {isHarvest && drawHarvestTime}
+      <pixiGraphics draw={drawFooter} />
     </>
   );
 };

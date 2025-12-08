@@ -49,10 +49,7 @@ export const LoadingBar = ({
         x={appWidth / 2}
         y={appHeight / 2 + barTextSep}
         anchor={0.5}
-        style={{
-          fill: 'black',
-          fontSize: 24,
-        }}
+        style={{ fontSize: 24, fontFamily: 'pixelFont' }}
       />
     </>
   );

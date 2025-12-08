@@ -9,34 +9,41 @@ import {
   Texture,
 } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useMenu } from '../../context/hooks';
+import { useAudio, useMenu } from '../../context/hooks';
 import { cowXpPerLevel } from '../../data/cowData';
 import { useGameStore } from '../../game/store';
+import { measureText } from '../../game/utils';
 import { Button } from '../menu/Button';
-import type { Cow } from '../../models/cowModel';
+import type { Cow, CowStat } from '../../game/cowModel';
 
 extend({ Container, Graphics, Sprite, Text });
 
-const baseFontSize = 20;
+const baseFontSize = 24;
 const boxWidth = 210;
-const boxHeight = 150;
+const boxHeight = 170;
 const crossSize = 15;
 const crossThickness = 4;
+const offset = 10;
+const titleWidth = 140;
 const heartMaxNum = 10;
 const heartScale = 0.07;
 const heartSpacing = 1.6;
-const heartY = 55;
-const offset = 10;
-const titleWidth = 160;
-const titleY = 18;
-const xpBarY = 35;
+const heartY = 75;
+const xpBarY = 55;
+const infoY = 52;
 const buttonWidth = 90;
-const buttonHeight = 35;
-const maxNameLength = 10;
+const buttonHeight = 30;
+const maxNameLength = 12;
 
-const assetNames = ['heart', 'noHeart'];
+const assetNames = ['heart', 'noHeart', 'mooney', 'pen'];
 const boxColor = '#ebd9c0ff';
 const allowedCharRegex = /^[a-zA-Z0-9 ]$/;
+
+const infoRows: { label: string; value: CowStat }[] = [
+  { label: 'Eat Chance', value: 'eatChance' },
+  { label: 'Bonus Mooney', value: 'extraMooney' },
+  { label: 'Value Multiplier', value: 'valueMultiplier' },
+];
 
 interface CowInfoBoxProps {
   appWidth: number;
@@ -51,18 +58,28 @@ export const CowInfoBox = ({
   cow,
   onClose,
 }: CowInfoBoxProps) => {
+  const { audioMap } = useAudio();
   const { updateCowName } = useGameStore();
   const { setSelectedMenu } = useMenu();
 
   const [isHovered, setIsHovered] = useState(false);
-  const [scale, setScale] = useState(1);
-  const [textures, setTextures] = useState<Record<string, Texture>>({});
+  const [isInfo, setIsInfo] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
-  const [tempName, setTempName] = useState('');
   const [cursorVisible, setCursorVisible] = useState(true);
+  const [scale, setScale] = useState(1);
+  const [renameScale, setRenameScale] = useState(1);
+  const [textures, setTextures] = useState<Record<string, Texture>>({});
+  const [tempName, setTempName] = useState('');
+  const [editNameTint, setEditNameTint] = useState('black');
 
   const hiddenInputRef = useRef<HTMLInputElement | null>(null);
   const textRef = useRef<any>(null);
+  const renameTextRef = useRef<any>(null);
+
+  const base = cowXpPerLevel[cow.level - 1] ?? 0;
+  let value: number;
+  if (cow.level == 10) value = Math.round(base * cow.stats.valueMultiplier);
+  else value = Math.round((base + cow.xp) * cow.stats.valueMultiplier);
 
   useEffect(() => {
     let mounted = true;
@@ -88,6 +105,7 @@ export const CowInfoBox = ({
     if (!isRenaming) return;
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
+        audioMap.type.play();
         updateCowName(cow.id, tempName.trim() || cow.name);
         setIsRenaming(false);
         return;
@@ -158,7 +176,7 @@ export const CowInfoBox = ({
   const drawXpBar = useCallback(
     (g: Graphics) => {
       const barWidth = boxWidth - 2 * offset;
-      var percentage;
+      let percentage;
       if (cowXpPerLevel[cow.level])
         percentage = cow.xp / cowXpPerLevel[cow.level];
       else percentage = 1;
@@ -204,31 +222,57 @@ export const CowInfoBox = ({
 
   useEffect(() => {
     if (!textRef.current) return;
-    textRef.current.style = new TextStyle({ fontSize: baseFontSize });
+    textRef.current.style = new TextStyle({
+      fontSize: baseFontSize,
+      fontFamily: 'pixelFont',
+    });
     const bounds = textRef.current.getLocalBounds();
     const textWidth = bounds.width;
     const newScale = textWidth > titleWidth ? titleWidth / textWidth : 1;
     setScale(newScale);
   }, [cow.name, titleWidth]);
 
-  const drawNameAndLevel = useMemo(
+  useEffect(() => {
+    const textWidth = measureText(tempName, {
+      fontSize: baseFontSize,
+      fontFamily: 'pixelFont',
+    });
+    const maxWidth = titleWidth - 2;
+    const newScale = textWidth > maxWidth ? maxWidth / textWidth : 1;
+    setRenameScale(newScale);
+  }, [tempName, cursorVisible, titleWidth]);
+
+  const drawName = useMemo(
     () => (
       <pixiText
         ref={textRef}
-        x={(boxWidth + crossSize + offset) / 2}
-        y={titleY}
-        text={`${cow.name} (Lvl. ${cow.level})`}
+        x={boxWidth / 2}
+        y={17}
+        text={`${cow.name}`}
         anchor={0.5}
         scale={{ x: scale, y: scale }}
-        style={{ fontSize: baseFontSize }}
+        style={{ fontSize: baseFontSize, fontFamily: 'pixelFont' }}
       />
     ),
-    [cow.name, cow.level, scale],
+    [cow.name, scale],
+  );
+
+  const drawLevel = useMemo(
+    () => (
+      <pixiText
+        x={boxWidth / 2}
+        y={40}
+        text={`(Lvl. ${cow.level})`}
+        anchor={0.5}
+        style={{ fontSize: 20, fontFamily: 'pixelFont' }}
+      />
+    ),
+    [cow.level],
   );
 
   const drawXp = useMemo(() => {
     const cowLevel = cow.level;
-    var xpText;
+    let xpText;
     if (cowLevel == 10 || !cowXpPerLevel[cowLevel]) xpText = 'Maxed';
     else {
       xpText =
@@ -244,7 +288,7 @@ export const CowInfoBox = ({
           y={xpBarY + 7}
           text={`${xpText}`}
           anchor={0.5}
-          style={{ fontSize: 14, fill: 'white' }}
+          style={{ fontSize: 14, fill: 'white', fontFamily: 'pixelFont' }}
         />
       </>
     );
@@ -284,80 +328,174 @@ export const CowInfoBox = ({
     );
   }, [textures.noHeart, textures.heart, cow.hearts]);
 
-  const drawDetails = useMemo(() => {
-    const base = cowXpPerLevel[cow.level - 1] ?? 0;
-    var value;
-    if (cow.level == 10) value = base;
-    else value = base + cow.xp;
+  const drawValue = useMemo(() => {
+    if (!textures.mooney) return null;
+    const iconWidth = textures.mooney.width * 0.8;
+    const textWidth = measureText(value.toLocaleString('en-US'), {
+      fontSize: 18,
+    });
+    const totalWidthDynamic = iconWidth + textWidth;
+    const startX = (boxWidth - totalWidthDynamic) / 2;
     return (
-      <>
-        <pixiText
-          x={boxWidth / 2}
-          y={75}
-          anchor={{ x: 0.5, y: 0 }}
-          text={`Value: ${value.toLocaleString('en-US')}`}
-          style={{ fontSize: 16 }}
+      <pixiContainer x={-6}>
+        <pixiSprite
+          texture={textures.mooney}
+          x={startX - 3}
+          y={97}
+          scale={0.8}
         />
-      </>
+        <pixiText
+          x={startX + iconWidth + 2}
+          y={99}
+          text={value.toLocaleString('en-US')}
+          style={{ fontSize: 20, fontFamily: 'pixelFont' }}
+        />
+      </pixiContainer>
     );
-  }, [cow.level, cow.xp]);
+  }, [textures.mooney, value, boxWidth]);
+
+  const drawInfo = useMemo(() => {
+    const lines = [
+      `Rarity: ${cow.stats.rarity.charAt(0).toUpperCase() + cow.stats.rarity.slice(1)}`,
+      ...infoRows.map((row) => `${row.label}: ${cow.stats[row.value]}`),
+    ];
+    const maxWidth = Math.max(
+      ...lines.map((line) =>
+        measureText(line, { fontSize: 16, fontFamily: 'pixelFont' }),
+      ),
+    );
+    return (
+      <pixiContainer x={(boxWidth - maxWidth) / 2}>
+        <pixiText
+          y={infoY}
+          text={`Rarity: ${cow.stats.rarity.charAt(0).toUpperCase() + cow.stats.rarity.slice(1)}`}
+          style={{ fontSize: 16, fontFamily: 'pixelFont' }}
+        />
+        {infoRows.map((row, i) => {
+          const y = infoY + (i + 1) * 16;
+          return (
+            <pixiContainer key={row.label}>
+              <pixiText
+                y={y}
+                text={`${row.label}: ${cow.stats[row.value]}`}
+                style={{ fontSize: 16, fontFamily: 'pixelFont' }}
+              />
+            </pixiContainer>
+          );
+        })}
+      </pixiContainer>
+    );
+  }, [cow.stats]);
+
+  if (!textures.pen) return null;
 
   return (
     <pixiContainer x={appWidth - boxWidth - offset} y={offset}>
       <pixiGraphics draw={drawBox} />
       {drawCloseButton}
-      {drawNameAndLevel}
-      {drawXp}
-      {drawHearts}
-      {drawDetails}
+      {!isRenaming && drawName}
+      {drawLevel}
 
-      {isRenaming && (
-        <pixiContainer
-          x={offset}
-          y={boxHeight - (buttonHeight + offset) - 49}
-          interactive={true}
-        >
-          <pixiGraphics
-            draw={(g) => {
-              g.clear();
-              g.roundRect(0, 0, boxWidth - offset * 2, 40, 8);
-              g.fill({ color: 'white' });
-              g.stroke({ width: 2, color: 'black' });
+      {!isInfo ? (
+        <>
+          {drawXp}
+          {drawHearts}
+          {drawValue}
+          {isRenaming && (
+            <pixiContainer
+              x={(boxWidth - titleWidth) / 2}
+              y={0}
+              interactive={true}
+            >
+              <pixiContainer x={titleWidth / 2} y={17}>
+                <pixiText
+                  ref={renameTextRef}
+                  text={tempName}
+                  anchor={{ x: 0.5, y: 0.5 }}
+                  scale={{ x: renameScale, y: renameScale }}
+                  style={{
+                    fontSize: baseFontSize,
+                    fontFamily: 'pixelFont',
+                  }}
+                />
+                {cursorVisible && (
+                  <pixiText
+                    text="|"
+                    x={renameTextRef.current?.width / 2 || 0}
+                    anchor={{ x: 0, y: 0.5 }}
+                    scale={{ x: renameScale, y: renameScale }}
+                    style={{
+                      fontSize: baseFontSize,
+                      fontFamily: 'pixelFont',
+                    }}
+                  />
+                )}
+              </pixiContainer>
+            </pixiContainer>
+          )}
+
+          <pixiSprite
+            texture={textures.pen}
+            x={boxWidth - 30}
+            y={7}
+            tint={editNameTint}
+            scale={0.6}
+            interactive={true}
+            cursor="pointer"
+            onPointerOver={() => setEditNameTint('green')}
+            onPointerOut={() => setEditNameTint('black')}
+            onPointerTap={() => {
+              audioMap.type.play();
+              setTempName('');
+              setIsRenaming(!isRenaming);
             }}
           />
-          <pixiText
-            text={`${tempName}${cursorVisible ? '|' : ''}`}
-            x={10}
-            y={20}
-            anchor={{ x: 0, y: 0.5 }}
-            style={{ fill: 'black', fontSize: 20 }}
-          />
-        </pixiContainer>
-      )}
 
-      <Button
-        x={offset}
-        y={boxHeight - (buttonHeight + offset)}
-        buttonWidth={buttonWidth}
-        buttonHeight={buttonHeight}
-        buttonText={'Rename'}
-        buttonColor={'white'}
-        fontsize={20}
-        onClick={() => {
-          setTempName('');
-          setIsRenaming(true);
-        }}
-      />
-      <Button
-        x={boxWidth - buttonWidth - offset}
-        y={boxHeight - (buttonHeight + offset)}
-        buttonWidth={buttonWidth}
-        buttonHeight={buttonHeight}
-        buttonText={'Sell'}
-        buttonColor={'#E28C80'}
-        fontsize={20}
-        onClick={() => setSelectedMenu('sellCow')}
-      />
+          <Button
+            x={boxWidth - buttonWidth - offset}
+            y={boxHeight - (buttonHeight + offset)}
+            buttonWidth={buttonWidth}
+            buttonHeight={buttonHeight}
+            buttonText={'Info'}
+            buttonColor={'white'}
+            ignorePointer={true}
+            onClick={() => {
+              audioMap.type.play();
+              if (isRenaming) setIsRenaming(false);
+              setIsInfo(true);
+            }}
+          />
+          <Button
+            x={offset}
+            y={boxHeight - (buttonHeight + offset)}
+            buttonWidth={buttonWidth}
+            buttonHeight={buttonHeight}
+            buttonText={'Sell'}
+            buttonColor={'#E28C80'}
+            onClick={() => {
+              audioMap.type.play();
+              setSelectedMenu('sellCow');
+            }}
+          />
+        </>
+      ) : (
+        <>
+          {drawInfo}
+          <Button
+            x={(boxWidth - buttonWidth) / 2}
+            y={boxHeight - (buttonHeight + offset)}
+            buttonWidth={buttonWidth}
+            buttonHeight={buttonHeight}
+            buttonText={'Back'}
+            buttonColor={'white'}
+            ignorePointer={true}
+            onClick={() => {
+              audioMap.type.play();
+              setIsInfo(false);
+            }}
+          />
+        </>
+      )}
     </pixiContainer>
   );
 };

@@ -1,16 +1,24 @@
-import { useState, useRef } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import {
+  AudioContext,
   CowContext,
   FileInputContext,
   MenuContext,
+  MooneyContext,
   SceneContext,
   ToastContext,
 } from './Contexts';
-import { ToastOverlay } from '../components/Toast';
+import { Howl } from 'howler';
+import { ToastOverlay } from '../components/others/Toast';
+import { useGameStore } from '../game/store';
 import type { ReactNode } from 'react';
-import type { SceneKey } from './Contexts';
-import type { ToastMessage } from '../components/Toast';
-import type { Cow } from '../models/cowModel';
+import type { SceneKey, MooneyEffect, AudioAsset } from './Contexts';
+import type { ToastMessage } from '../components/others/Toast';
+import type { Cow } from '../game/cowModel';
+
+const animationDuration = 1000;
+const fadeInDuration = 200;
+const fadeOutDuration = 300;
 
 export const SceneProvider = ({ children }: { children: ReactNode }) => {
   const [currentScene, setCurrentScene] = useState<SceneKey>('LoadScreen');
@@ -91,3 +99,105 @@ export function MenuProvider({ children }: { children: ReactNode }) {
     </MenuContext.Provider>
   );
 }
+
+export const MooneyProvider = ({ children }: { children: ReactNode }) => {
+  const [moonies, setMoonies] = useState<MooneyEffect[]>([]);
+
+  const addMooneyEffect = (x: number, y: number, amount: number) => {
+    setMoonies((prev) => [
+      ...prev,
+      {
+        x,
+        y,
+        alpha: 0,
+        vy: -1,
+        start: performance.now(),
+        amount: amount,
+      },
+    ]);
+  };
+
+  useEffect(() => {
+    let frame: number;
+
+    const animate = () => {
+      setMoonies((prev) =>
+        prev
+          .map((m) => {
+            const elapsed = performance.now() - m.start;
+
+            let alpha = 1;
+            if (elapsed < fadeInDuration) alpha = elapsed / fadeInDuration;
+            else if (elapsed > animationDuration - fadeOutDuration)
+              alpha = (animationDuration - elapsed) / fadeOutDuration;
+
+            return {
+              ...m,
+              y: m.y + m.vy,
+              alpha: Math.max(0, Math.min(1, alpha)),
+            };
+          })
+          .filter((m) => performance.now() - m.start < animationDuration),
+      );
+      frame = requestAnimationFrame(animate);
+    };
+
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  return (
+    <MooneyContext.Provider
+      value={{
+        moonies,
+        addMooneyEffect,
+      }}
+    >
+      {children}
+    </MooneyContext.Provider>
+  );
+};
+
+export const AudioProvider = ({ children }: { children: ReactNode }) => {
+  const { volume: globalVolume, setVolume } = useGameStore();
+  const [audioMap, setAudioMap] = useState<Record<string, Howl>>({});
+  const [originalVolumes, setOriginalVolumes] = useState<
+    Record<string, number>
+  >({});
+
+  const loadAudio = async (audioManifest: AudioAsset[]) => {
+    const map: Record<string, Howl> = {};
+    const volumes: Record<string, number> = {};
+
+    for (const audio of audioManifest) {
+      volumes[audio.alias] = audio.volume ?? 1;
+      map[audio.alias] = new Howl({
+        src: [audio.src],
+        volume: (audio.volume ?? 1) * globalVolume,
+      });
+    }
+
+    setAudioMap(map);
+    setOriginalVolumes(volumes);
+    return map;
+  };
+
+  const setGlobalVolume = useCallback(
+    (volume: number) => {
+      setVolume(volume);
+      Object.entries(audioMap).forEach(([alias, howl]) => {
+        const originalVolume = originalVolumes[alias] ?? 1;
+        howl.volume(originalVolume * volume);
+      });
+    },
+    [audioMap, originalVolumes],
+  );
+
+  return (
+    <AudioContext.Provider
+      value={{ audioMap, globalVolume, loadAudio, setGlobalVolume }}
+    >
+      {children}
+    </AudioContext.Provider>
+  );
+};

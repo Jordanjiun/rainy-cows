@@ -1,16 +1,19 @@
 import { extend } from '@pixi/react';
 import { Container, Graphics, Text } from 'pixi.js';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
+import { useAudio } from '../../context/hooks';
 import { purgeGameData } from '../../game/store';
+import { Button } from './Button';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Container, Graphics, Text });
 
 const boxHeight = 200;
-const boxWidth = 250;
+const boxWidth = 260;
 const buttonWidth = 80;
 const buttonHeight = 40;
 const buttonOffset = 20;
+const buttonY = boxHeight - buttonHeight - 15;
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
@@ -23,9 +26,7 @@ export const FinalWarning = ({
   appHeight: number;
   onClick: () => void;
 }) => {
-  const [noHovered, setNoHovered] = useState(false);
-  const [yesHovered, setYesHovered] = useState(false);
-  const buttonY = boxHeight - buttonHeight - 15;
+  const { audioMap, setGlobalVolume } = useAudio();
 
   const drawBase = useCallback(
     (g: Graphics) => {
@@ -40,7 +41,11 @@ export const FinalWarning = ({
 
   function handleClick(isDelete: boolean = false) {
     if (isDelete) {
+      audioMap.whoosh.play();
       purgeGameData();
+      setGlobalVolume(1);
+    } else {
+      audioMap.type.play();
     }
     onClick();
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;
@@ -72,76 +77,44 @@ export const FinalWarning = ({
           y={30}
           text={'Warning!'}
           anchor={0.5}
-          style={{ fontWeight: 'bold', fill: 'red' }}
+          style={{ fill: 'red', fontSize: 28, fontFamily: 'pixelFont' }}
         />
         <pixiText
           x={boxWidth / 2}
-          y={boxHeight / 2 - 8}
+          y={boxHeight / 2 - 10}
           text={
             'You are about to delete your save file. This is irreversible. Are you sure you want to continue?'
           }
           anchor={0.5}
           style={{
-            fontSize: 18,
+            fontSize: 16,
+            fontFamily: 'pixelFont',
             align: 'center',
             wordWrap: true,
             wordWrapWidth: boxWidth - 40,
           }}
         />
 
-        <pixiContainer
+        <Button
           x={boxWidth - buttonWidth - buttonOffset}
           y={buttonY}
-          interactive={true}
-          cursor="pointer"
-          onPointerOver={() => setNoHovered(true)}
-          onPointerOut={() => setNoHovered(false)}
-          onPointerTap={() => handleClick(false)}
-        >
-          <pixiGraphics
-            draw={(g) => {
-              g.clear();
-              g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-              g.fill({ color: noHovered ? 'yellow' : '#E28C80' });
-              g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-              g.stroke({ width: 2, color: 'black' });
-            }}
-          />
-          <pixiText
-            x={buttonWidth / 2}
-            y={buttonHeight / 2 - 1}
-            text={'No'}
-            anchor={0.5}
-            style={{ fontSize: 22 }}
-          />
-        </pixiContainer>
-
-        <pixiContainer
+          buttonWidth={buttonWidth}
+          buttonHeight={buttonHeight}
+          buttonText={'No'}
+          fontsize={28}
+          buttonColor={'#E28C80'}
+          onClick={() => handleClick(false)}
+        />
+        <Button
           x={buttonOffset}
           y={buttonY}
-          interactive={true}
-          cursor="pointer"
-          onPointerOver={() => setYesHovered(true)}
-          onPointerOut={() => setYesHovered(false)}
-          onPointerTap={() => handleClick(true)}
-        >
-          <pixiGraphics
-            draw={(g) => {
-              g.clear();
-              g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-              g.fill({ color: yesHovered ? 'yellow' : '#80E28C' });
-              g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-              g.stroke({ width: 2, color: 'black' });
-            }}
-          />
-          <pixiText
-            x={buttonWidth / 2}
-            y={buttonHeight / 2 - 1}
-            text={'Yes'}
-            anchor={0.5}
-            style={{ fontSize: 22 }}
-          />
-        </pixiContainer>
+          buttonWidth={buttonWidth}
+          buttonHeight={buttonHeight}
+          buttonText={'Yes'}
+          fontsize={28}
+          buttonColor={'#80E28C'}
+          onClick={() => handleClick(true)}
+        />
       </pixiContainer>
     </>
   );

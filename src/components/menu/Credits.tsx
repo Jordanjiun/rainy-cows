@@ -1,6 +1,7 @@
 import { extend } from '@pixi/react';
 import { Container, Graphics, Text } from 'pixi.js';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
+import { Button } from './Button';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Container, Graphics, Text });
@@ -17,8 +18,9 @@ const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 const infoRows = [
   { label: 'Developer:', value: 'Jordan Tay' },
   { label: 'Pixel Cows:', value: 'Pop Shop Packs' },
-  { label: 'Music:', value: 'TBA' },
-  { label: 'Audio:', value: 'TBA' },
+  { label: 'Pixel Grass:', value: 'Bonsaiheldin' },
+  { label: 'Pixel Clouds:', value: 'Kass' },
+  { label: 'Audio:', value: 'Pixabay' },
 ];
 
 export const Credits = ({
@@ -30,7 +32,13 @@ export const Credits = ({
   appHeight: number;
   onClick: () => void;
 }) => {
-  const [backHovered, setBackHovered] = useState(false);
+  function handleClick() {
+    onClick();
+    const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+    if (canvas) {
+      canvas.style.cursor = 'default';
+    }
+  }
 
   const drawBase = useCallback(
     (g: Graphics) => {
@@ -47,9 +55,9 @@ export const Credits = ({
     (g: Graphics) => {
       const lineY = 112.5;
       g.clear();
-      g.moveTo(padding, lineY);
-      g.lineTo(boxWidth - padding, lineY);
-      g.stroke({ width: 2, color: 'black' });
+      g.moveTo(padding - 5, lineY);
+      g.lineTo(boxWidth - padding + 5, lineY);
+      g.stroke({ width: 3, color: 'black' });
     },
     [boxWidth],
   );
@@ -77,15 +85,16 @@ export const Credits = ({
           y={30}
           text={'Credits'}
           anchor={0.5}
-          style={{ fontWeight: 'bold', fill: 'black' }}
+          style={{ fontSize: 28, fontFamily: 'pixelFont' }}
         />
         <pixiText
           x={boxWidth / 2}
           y={55}
-          text={'This game is dedicated to the love of my life, RainyBearry <3'}
+          text={'This game is dedicated to the love of my life, RainyBearry❤️'}
           anchor={{ x: 0.5, y: 0 }}
           style={{
-            fontSize: 18,
+            fontSize: 16,
+            fontFamily: 'pixelFont',
             align: 'center',
             wordWrap: true,
             wordWrapWidth: boxWidth - padding,
@@ -93,52 +102,35 @@ export const Credits = ({
         />
         <pixiGraphics draw={drawLine} />
         {infoRows.map((row, i) => {
-          const y = 130 + i * 25;
+          const y = 130 + i * 20;
           return (
             <pixiContainer key={row.label}>
               <pixiText
                 x={padding}
                 y={y}
                 text={row.label}
-                style={{ fontSize: 18 }}
+                style={{ fontSize: 16, fontFamily: 'pixelFont' }}
               />
               <pixiText
                 x={boxWidth - padding}
                 y={y}
                 text={row.value}
                 anchor={{ x: 1, y: 0 }}
-                style={{ fontSize: 18 }}
+                style={{ fontSize: 16, fontFamily: 'pixelFont' }}
               />
             </pixiContainer>
           );
         })}
 
-        <pixiContainer
+        <Button
           x={(boxWidth - buttonWidth) / 2}
           y={boxHeight - buttonHeight - 20}
-          interactive={true}
-          cursor="pointer"
-          onPointerOver={() => setBackHovered(true)}
-          onPointerOut={() => setBackHovered(false)}
-          onPointerTap={onClick}
-        >
-          <pixiGraphics
-            draw={(g) => {
-              g.clear();
-              g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-              g.fill({ color: backHovered ? 'yellow' : 'white' });
-              g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-              g.stroke({ width: 2, color: 'black' });
-            }}
-          />
-          <pixiText
-            x={buttonWidth / 2}
-            y={buttonHeight / 2 - 1}
-            text={'Back'}
-            anchor={0.5}
-            style={{ fontSize: 22 }}
-          />
-        </pixiContainer>
+          buttonWidth={buttonWidth}
+          buttonHeight={buttonHeight}
+          buttonText={'Back'}
+          buttonColor={'white'}
+          onClick={handleClick}
+        />
       </pixiContainer>
     </>
   );

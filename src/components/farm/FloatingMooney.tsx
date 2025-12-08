@@ -1,24 +1,13 @@
 import { extend } from '@pixi/react';
-import { Assets, Graphics, Sprite, Texture } from 'pixi.js';
+import { Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useEffect, useState } from 'react';
-import { useGameStore } from '../game/store';
+import { useAudio, useMooney } from '../../context/hooks';
+import { useGameStore } from '../../game/store';
 import type { FederatedPointerEvent } from 'pixi.js';
 
-extend({ Graphics, Sprite });
-
-const animationDuration = 1000;
-const fadeInDuration = 200;
-const fadeOutDuration = 300;
+extend({ Container, Graphics, Sprite, Text });
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
-
-type MooneyEffect = {
-  x: number;
-  y: number;
-  alpha: number;
-  vy: number;
-  start: number;
-};
 
 export const FloatingMooney = ({
   appWidth,
@@ -28,7 +17,9 @@ export const FloatingMooney = ({
   appHeight: number;
 }) => {
   const { isHarvest, upgrades, addMooney } = useGameStore();
-  const [moonies, setMoonies] = useState<MooneyEffect[]>([]);
+  const { moonies, addMooneyEffect } = useMooney();
+  const { audioMap } = useAudio();
+
   const [mooneyImage, setMooneyImage] = useState<Texture | null>(null);
 
   useEffect(() => {
@@ -43,48 +34,11 @@ export const FloatingMooney = ({
     };
   }, []);
 
-  useEffect(() => {
-    let frame: number;
-    const animate = () => {
-      setMoonies((prev) =>
-        prev
-          .map((h) => {
-            const elapsed = performance.now() - h.start;
-
-            let alpha = 1;
-            if (elapsed < fadeInDuration) alpha = elapsed / fadeInDuration;
-            else if (elapsed > animationDuration - fadeOutDuration)
-              alpha = (animationDuration - elapsed) / fadeOutDuration;
-
-            return {
-              ...h,
-              y: h.y + h.vy,
-              alpha: Math.max(0, Math.min(1, alpha)),
-            };
-          })
-          .filter((h) => performance.now() - h.start < animationDuration),
-      );
-
-      frame = requestAnimationFrame(animate);
-    };
-
-    frame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frame);
-  }, [animationDuration]);
-
   function handleClick(event: any) {
     const { x, y } = event.data.global;
     addMooney(upgrades.clickLevel);
-    setMoonies((prev) => [
-      ...prev,
-      {
-        x,
-        y,
-        alpha: 0,
-        vy: -1,
-        start: performance.now(),
-      },
-    ]);
+    addMooneyEffect(x, y, upgrades.clickLevel);
+    audioMap.coin.play();
   }
 
   if (!mooneyImage) return null;
@@ -92,15 +46,23 @@ export const FloatingMooney = ({
   return (
     <>
       {moonies.map((h) => (
-        <pixiSprite
-          key={`${h.start}-${h.x}-${h.y}`}
-          texture={mooneyImage}
-          x={h.x}
-          y={h.y}
-          alpha={h.alpha}
-          anchor={0.5}
-          scale={1}
-        />
+        <pixiContainer key={`${h.start}-${h.x}-${h.y}`}>
+          <pixiSprite
+            texture={mooneyImage}
+            x={h.x}
+            y={h.y}
+            alpha={h.alpha}
+            anchor={0.5}
+            scale={1}
+          />
+          <pixiText
+            x={h.x - 4}
+            y={h.y - 2}
+            alpha={h.alpha}
+            text={`+${h.amount}`}
+            style={{ fontSize: 26, fontFamily: 'pixelFont' }}
+          />
+        </pixiContainer>
       ))}
       {isHarvest && (
         <>

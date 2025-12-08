@@ -1,16 +1,23 @@
 import { extend } from '@pixi/react';
 import { Assets, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useCallback, useMemo, useState, useEffect } from 'react';
-import { useCow, useFileInput, useMenu, useToast } from '../../context/hooks';
-import { exportGameSave, importGameSave } from '../../game/store';
+import {
+  useAudio,
+  useCow,
+  useFileInput,
+  useMenu,
+  useToast,
+} from '../../context/hooks';
+import { exportGameSave, importGameSave, useGameStore } from '../../game/store';
+import { AudioBar } from './AudioBar';
 import { Button } from './Button';
+import { Credits } from './Credits';
 import { FinalWarning } from './FinalWarning';
 import type { FederatedPointerEvent } from 'pixi.js';
-import { Credits } from './Credits';
 
 extend({ Graphics, Sprite, Text });
 
-const boxHeight = 300;
+const boxHeight = 353;
 const boxWidth = 200;
 const buttonWidth = 170;
 const buttonHeight = 40;
@@ -32,6 +39,7 @@ export const MainMenu = ({
   appWidth: number;
   appHeight: number;
 }) => {
+  const { audioMap, setGlobalVolume } = useAudio();
   const { selectedCow, setSelectedCow } = useCow();
   const { selectedMenu, setSelectedMenu } = useMenu();
   const { openFilePicker, onFileSelected } = useFileInput();
@@ -63,17 +71,24 @@ export const MainMenu = ({
   async function handleImport(file: File) {
     const result = await importGameSave(file);
     if (result.success) {
+      setGlobalVolume(useGameStore.getState().volume);
+      audioMap.powerup.play();
       showToast('Save file imported successfully!', greenColor);
       setSelectedMenu(null);
-    } else showToast('Error: File could not be imported', redColor);
+    } else {
+      audioMap.wrong.play();
+      showToast('Error: File could not be imported', redColor);
+    }
   }
 
   function handleExport() {
+    audioMap.type.play();
     exportGameSave();
     showToast('Save file exported', greenColor);
   }
 
   function handleClick() {
+    audioMap.click.play();
     if (selectedCow) {
       setSelectedCow(null);
     }
@@ -85,13 +100,19 @@ export const MainMenu = ({
   }
 
   function handleDeleteButton() {
+    audioMap.type.play();
     setSelectedMenu(null);
     setIsWarning(true);
   }
 
   function closeMenu() {
+    audioMap.click.play();
     setCloseHovered(false);
     setSelectedMenu(null);
+    const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+    if (canvas) {
+      canvas.style.cursor = 'default';
+    }
   }
 
   const drawButtonBase = useMemo(() => {
@@ -153,7 +174,7 @@ export const MainMenu = ({
         />
       </pixiContainer>
 
-      {selectedMenu == 'menu' && (
+      {selectedMenu == 'menu' && !isCredit && (
         <>
           <pixiGraphics
             interactive={true}
@@ -186,10 +207,16 @@ export const MainMenu = ({
 
             <pixiText
               x={boxWidth / 2}
-              y={30}
+              y={29}
               text={'Menu'}
               anchor={0.5}
-              style={{ fontWeight: 'bold' }}
+              style={{ fontSize: 28, fontFamily: 'pixelFont' }}
+            />
+
+            <AudioBar
+              x={(boxWidth - buttonWidth) / 2}
+              y={50}
+              width={buttonWidth}
             />
 
             <Button
@@ -219,7 +246,10 @@ export const MainMenu = ({
               buttonHeight={buttonHeight}
               buttonText={'Import Save'}
               buttonColor={'white'}
-              onClick={openFilePicker}
+              onClick={() => {
+                audioMap.type.play();
+                openFilePicker();
+              }}
             />
 
             <Button
@@ -229,7 +259,10 @@ export const MainMenu = ({
               buttonHeight={buttonHeight}
               buttonText={'Credits'}
               buttonColor={'white'}
-              onClick={() => setIsCredit(true)}
+              onClick={() => {
+                audioMap.type.play();
+                setIsCredit(true);
+              }}
             />
           </pixiContainer>
         </>
@@ -247,7 +280,10 @@ export const MainMenu = ({
         <Credits
           appWidth={appWidth}
           appHeight={appHeight}
-          onClick={() => setIsCredit(false)}
+          onClick={() => {
+            audioMap.type.play();
+            setIsCredit(false);
+          }}
         />
       )}
     </>

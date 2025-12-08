@@ -1,7 +1,7 @@
 import { extend } from '@pixi/react';
 import { Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useCow, useMenu } from '../../context/hooks';
+import { useAudio, useCow, useMenu } from '../../context/hooks';
 import { cowPrices, shopItemData } from '../../data/gameData';
 import { BuyCow } from './BuyCow';
 import { ShopItem } from './ShopItem';
@@ -10,16 +10,15 @@ import type { FederatedPointerEvent } from 'pixi.js';
 extend({ Container, Graphics, Sprite, Text });
 
 const boxHeight = 400;
-const boxWidth = 300;
+const boxWidth = 325;
 const buttonSize = 50;
 const crossSize = 20;
 const crossThickness = 4;
 const offset = 20;
-const shopItemHeight = 130;
-const shopItemOffset = 80;
+const shopItemHeight = 160;
+const shopItemOffset = 70;
 const maskHeight = boxHeight - 80;
-const maxScroll = shopItemOffset + 200;
-const scrollBarWidth = 6;
+const scrollBarWidth = 5;
 const scrollBarHeight = boxHeight - 2 * offset;
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
@@ -33,6 +32,7 @@ export const Shop = ({
   appWidth: number;
   appHeight: number;
 }) => {
+  const { audioMap } = useAudio();
   const { selectedCow, setSelectedCow } = useCow();
   const { selectedMenu, setSelectedMenu } = useMenu();
 
@@ -47,6 +47,14 @@ export const Shop = ({
   const lastY = useRef(0);
 
   const iconColor = isHovered ? 'yellow' : 'white';
+  const contentHeight = shopItemOffset + shopItemData.length * shopItemHeight;
+  const maxScroll = Math.max(0, contentHeight - maskHeight);
+  const trackHeight = scrollBarHeight;
+  const thumbHeight = Math.max(
+    20,
+    (maskHeight / contentHeight) * trackHeight * 0.6,
+  );
+  const thumbY = offset + (scrollY / maxScroll) * (trackHeight - thumbHeight);
 
   useEffect(() => {
     let mounted = true;
@@ -62,6 +70,7 @@ export const Shop = ({
   }, []);
 
   function handleClick() {
+    audioMap.click.play();
     if (selectedCow) setSelectedCow(null);
     if (selectedMenu != 'shop') setSelectedMenu('shop');
     else {
@@ -75,9 +84,14 @@ export const Shop = ({
   }
 
   function closeMenu() {
+    audioMap.click.play();
     setCloseHovered(false);
     setSelectedMenu(null);
     setScrollY(0);
+    const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+    if (canvas) {
+      canvas.style.cursor = 'default';
+    }
   }
 
   const drawButtonBase = useMemo(() => {
@@ -108,18 +122,20 @@ export const Shop = ({
         boxWidth - scrollBarWidth - 2,
         offset,
         scrollBarWidth,
-        scrollBarHeight,
+        trackHeight,
       );
       g.fill({ color: 'grey', alpha: 0.5 });
-      g.rect(
-        boxWidth - scrollBarWidth - 2,
-        offset + scrollY,
-        scrollBarWidth,
-        scrollBarHeight - maxScroll,
-      );
-      g.fill({ color: 'grey' });
+      if (maxScroll > 0) {
+        g.rect(
+          boxWidth - scrollBarWidth - 2,
+          thumbY,
+          scrollBarWidth,
+          thumbHeight,
+        );
+        g.fill({ color: 'grey' });
+      }
     },
-    [boxWidth, boxHeight, scrollY],
+    [scrollY, maskHeight, contentHeight],
   );
 
   const drawCloseButton = useMemo(() => {
@@ -180,7 +196,7 @@ export const Shop = ({
               e.stopPropagation();
               const delta = e.global.y - lastY.current;
               lastY.current = e.global.y;
-              handleScroll(-delta);
+              handleScroll(-delta * 1.5);
             }}
             onPointerUp={(e: FederatedPointerEvent) => {
               e.stopPropagation();
@@ -192,7 +208,7 @@ export const Shop = ({
             }}
             onWheel={(e: WheelEvent) => {
               e.stopPropagation();
-              handleScroll(e.deltaY * 0.3);
+              handleScroll(e.deltaY * 0.6);
             }}
             draw={(g) => {
               g.clear();
@@ -222,10 +238,10 @@ export const Shop = ({
 
             <pixiText
               x={boxWidth / 2}
-              y={30}
+              y={29}
               text={'Shop'}
               anchor={0.5}
-              style={{ fontWeight: 'bold' }}
+              style={{ fontSize: 28, fontFamily: 'pixelFont' }}
             />
 
             <pixiContainer x={offset} y={60}>
@@ -258,6 +274,7 @@ export const Shop = ({
                       maxWidth={boxWidth}
                       label={item.label}
                       description={item.description}
+                      levelText={item.levelText}
                       imageString={item.image}
                       upgradeName={item.upgradeName}
                       prices={item.prices}

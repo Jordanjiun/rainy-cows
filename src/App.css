@@ -1,3 +1,10 @@
+@font-face {
+  font-family: 'pixelFont';
+  src: url('/assets/fonts/04B_03__.TTF') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 .banner {
   width: 100%;
   background-color: #1A2A4F;
@@ -5,6 +12,7 @@
   text-align: left;
   padding: 8px 0 10px 16px;
   font-size: 32px;
+  font-family: 'pixelFont', sans-serif;
   font-weight: bold;
   box-sizing: border-box;
   position: fixed;

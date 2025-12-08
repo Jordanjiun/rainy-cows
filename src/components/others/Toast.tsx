@@ -89,10 +89,18 @@ function ToastItem({ message, offset }: ToastItemProps) {
     return () => cancelAnimationFrame(animationFrame);
   }, [offset]);
 
-  const width = 300;
   const height = 40;
 
   if (!app || size.width === 0 || size.height === 0) return null;
+
+  const tempText = new Text({
+    text: message.text,
+    style: {
+      fontFamily: 'pixelFont',
+      fontSize: 18,
+    },
+  });
+  const width = tempText.width + 20;
 
   return (
     <pixiContainer x={(size.width - width) / 2} y={yPos} alpha={alpha}>
@@ -101,7 +109,7 @@ function ToastItem({ message, offset }: ToastItemProps) {
           g.clear();
           g.roundRect(0, 0, width, height, 10);
           g.fill({ color: message.color });
-          g.stroke({ width: 2, color: 'black' });
+          g.stroke({ width: 3, color: 'black' });
         }}
       />
       <pixiText
@@ -109,7 +117,7 @@ function ToastItem({ message, offset }: ToastItemProps) {
         x={width / 2}
         y={height / 2}
         anchor={0.5}
-        style={{ fill: 'black', fontSize: 18 }}
+        style={{ fontSize: 18, fontFamily: 'pixelFont' }}
       />
     </pixiContainer>
   );

@@ -1,7 +1,7 @@
 import { extend } from '@pixi/react';
 import { Assets, Sprite, Text, Texture } from 'pixi.js';
 import { useEffect, useState } from 'react';
-import { useGameStore } from '../game/store';
+import { useGameStore } from '../../game/store';
 
 extend({ Sprite, Text });
 
@@ -31,19 +31,19 @@ export const FarmHud = () => {
 
   return (
     <>
-      <pixiSprite texture={textures.mooney} x={offset} y={offset} scale={1} />
+      <pixiSprite texture={textures.mooney} x={offset} y={offset} />
       <pixiText
-        x={32 + 1.5 * offset}
+        x={34 + 1.5 * offset}
         y={offset}
         text={amount}
-        style={{ fill: 'black' }}
+        style={{ fontFamily: 'pixelFont' }}
       />
-      <pixiSprite texture={textures.logo} x={offset} y={offset * 5} scale={1} />
+      <pixiSprite texture={textures.logo} x={offset} y={offset * 5} />
       <pixiText
-        x={32 + 1.5 * offset}
-        y={offset * 5}
+        x={34 + 1.5 * offset}
+        y={offset * 5 + 1}
         text={ratio}
-        style={{ fill: 'black' }}
+        style={{ fontFamily: 'pixelFont' }}
       />
     </>
   );

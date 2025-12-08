@@ -12,6 +12,7 @@ interface ButtonProps {
   buttonText: string;
   buttonColor: string;
   fontsize?: number;
+  ignorePointer?: boolean;
   onClick: () => void;
 }
 
@@ -22,10 +23,21 @@ export const Button = ({
   buttonHeight,
   buttonText,
   buttonColor,
-  fontsize = 22,
+  fontsize = 24,
+  ignorePointer = false,
   onClick,
 }: ButtonProps) => {
   const [isHovered, setIsHovered] = useState(false);
+
+  function handleClick() {
+    onClick();
+    if (ignorePointer) return;
+    setIsHovered(false);
+    const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+    if (canvas) {
+      canvas.style.cursor = 'default';
+    }
+  }
 
   return (
     <pixiContainer
@@ -35,7 +47,7 @@ export const Button = ({
       cursor="pointer"
       onPointerOver={() => setIsHovered(true)}
       onPointerOut={() => setIsHovered(false)}
-      onPointerTap={onClick}
+      onPointerTap={handleClick}
     >
       <pixiGraphics
         draw={(g) => {
@@ -43,7 +55,7 @@ export const Button = ({
           g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
           g.fill({ color: isHovered ? 'yellow' : buttonColor });
           g.roundRect(0, 0, buttonWidth, buttonHeight, 10);
-          g.stroke({ width: 2, color: 'black' });
+          g.stroke({ width: 3, color: 'black' });
         }}
       />
       <pixiText
@@ -51,7 +63,7 @@ export const Button = ({
         y={buttonHeight / 2 - 1}
         text={buttonText}
         anchor={0.5}
-        style={{ fontSize: fontsize }}
+        style={{ fontSize: fontsize, fontFamily: 'pixelFont' }}
       />
     </pixiContainer>
   );

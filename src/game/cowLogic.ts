@@ -3,7 +3,9 @@ import { Ticker } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
 import { createSeededRNG, getCowScale } from './utils';
 import { animationsDef } from './cowBuilder';
+import { useAudio } from '../context/hooks';
 import { cowConfig } from '../data/cowData';
+import type { Cow } from './cowModel';
 
 type AnimationKey = 'eat' | 'idle' | 'pet' | 'walk';
 type AnimationOptions = {
@@ -17,11 +19,8 @@ const frameSize = cowConfig.frameSize;
 const landRatio = Number(import.meta.env.VITE_LAND_RATIO);
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
-export function useCowActions(
-  appWidth: number,
-  appHeight: number,
-  seed: number,
-) {
+export function useCowActions(appWidth: number, appHeight: number, cow: Cow) {
+  const { audioMap } = useAudio();
   const cowScale = getCowScale(appWidth * appHeight);
   const cowHalfSize = (frameSize * cowScale) / 2;
   const landBoundary = appHeight * (1 - landRatio) - frameSize * cowScale + 10;
@@ -30,7 +29,7 @@ export function useCowActions(
   const eatCooldown = useRef(0);
   const isBeingPetted = useRef(false);
   const moveDir = useRef<{ dx: number; dy: number }>({ dx: 0, dy: 0 });
-  const rng = useRef(createSeededRNG(seed));
+  const rng = useRef(createSeededRNG(cow.seed));
   const stateTimer = useRef(0);
 
   const [pos, setPos] = useState<Vec2>(() =>
@@ -105,6 +104,8 @@ export function useCowActions(
 
   const handlePetAnimation = () => {
     if (isBeingPetted.current) return;
+    var soundId = audioMap.moo.play();
+    audioMap.moo.rate(cow.pitch ?? 1, soundId);
     isBeingPetted.current = true;
     playAnimation('pet');
     setTimeout(() => {
@@ -137,7 +138,7 @@ export function useCowActions(
       if (
         !isIdleActionPlaying &&
         eatCooldown.current <= 0 &&
-        rng.current() < cowConfig.eatChance
+        rng.current() < cowConfig.eatChance * cow.stats.eatChance
       ) {
         setIsIdleActionPlaying(true);
         setAnimation('eat');

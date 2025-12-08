@@ -2,14 +2,19 @@ import { extend, useApplication } from '@pixi/react';
 import { Container } from 'pixi.js';
 import { useEffect, useState } from 'react';
 import { CowManager } from '../components/cow/CowManager';
-import { Farm } from '../components/Farm';
-import { FarmHud } from '../components/FarmHud';
-import { FloatingMooney } from '../components/FloatingMooney';
-import { HarvestButton } from '../components/HarvestButton';
+import { Farm } from '../components/farm/Farm';
+import { FarmHud } from '../components/farm/FarmHud';
+import { FloatingMooney } from '../components/farm/FloatingMooney';
+import { HarvestButton } from '../components/farm/HarvestButton';
 import { MainMenu } from '../components/menu/MainMenu';
 import { SellCow } from '../components/menu/SellCow';
 import { Shop } from '../components/menu/Shop';
-import { CowProvider, MenuProvider, ToastProvider } from '../context/Providers';
+import {
+  CowProvider,
+  MenuProvider,
+  MooneyProvider,
+  ToastProvider,
+} from '../context/Providers';
 
 extend({ Container });
 
@@ -38,16 +43,18 @@ export const MainScene = () => {
     <pixiContainer>
       <ToastProvider>
         <MenuProvider>
-          <CowProvider>
-            <Farm appWidth={size.width} appHeight={size.height} />
-            <FarmHud />
-            <CowManager appWidth={size.width} appHeight={size.height} />
-            <HarvestButton appHeight={size.height} />
-            <FloatingMooney appWidth={size.width} appHeight={size.height} />
-            <Shop appWidth={size.width} appHeight={size.height} />
-            <MainMenu appWidth={size.width} appHeight={size.height} />
-            <SellCow appWidth={size.width} appHeight={size.height} />
-          </CowProvider>
+          <MooneyProvider>
+            <CowProvider>
+              <Farm appWidth={size.width} appHeight={size.height} />
+              <FarmHud />
+              <CowManager appWidth={size.width} appHeight={size.height} />
+              <HarvestButton appHeight={size.height} />
+              <FloatingMooney appWidth={size.width} appHeight={size.height} />
+              <Shop appWidth={size.width} appHeight={size.height} />
+              <MainMenu appWidth={size.width} appHeight={size.height} />
+              <SellCow appWidth={size.width} appHeight={size.height} />
+            </CowProvider>
+          </MooneyProvider>
         </MenuProvider>
       </ToastProvider>
     </pixiContainer>

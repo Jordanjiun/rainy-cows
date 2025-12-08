@@ -3,6 +3,8 @@ export const gameUpgrades = {
   harvestCooldownDecreasePerUpgrade: 5,
   harvestDurationSeconds: 10,
   harvetDurationIncreasePerUpgrade: 5,
+  harvestMultiplier: 10,
+  harvestMultiplierIncreasePerUpgrade: 10,
 };
 
 export const cowPrices = {
@@ -32,6 +34,7 @@ export const shopItemData = [
   {
     label: 'Upgrade Click',
     description: 'Increases mooney gained from clicking by 1.',
+    levelText: 'Mooney per click:',
     image: 'upgradeClick',
     upgradeName: 'clickLevel',
     prices: {
@@ -60,6 +63,7 @@ export const shopItemData = [
   {
     label: 'Upgrade Farm',
     description: 'Increases cow capacity by 2.',
+    levelText: 'Current capacity:',
     image: 'housePlus',
     upgradeName: 'farmLevel',
     prices: {
@@ -78,6 +82,7 @@ export const shopItemData = [
   {
     label: 'Upgrade Cooldown',
     description: 'Decreases time to next harvest by 5 minutes.',
+    levelText: 'Current wait:',
     image: 'clockDown',
     upgradeName: 'harvestCooldownLevel',
     prices: {
@@ -101,6 +106,7 @@ export const shopItemData = [
   {
     label: 'Upgrade Duration',
     description: 'Increases harvest duration by 5 seconds.',
+    levelText: 'Current length:',
     image: 'clockPlus',
     upgradeName: 'harvestDurationLevel',
     prices: {
@@ -115,6 +121,25 @@ export const shopItemData = [
       9: 2e4,
       10: 5e4,
       11: 1e5,
+    },
+  },
+  {
+    label: 'Upgrade Multiplier',
+    description: 'Increases cow harvest multiplier by 10.',
+    levelText: 'Current multiplier:',
+    image: 'x',
+    upgradeName: 'harvestMultiplierLevel',
+    prices: {
+      1: 0,
+      2: 1e3,
+      3: 5e3,
+      4: 1e4,
+      5: 5e4,
+      6: 1e5,
+      7: 5e5,
+      8: 1e6,
+      9: 5e6,
+      10: 1e7,
     },
   },
 ];

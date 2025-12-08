@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
 import { useEffect } from 'react';
 import { gameUpgrades } from '../data/gameData';
-import { Cow } from '../models/cowModel';
+import { Cow } from './cowModel';
 
 const dbName = String(import.meta.env.VITE_DB_NAME);
 const storeName = String(import.meta.env.VITE_DB_STORE_NAME);
@@ -51,6 +51,7 @@ function getSerializableState(state: GameState) {
     lastHarvest: state.lastHarvest,
     isHarvest: state.isHarvest,
     upgrades: state.upgrades,
+    volume: state.volume,
   };
 }
 
@@ -107,6 +108,8 @@ interface GameState {
   lastHarvest: number | null;
   isHarvest: boolean;
   upgrades: Upgrades;
+  volume: number;
+  setVolume: (volume: number) => void;
   addMooney: (amount: number) => void;
   addCow: (cow: Cow) => void;
   addUpgrade: (key: keyof Upgrades) => void;
@@ -122,6 +125,7 @@ export interface Upgrades {
   farmLevel: number;
   harvestCooldownLevel: number;
   harvestDurationLevel: number;
+  harvestMultiplierLevel: number;
 }
 
 export const upgrades: Upgrades = {
@@ -129,14 +133,17 @@ export const upgrades: Upgrades = {
   farmLevel: 1,
   harvestCooldownLevel: 1,
   harvestDurationLevel: 1,
+  harvestMultiplierLevel: 1,
 };
 
 export const useGameStore = create<GameState>((set, get) => {
-  const harvestDuration =
-    gameUpgrades.harvestDurationSeconds * 1000 +
-    gameUpgrades.harvetDurationIncreasePerUpgrade *
-      1000 *
-      (upgrades.harvestDurationLevel - 1);
+  const getHarvestDuration = () => {
+    const level = get().upgrades.harvestDurationLevel || 1;
+    return (
+      gameUpgrades.harvestDurationSeconds * 1000 +
+      gameUpgrades.harvetDurationIncreasePerUpgrade * 1000 * (level - 1)
+    );
+  };
 
   return {
     mooney: 100,
@@ -144,23 +151,18 @@ export const useGameStore = create<GameState>((set, get) => {
     lastHarvest: null,
     isHarvest: false,
     upgrades: upgrades,
+    volume: 1,
+
+    setVolume: (newVolume: number) => set({ volume: newVolume }),
 
     addMooney: (amount) => set({ mooney: get().mooney + amount }),
-    addCow: (cow) => set((state) => ({ cows: [...state.cows, cow] })),
-    addUpgrade: (key: keyof Upgrades) =>
-      set((state) => ({
-        upgrades: {
-          ...state.upgrades,
-          [key]: (state.upgrades[key] || 0) + 1,
-        },
-      })),
-
     removeMooney: (amount) => set({ mooney: get().mooney - amount }),
+
+    addCow: (cow) => set((state) => ({ cows: [...state.cows, cow] })),
     removeCow: (cowId: string) =>
       set((state) => ({
         cows: state.cows.filter((cow) => cow.id !== cowId),
       })),
-
     updateCowName: (cowId: string, newName: string) =>
       set((state) => ({
         cows: state.cows.map((cow) => {
@@ -171,20 +173,27 @@ export const useGameStore = create<GameState>((set, get) => {
         }),
       })),
 
+    addUpgrade: (key: keyof Upgrades) =>
+      set((state) => ({
+        upgrades: {
+          ...state.upgrades,
+          [key]: (state.upgrades[key] || 0) + 1,
+        },
+      })),
+
     loadData: (data) =>
       set((state) => {
         let restoredCows = state.cows;
-
         if (data.cows) {
           restoredCows = restoreCows(data);
         }
 
         const now = Date.now();
+        const harvestDuration = getHarvestDuration();
         let lastHarvest =
           typeof data.lastHarvest === 'number'
             ? data.lastHarvest
             : state.lastHarvest;
-
         let isHarvest = data.isHarvest ?? state.isHarvest;
 
         if (lastHarvest && lastHarvest + harvestDuration < now) {
@@ -197,7 +206,11 @@ export const useGameStore = create<GameState>((set, get) => {
           cows: restoredCows,
           lastHarvest,
           isHarvest,
-          upgrades: data.upgrades ?? state.upgrades,
+          upgrades: {
+            ...upgrades,
+            ...(data.upgrades ?? {}),
+          },
+          volume: data.volume ?? state.volume,
         };
       }),
 
@@ -208,6 +221,7 @@ export const useGameStore = create<GameState>((set, get) => {
         lastHarvest: null,
         isHarvest: false,
         upgrades: upgrades,
+        volume: 1,
       }),
   };
 });
