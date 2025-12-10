@@ -121,18 +121,16 @@ export const CowManager = ({
       let startY = 0;
       let longPressTimeout: number | null = null;
       let tapHandled = false;
-      let isPressActive = false;
+      let activePointerId: number | null = null;
 
       const handlePointerDown = (e: PointerEvent) => {
         if (isHarvest) return;
         if (e.button !== 0 && e.pointerType !== 'touch') return;
-
+        activePointerId = e.pointerId;
         pointerDownTime = performance.now();
         startX = e.clientX;
         startY = e.clientY;
         tapHandled = false;
-        isPressActive = true;
-
         longPressTimeout = window.setTimeout(() => {
           if (!tapHandled) {
             handleSetCow(cow);
@@ -142,9 +140,9 @@ export const CowManager = ({
         }, holdThreshold);
       };
 
-      const processPointerUp = (e: PointerEvent) => {
-        if (!isPressActive) return;
-        isPressActive = false;
+      const handlePointerUpGeneric = (e: PointerEvent) => {
+        if (activePointerId !== e.pointerId) return;
+        activePointerId = null;
 
         if (longPressTimeout) {
           clearTimeout(longPressTimeout);
@@ -170,27 +168,26 @@ export const CowManager = ({
         }
       };
 
-      const handlePointerUp = (e: PointerEvent) => processPointerUp(e);
-      const handlePointerUpOutside = (e: PointerEvent) => processPointerUp(e);
-      const handlePointerCancelOrLeave = () => {
+      const handleCancel = (e: PointerEvent) => {
+        if (activePointerId !== e.pointerId) return;
+        activePointerId = null;
         if (longPressTimeout) clearTimeout(longPressTimeout);
         longPressTimeout = null;
-        isPressActive = false;
       };
 
       sprite.eventMode = isHarvest ? 'none' : 'static';
       sprite.on('pointerdown', handlePointerDown);
-      sprite.on('pointerup', handlePointerUp);
-      sprite.on('pointerupoutside', handlePointerUpOutside);
-      sprite.on('pointercancel', handlePointerCancelOrLeave);
-      sprite.on('pointerleave', handlePointerCancelOrLeave);
+      sprite.on('pointerup', handlePointerUpGeneric);
+      sprite.on('pointerupoutside', handlePointerUpGeneric);
+      sprite.on('pointercancel', handleCancel);
+      sprite.on('pointerleave', handleCancel);
 
       return () => {
         sprite.off('pointerdown', handlePointerDown);
-        sprite.off('pointerup', handlePointerUp);
-        sprite.off('pointerupoutside', handlePointerUpOutside);
-        sprite.off('pointercancel', handlePointerCancelOrLeave);
-        sprite.off('pointerleave', handlePointerCancelOrLeave);
+        sprite.off('pointerup', handlePointerUpGeneric);
+        sprite.off('pointerupoutside', handlePointerUpGeneric);
+        sprite.off('pointercancel', handleCancel);
+        sprite.off('pointerleave', handleCancel);
       };
     },
     [isHarvest, selectedCow, handleHeartChange],

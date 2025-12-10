@@ -244,12 +244,15 @@ export const CowInfoBox = ({
   }, [cow.name, titleWidth]);
 
   useEffect(() => {
-    const textWidth = measureText(tempName, {
+    const textWidth = measureText(tempName || ' ', {
       fontSize: baseFontSize,
       fontFamily: 'pixelFont',
     });
     const maxWidth = titleWidth - 2;
-    const newScale = textWidth > maxWidth ? maxWidth / textWidth : 1;
+    let newScale = textWidth > maxWidth ? maxWidth / textWidth : 1;
+    if (!Number.isFinite(newScale) || newScale <= 0) {
+      newScale = 1;
+    }
     setRenameScale(newScale);
   }, [tempName, cursorVisible, titleWidth]);
 
