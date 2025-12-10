@@ -278,20 +278,28 @@ export function useGamePersistence() {
       await saveCompressedGameData(data);
     };
 
-    const interval = setInterval(saveToDB, 10000);
+    const interval = setInterval(saveToDB, 5000);
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    const handleBeforeUnload = () => {
+    const saveState = () => {
       const data = getSerializableState(useGameStore.getState());
       const compressed = compressToUTF16(JSON.stringify(data));
       localStorage.setItem(dbName, compressed);
+      saveCompressedGameData(data);
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', saveState);
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        saveState();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', saveState);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 }
