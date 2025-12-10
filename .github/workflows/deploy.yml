@@ -17,7 +17,6 @@ jobs:
 
       - name: Build React app
         if: github.ref_name == 'main'
-        working-directory: react
         env:
           VITE_DB_NAME: ${{ vars.DB_NAME }}
           VITE_DB_STORE_NAME: ${{ vars.DB_STORE_NAME }}
@@ -38,4 +37,4 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./react/build
+          publish_dir: ./build
