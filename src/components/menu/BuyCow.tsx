@@ -9,7 +9,7 @@ import {
   Texture,
 } from 'pixi.js';
 import { useEffect, useMemo, useState } from 'react';
-import { useAudio } from '../../context/hooks';
+import { useAudio, useMenu } from '../../context/hooks';
 import { useGameStore } from '../../game/store';
 import { Cow } from '../../game/cowModel';
 import { Button } from './Button';
@@ -32,8 +32,17 @@ interface BuyCowProps {
 }
 
 export const BuyCow = ({ y, maxWidth, prices }: BuyCowProps) => {
-  const { cows, mooney, upgrades, addCow, removeMooney } = useGameStore();
+  const {
+    cows,
+    mooney,
+    upgrades,
+    tutorial,
+    addCow,
+    removeMooney,
+    setTutorial,
+  } = useGameStore();
   const { audioMap } = useAudio();
+  const { setSelectedMenu } = useMenu();
 
   const [textures, setTextures] = useState<Record<string, Texture>>({});
   const [price, setPrice] = useState<number | null>(null);
@@ -91,6 +100,8 @@ export const BuyCow = ({ y, maxWidth, prices }: BuyCowProps) => {
       removeMooney(price);
       addCow(new Cow(cows));
     }
+    if (tutorial == 3) setTutorial(4);
+    setSelectedMenu(null);
   }
 
   if (!textures.mooney || !textures.cowIcon) return null;

@@ -3,6 +3,7 @@ import { Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAudio, useCow, useMenu } from '../../context/hooks';
 import { cowPrices, shopItemData } from '../../data/gameData';
+import { useGameStore } from '../../game/store';
 import { BuyCow } from './BuyCow';
 import { ShopItem } from './ShopItem';
 import type { FederatedPointerEvent } from 'pixi.js';
@@ -35,6 +36,7 @@ export const Shop = ({
   const { audioMap } = useAudio();
   const { selectedCow, setSelectedCow } = useCow();
   const { selectedMenu, setSelectedMenu } = useMenu();
+  const { tutorial, setTutorial } = useGameStore();
 
   const [isHovered, setIsHovered] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
@@ -77,9 +79,13 @@ export const Shop = ({
       setSelectedMenu(null);
       setScrollY(0);
     }
+    if (tutorial == 2) {
+      setTutorial(3);
+    }
   }
 
   function handleScroll(delta: number) {
+    if (tutorial > 0) return;
     setScrollY((prev) => Math.min(maxScroll, Math.max(0, prev + delta)));
   }
 
