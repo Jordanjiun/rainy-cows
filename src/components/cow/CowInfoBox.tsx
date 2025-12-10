@@ -110,7 +110,6 @@ export const CowInfoBox = ({
     if (!isRenaming) return;
     const input = document.createElement('input');
     input.type = 'text';
-    input.readOnly = true;
     input.maxLength = maxNameLength;
     input.value = tempName;
     input.style.position = 'absolute';
