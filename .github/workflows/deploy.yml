@@ -30,7 +30,7 @@ jobs:
       - name: Add CNAME for custom domain
         if: github.ref_name == 'main'
         run: |
-          echo "rainycows.com" > react/build/CNAME
+          echo "rainycows.com" > build/CNAME
 
       - name: Deploy to GitHub Pages
         if: github.ref_name == 'main'
