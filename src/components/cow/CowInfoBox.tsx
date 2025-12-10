@@ -103,60 +103,43 @@ export const CowInfoBox = ({
 
   useEffect(() => {
     if (!isRenaming) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        audioMap.type.play();
-        updateCowName(cow.id, tempName.trim() || cow.name);
-        setIsRenaming(false);
-        return;
-      }
-      if (e.key === 'Escape') {
-        setTempName(cow.name);
-        setIsRenaming(false);
-        return;
-      }
-      if (e.key === 'Backspace') {
-        setTempName((prev) => prev.slice(0, -1));
-        return;
-      }
 
-      if (e.key.length === 1 && allowedCharRegex.test(e.key)) {
-        setTempName((prev) =>
-          prev.length < maxNameLength ? prev + e.key : prev,
-        );
-      }
-    };
-
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [isRenaming, tempName]);
-
-  useEffect(() => {
-    if (!isRenaming) return;
     const input = document.createElement('input');
     input.type = 'text';
     input.maxLength = maxNameLength;
     input.value = tempName;
+
+    const canvas = document.querySelector('canvas');
+    const rect = canvas?.getBoundingClientRect();
+
     input.style.position = 'absolute';
-    input.style.top = '-1000px';
-    input.style.left = '-1000px';
-    input.style.width = '0px';
-    input.style.height = '0px';
-    input.style.opacity = '0';
-    input.style.pointerEvents = 'none';
-    input.style.zIndex = '-1';
+    if (rect) {
+      input.style.left = `${rect.left + boxWidth / 2 - 50}px`;
+      input.style.top = `${rect.top + 17 - 12}px`;
+    } else {
+      input.style.left = '50%';
+      input.style.top = '50%';
+    }
 
-    input.addEventListener('focus', () => {
-      document.body.style.overflow = 'hidden';
-    });
-
-    input.addEventListener('blur', () => {
-      document.body.style.overflow = '';
-    });
+    input.style.width = '100px';
+    input.style.height = '24px';
+    input.style.opacity = '0.01';
+    input.style.zIndex = '1000';
+    input.style.fontSize = `${baseFontSize}px`;
+    input.style.fontFamily = 'pixelFont';
+    input.style.color = 'black';
+    input.style.border = 'none';
+    input.style.background = 'transparent';
+    input.style.outline = 'none';
+    input.style.pointerEvents = 'auto';
 
     document.body.appendChild(input);
-    hiddenInputRef.current = input;
-    input.focus();
+    input.focus({ preventScroll: true });
+
+    setCursorVisible(true);
+    const blinkInterval = setInterval(() => {
+      setCursorVisible((v) => !v);
+    }, 500);
 
     const onInput = () => {
       const filtered = [...input.value]
@@ -167,11 +150,37 @@ export const CowInfoBox = ({
     };
     input.addEventListener('input', onInput);
 
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        updateCowName(cow.id, tempName.trim() || cow.name);
+        setIsRenaming(false);
+      }
+      if (e.key === 'Escape') {
+        setTempName(cow.name);
+        setIsRenaming(false);
+      }
+      if (e.key === 'Backspace') {
+        setTempName((prev) => prev.slice(0, -1));
+      }
+      if (e.key.length === 1 && allowedCharRegex.test(e.key)) {
+        setTempName((prev) =>
+          prev.length < maxNameLength ? prev + e.key : prev,
+        );
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    const handleBlur = () => setIsRenaming(false);
+    input.addEventListener('blur', handleBlur);
+    hiddenInputRef.current = input;
+
     return () => {
+      clearInterval(blinkInterval);
       input.removeEventListener('input', onInput);
+      input.removeEventListener('blur', handleBlur);
+      window.removeEventListener('keydown', handleKey);
       document.body.removeChild(input);
     };
-  }, [isRenaming]);
+  }, [isRenaming, tempName, cow.id]);
 
   const drawBox = useCallback(
     (g: Graphics) => {

@@ -35,23 +35,63 @@ export const AppContent = () => {
     const elem = containerRef.current;
     if (!elem) return;
 
-    if (!document.fullscreenElement) {
-      elem
-        .requestFullscreen?.()
-        .catch((err) =>
-          console.error(
-            `Error attempting to enable fullscreen: ${err.message}`,
-          ),
-        );
+    const doc: any = document;
+    if (
+      !document.fullscreenElement &&
+      !doc.webkitFullscreenElement &&
+      !doc.mozFullScreenElement &&
+      !doc.msFullscreenElement
+    ) {
+      if (elem.requestFullscreen) {
+        elem
+          .requestFullscreen()
+          .catch((err) =>
+            console.error(
+              `Error attempting to enable fullscreen: ${err.message}`,
+            ),
+          );
+      } else if ((elem as any).webkitRequestFullscreen) {
+        (elem as any).webkitRequestFullscreen();
+      } else if ((elem as any).mozRequestFullScreen) {
+        (elem as any).mozRequestFullScreen();
+      } else if ((elem as any).msRequestFullscreen) {
+        (elem as any).msRequestFullscreen();
+      }
     } else {
-      document.exitFullscreen?.();
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (doc.webkitExitFullscreen) {
+        doc.webkitExitFullscreen();
+      } else if (doc.mozCancelFullScreen) {
+        doc.mozCancelFullScreen();
+      } else if (doc.msExitFullscreen) {
+        doc.msExitFullscreen();
+      }
     }
   };
 
   useEffect(() => {
-    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    const handler = () => {
+      const doc: any = document;
+      setIsFullscreen(
+        !!document.fullscreenElement ||
+          !!doc.webkitFullscreenElement ||
+          !!doc.mozFullScreenElement ||
+          !!doc.msFullscreenElement,
+      );
+    };
+
     document.addEventListener('fullscreenchange', handler);
-    return () => document.removeEventListener('fullscreenchange', handler);
+    document.addEventListener('webkitfullscreenchange', handler);
+    document.addEventListener('mozfullscreenchange', handler);
+    document.addEventListener('MSFullscreenChange', handler);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handler);
+      document.removeEventListener('webkitfullscreenchange', handler);
+      document.removeEventListener('mozfullscreenchange', handler);
+      document.removeEventListener('MSFullscreenChange', handler);
+    };
   }, []);
 
   useEffect(() => {
