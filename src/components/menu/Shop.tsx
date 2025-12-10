@@ -73,14 +73,12 @@ export const Shop = ({
 
   function handleClick() {
     audioMap.click.play();
+    if (tutorial == 2) setTutorial(3);
     if (selectedCow) setSelectedCow(null);
     if (selectedMenu != 'shop') setSelectedMenu('shop');
     else {
       setSelectedMenu(null);
       setScrollY(0);
-    }
-    if (tutorial == 2) {
-      setTutorial(3);
     }
   }
 

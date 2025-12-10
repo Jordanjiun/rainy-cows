@@ -8,7 +8,7 @@ export const gameUpgrades = {
 };
 
 export const cowPrices = {
-  1: 100,
+  1: 50,
   2: 500,
   3: 1e3,
   4: 5e3,
@@ -39,7 +39,7 @@ export const shopItemData = [
     upgradeName: 'clickLevel',
     prices: {
       1: 0,
-      2: 200,
+      2: 100,
       3: 400,
       4: 800,
       5: 1500,
@@ -87,7 +87,7 @@ export const shopItemData = [
     upgradeName: 'harvestCooldownLevel',
     prices: {
       1: 0,
-      2: 150,
+      2: 100,
       3: 300,
       4: 600,
       5: 1e3,
@@ -111,7 +111,7 @@ export const shopItemData = [
     upgradeName: 'harvestDurationLevel',
     prices: {
       1: 0,
-      2: 200,
+      2: 100,
       3: 500,
       4: 1000,
       5: 1.5e3,

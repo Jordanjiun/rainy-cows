@@ -3,6 +3,7 @@ import { AnimatedSprite, Container, Graphics } from 'pixi.js';
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { CowComponent } from './CowComponent';
 import { CowInfoBox } from './CowInfoBox';
+import { FloatingArrow } from '../others/FloatingArrow';
 import { FloatingHearts } from './FloatingHeart';
 import { useAudio, useCow, useMenu } from '../../context/hooks';
 import { cowConfig } from '../../data/cowData';
@@ -21,7 +22,7 @@ export const CowManager = ({
 }) => {
   const { audioMap } = useAudio();
   const { selectedMenu } = useMenu();
-  const { cows, isHarvest } = useGameStore();
+  const { cows, isHarvest, tutorial, setTutorial } = useGameStore();
   const { selectedCow, setSelectedCow } = useCow();
   const cowScale = getCowScale(appWidth * appHeight);
 
@@ -159,6 +160,10 @@ export const CowManager = ({
         if (duration < holdThreshold) {
           handlePetAnimation();
           handleHeartChange(cow.id, cow.pet());
+          if (tutorial == 4) {
+            setSelectedCow(null);
+            setTutorial(5);
+          }
         }
       };
 
@@ -225,6 +230,14 @@ export const CowManager = ({
     );
   }, [appWidth, appHeight, selectedCow, cowXY]);
 
+  const drawFloatingArrow = useMemo(() => {
+    if (tutorial != 4) return;
+    const pos = cowXY[useGameStore.getState().cows[0].id];
+    if (!pos) return null;
+    const { x, y } = pos;
+    return <FloatingArrow x={x} y={y - 45} rotation={Math.PI} />;
+  }, [appWidth, appHeight, selectedCow, cowXY]);
+
   return (
     <>
       {sortedCows.map((cow) => (
@@ -268,6 +281,8 @@ export const CowManager = ({
           }}
         />
       )}
+
+      {tutorial == 4 && drawFloatingArrow}
     </>
   );
 };
