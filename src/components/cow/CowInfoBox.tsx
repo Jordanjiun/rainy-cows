@@ -95,6 +95,7 @@ export const CowInfoBox = ({
 
   useEffect(() => {
     if (!isRenaming) return;
+    setCursorVisible(true);
     const interval = setInterval(() => {
       setCursorVisible((v) => !v);
     }, 500);
@@ -102,44 +103,32 @@ export const CowInfoBox = ({
   }, [isRenaming]);
 
   useEffect(() => {
-    if (!isRenaming) return;
+    setIsRenaming(false);
+  }, [cow.id, cow.name]);
 
+  useEffect(() => {
+    if (!isRenaming) return;
     const input = document.createElement('input');
     input.type = 'text';
     input.maxLength = maxNameLength;
     input.value = tempName;
-
-    const canvas = document.querySelector('canvas');
-    const rect = canvas?.getBoundingClientRect();
-
     input.style.position = 'absolute';
-    if (rect) {
-      input.style.left = `${rect.left + boxWidth / 2 - 50}px`;
-      input.style.top = `${rect.top + 17 - 12}px`;
-    } else {
-      input.style.left = '50%';
-      input.style.top = '50%';
-    }
-
-    input.style.width = '100px';
-    input.style.height = '24px';
-    input.style.opacity = '0.01';
+    input.style.left = `${appWidth - 187}px`;
+    input.style.top = `80px`;
+    input.style.width = `${titleWidth}px`;
+    input.style.height = '20px';
+    input.style.opacity = '0.1';
     input.style.zIndex = '1000';
     input.style.fontSize = `${baseFontSize}px`;
     input.style.fontFamily = 'pixelFont';
     input.style.color = 'black';
     input.style.border = 'none';
-    input.style.background = 'transparent';
+    input.style.background = '#000';
     input.style.outline = 'none';
     input.style.pointerEvents = 'auto';
 
     document.body.appendChild(input);
     input.focus({ preventScroll: true });
-
-    setCursorVisible(true);
-    const blinkInterval = setInterval(() => {
-      setCursorVisible((v) => !v);
-    }, 500);
 
     const onInput = () => {
       const filtered = [...input.value]
@@ -169,18 +158,14 @@ export const CowInfoBox = ({
       }
     };
     window.addEventListener('keydown', handleKey);
-    const handleBlur = () => setIsRenaming(false);
-    input.addEventListener('blur', handleBlur);
     hiddenInputRef.current = input;
 
     return () => {
-      clearInterval(blinkInterval);
       input.removeEventListener('input', onInput);
-      input.removeEventListener('blur', handleBlur);
       window.removeEventListener('keydown', handleKey);
       document.body.removeChild(input);
     };
-  }, [isRenaming, tempName, cow.id]);
+  }, [isRenaming, tempName, cow.id, appWidth]);
 
   const drawBox = useCallback(
     (g: Graphics) => {
