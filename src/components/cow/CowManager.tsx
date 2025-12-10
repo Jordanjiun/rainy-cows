@@ -13,6 +13,9 @@ import { Cow } from '../../game/cowModel';
 
 extend({ AnimatedSprite, Container, Graphics });
 
+const pointerMoveThreshold = 5;
+const holdThreshold = 200;
+
 export const CowManager = ({
   appWidth,
   appHeight,
@@ -117,11 +120,6 @@ export const CowManager = ({
       let startX = 0;
       let startY = 0;
       let longPressTimeout: number | null = null;
-
-      const pointerMoveThreshold = 5;
-      const holdThreshold = Number(
-        import.meta.env.VITE_POINTER_HOLD_THRESHOLD_MS,
-      );
 
       const handlePointerDown = (e: PointerEvent) => {
         if (isHarvest) return;

@@ -10,7 +10,7 @@ import { useRef, useEffect, useState } from 'react';
 import type { MouseEvent } from 'react';
 import './App.css';
 
-const fullscreenSvgSize = Number(import.meta.env.VITE_FULLSCREEN_SVG_SIZE);
+const fullscreenSvgSize = 25;
 
 export const AppContent = () => {
   useGamePersistence();
@@ -53,6 +53,19 @@ export const AppContent = () => {
     document.addEventListener('fullscreenchange', handler);
     return () => document.removeEventListener('fullscreenchange', handler);
   }, []);
+
+  useEffect(() => {
+    const canvas = containerRef.current?.querySelector('canvas');
+    if (!canvas) return;
+    const preventDefault = (e: Event) => e.preventDefault();
+    canvas.addEventListener('contextmenu', preventDefault);
+    canvas.addEventListener('touchstart', preventDefault, { passive: false });
+    canvas.style.touchAction = 'none';
+    return () => {
+      canvas.removeEventListener('contextmenu', preventDefault);
+      canvas.removeEventListener('touchstart', preventDefault);
+    };
+  }, [containerRef]);
 
   return (
     <>
