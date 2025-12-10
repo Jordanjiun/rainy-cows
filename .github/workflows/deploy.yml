@@ -1,0 +1,39 @@
+name: Deploy Rainy Cows
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build React app
+        if: github.ref_name == 'main'
+        working-directory: react
+        env:
+          VITE_DB_NAME: ${{ vars.DB_NAME }}
+          VITE_DB_STORE_NAME: ${{ vars.DB_STORE_NAME }}
+          VITE_DB_VERSION: ${{ vars.DB_VERSION }}
+          VITE_LAND_RATIO: ${{ vars.LAND_RATIO }}
+          VITE_FOOTER_HEIGHT_PX: ${{ vars.FOOTER_HEIGHT_PX }}
+        run: |
+          npm ci
+          npm run build
+
+      - name: Add CNAME for custom domain
+        if: github.ref_name == 'main'
+        run: |
+          echo "rainycows.com" > react/build/CNAME
+
+      - name: Deploy to GitHub Pages
+        if: github.ref_name == 'main'
+        uses: peaceiris/actions-gh-pages@v6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./react/build

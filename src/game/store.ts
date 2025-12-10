@@ -49,9 +49,11 @@ function getSerializableState(state: GameState) {
     mooney: state.mooney,
     cows: state.cows,
     lastHarvest: state.lastHarvest,
+    lastExportReminder: state.lastExportReminder,
+    volume: state.volume,
+    tutorial: state.tutorial,
     isHarvest: state.isHarvest,
     upgrades: state.upgrades,
-    volume: state.volume,
   };
 }
 
@@ -106,10 +108,14 @@ interface GameState {
   mooney: number;
   cows: Cow[];
   lastHarvest: number | null;
+  lastExportReminder: number;
+  volume: number;
+  tutorial: number;
   isHarvest: boolean;
   upgrades: Upgrades;
-  volume: number;
   setVolume: (volume: number) => void;
+  setTutorial: (scene: number) => void;
+  setLastExportReminder: (datetime: number) => void;
   addMooney: (amount: number) => void;
   addCow: (cow: Cow) => void;
   addUpgrade: (key: keyof Upgrades) => void;
@@ -151,9 +157,14 @@ export const useGameStore = create<GameState>((set, get) => {
     lastHarvest: null,
     isHarvest: false,
     upgrades: upgrades,
+    lastExportReminder: Date.now(),
     volume: 1,
+    tutorial: 1,
 
     setVolume: (newVolume: number) => set({ volume: newVolume }),
+    setTutorial: (scene: number) => set({ tutorial: scene }),
+    setLastExportReminder: (datetime: number) =>
+      set({ lastExportReminder: datetime }),
 
     addMooney: (amount) => set({ mooney: get().mooney + amount }),
     removeMooney: (amount) => set({ mooney: get().mooney - amount }),
@@ -210,7 +221,10 @@ export const useGameStore = create<GameState>((set, get) => {
             ...upgrades,
             ...(data.upgrades ?? {}),
           },
+          lastExportReminder:
+            data.lastExportReminder ?? state.lastExportReminder,
           volume: data.volume ?? state.volume,
+          tutorial: data.tutorial ?? state.tutorial,
         };
       }),
 
@@ -221,7 +235,9 @@ export const useGameStore = create<GameState>((set, get) => {
         lastHarvest: null,
         isHarvest: false,
         upgrades: upgrades,
+        lastExportReminder: Date.now(),
         volume: 1,
+        tutorial: 1,
       }),
   };
 });

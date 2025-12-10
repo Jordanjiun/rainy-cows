@@ -11,7 +11,7 @@ extend({ Graphics, Sprite, Text });
 const buttonSize = 50;
 
 export const HarvestButton = ({ appHeight }: { appHeight: number }) => {
-  const { lastHarvest, upgrades } = useGameStore();
+  const { lastHarvest, upgrades, tutorial, setTutorial } = useGameStore();
   const { audioMap } = useAudio();
   const { selectedCow, setSelectedCow } = useCow();
   const { selectedMenu, setSelectedMenu } = useMenu();
@@ -74,6 +74,7 @@ export const HarvestButton = ({ appHeight }: { appHeight: number }) => {
     setIsHovered(false);
     audioMap.click.play();
     useGameStore.setState({ lastHarvest: Date.now(), isHarvest: true });
+    if (tutorial == 5) setTutorial(0);
     if (selectedCow) {
       setSelectedCow(null);
     }

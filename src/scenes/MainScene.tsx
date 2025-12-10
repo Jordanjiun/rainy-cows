@@ -1,6 +1,6 @@
 import { extend, useApplication } from '@pixi/react';
 import { Container } from 'pixi.js';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CowManager } from '../components/cow/CowManager';
 import { Farm } from '../components/farm/Farm';
 import { FarmHud } from '../components/farm/FarmHud';
@@ -9,6 +9,8 @@ import { HarvestButton } from '../components/farm/HarvestButton';
 import { MainMenu } from '../components/menu/MainMenu';
 import { SellCow } from '../components/menu/SellCow';
 import { Shop } from '../components/menu/Shop';
+import { Tutorial } from '../components/others/Tutorial';
+import { useGameStore } from '../game/store';
 import {
   CowProvider,
   MenuProvider,
@@ -20,7 +22,12 @@ extend({ Container });
 
 export const MainScene = () => {
   const { app } = useApplication();
+  const { tutorial } = useGameStore();
   const [size, setSize] = useState({ width: 0, height: 0 });
+
+  const isTutorial = useMemo(() => {
+    return tutorial > 0;
+  }, [tutorial]);
 
   useEffect(() => {
     if (!app) return;
@@ -53,6 +60,9 @@ export const MainScene = () => {
               <Shop appWidth={size.width} appHeight={size.height} />
               <MainMenu appWidth={size.width} appHeight={size.height} />
               <SellCow appWidth={size.width} appHeight={size.height} />
+              {isTutorial && (
+                <Tutorial appWidth={size.width} appHeight={size.height} />
+              )}
             </CowProvider>
           </MooneyProvider>
         </MenuProvider>
