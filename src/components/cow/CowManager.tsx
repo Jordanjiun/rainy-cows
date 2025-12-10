@@ -158,7 +158,7 @@ export const CowManager = ({
         if (duration < holdThreshold) {
           handlePetAnimation();
           handleHeartChange(cow.id, cow.pet());
-          if (tutorial == 4) {
+          if (tutorial == 4 && useGameStore.getState().tutorial == 4) {
             setSelectedCow(null);
             setTutorial(5);
           }
