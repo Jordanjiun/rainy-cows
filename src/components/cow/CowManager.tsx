@@ -121,19 +121,20 @@ export const CowManager = ({
       let startY = 0;
       let longPressTimeout: number | null = null;
       let tapHandled = false;
+      let isPressActive = false;
 
       const handlePointerDown = (e: PointerEvent) => {
         if (isHarvest) return;
         if (e.button !== 0 && e.pointerType !== 'touch') return;
-        e.preventDefault();
 
         pointerDownTime = performance.now();
         startX = e.clientX;
         startY = e.clientY;
         tapHandled = false;
+        isPressActive = true;
 
         longPressTimeout = window.setTimeout(() => {
-          if (!isHarvest && selectedCow?.id !== cow.id && !tapHandled) {
+          if (!tapHandled) {
             handleSetCow(cow);
             tapHandled = true;
           }
@@ -141,10 +142,9 @@ export const CowManager = ({
         }, holdThreshold);
       };
 
-      const handlePointerUp = (e: PointerEvent) => {
-        if (isHarvest) return;
-        if (e.button !== 0 && e.pointerType !== 'touch') return;
-        e.preventDefault();
+      const processPointerUp = (e: PointerEvent) => {
+        if (!isPressActive) return;
+        isPressActive = false;
 
         if (longPressTimeout) {
           clearTimeout(longPressTimeout);
@@ -170,24 +170,25 @@ export const CowManager = ({
         }
       };
 
+      const handlePointerUp = (e: PointerEvent) => processPointerUp(e);
+      const handlePointerUpOutside = (e: PointerEvent) => processPointerUp(e);
       const handlePointerCancelOrLeave = () => {
-        if (longPressTimeout) {
-          clearTimeout(longPressTimeout);
-          longPressTimeout = null;
-        }
+        if (longPressTimeout) clearTimeout(longPressTimeout);
+        longPressTimeout = null;
+        isPressActive = false;
       };
 
       sprite.eventMode = isHarvest ? 'none' : 'static';
       sprite.on('pointerdown', handlePointerDown);
       sprite.on('pointerup', handlePointerUp);
-      sprite.on('pointerupoutside', handlePointerUp);
+      sprite.on('pointerupoutside', handlePointerUpOutside);
       sprite.on('pointercancel', handlePointerCancelOrLeave);
       sprite.on('pointerleave', handlePointerCancelOrLeave);
 
       return () => {
         sprite.off('pointerdown', handlePointerDown);
         sprite.off('pointerup', handlePointerUp);
-        sprite.off('pointerupoutside', handlePointerUp);
+        sprite.off('pointerupoutside', handlePointerUpOutside);
         sprite.off('pointercancel', handlePointerCancelOrLeave);
         sprite.off('pointerleave', handlePointerCancelOrLeave);
       };
