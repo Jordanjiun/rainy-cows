@@ -27,11 +27,6 @@ jobs:
           npm ci
           npm run build
 
-      - name: Add CNAME for custom domain
-        if: github.ref_name == 'main'
-        run: |
-          echo "rainycows.com" > build/CNAME
-
       - name: Deploy to GitHub Pages
         if: github.ref_name == 'main'
         uses: peaceiris/actions-gh-pages@v4.0.0
