@@ -120,19 +120,22 @@ export const CowManager = ({
       let startX = 0;
       let startY = 0;
       let longPressTimeout: number | null = null;
+      let tapHandled = false;
 
       const handlePointerDown = (e: PointerEvent) => {
         if (isHarvest) return;
-        if (e.button !== 0) return;
+        if (e.button !== 0 && e.pointerType !== 'touch') return;
         e.preventDefault();
 
         pointerDownTime = performance.now();
         startX = e.clientX;
         startY = e.clientY;
+        tapHandled = false;
 
         longPressTimeout = window.setTimeout(() => {
-          if (!isHarvest && selectedCow?.id !== cow.id) {
+          if (!isHarvest && selectedCow?.id !== cow.id && !tapHandled) {
             handleSetCow(cow);
+            tapHandled = true;
           }
           longPressTimeout = null;
         }, holdThreshold);
@@ -140,7 +143,7 @@ export const CowManager = ({
 
       const handlePointerUp = (e: PointerEvent) => {
         if (isHarvest) return;
-        if (e.button !== 0) return;
+        if (e.button !== 0 && e.pointerType !== 'touch') return;
         e.preventDefault();
 
         if (longPressTimeout) {
@@ -148,10 +151,12 @@ export const CowManager = ({
           longPressTimeout = null;
         }
 
+        if (tapHandled) return;
+        tapHandled = true;
+
         const moved =
           Math.abs(e.clientX - startX) > pointerMoveThreshold ||
           Math.abs(e.clientY - startY) > pointerMoveThreshold;
-
         if (moved) return;
 
         const duration = performance.now() - pointerDownTime;
