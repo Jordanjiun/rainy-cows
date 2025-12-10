@@ -141,7 +141,7 @@ export const MainMenu = ({
   const drawCloseButton = useMemo(() => {
     return (g: Graphics) => {
       g.clear();
-      g.rect(0, 0, crossSize, crossSize);
+      g.rect(-3, -3, crossSize + 6, crossSize + 6);
       g.fill({ alpha: 0 });
       const stroke = closeHovered ? 'red' : 'black';
       g.setStrokeStyle({ width: crossThickness, color: stroke });

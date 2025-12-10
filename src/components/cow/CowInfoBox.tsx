@@ -110,6 +110,7 @@ export const CowInfoBox = ({
     if (!isRenaming) return;
     const input = document.createElement('input');
     input.type = 'text';
+    input.readOnly = true;
     input.maxLength = maxNameLength;
     input.value = tempName;
     input.style.position = 'absolute';
@@ -125,6 +126,7 @@ export const CowInfoBox = ({
     input.style.border = 'none';
     input.style.background = '#000';
     input.style.outline = 'none';
+    input.style.caretColor = 'transparent';
     input.style.pointerEvents = 'auto';
 
     document.body.appendChild(input);
@@ -208,9 +210,8 @@ export const CowInfoBox = ({
         <pixiGraphics
           draw={(g) => {
             g.clear();
-            g.rect(0, 0, crossSize, crossSize);
-            g.fill({ color: boxColor });
-
+            g.rect(-3, -3, crossSize + 6, crossSize + 6);
+            g.fill({ alpha: 0 });
             const stroke = isHovered ? 'red' : 'black';
             g.setStrokeStyle({ width: crossThickness, color: stroke });
             g.moveTo(0, 0);
