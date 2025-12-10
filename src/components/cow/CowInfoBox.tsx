@@ -138,10 +138,21 @@ export const CowInfoBox = ({
     input.maxLength = maxNameLength;
     input.value = tempName;
     input.style.position = 'absolute';
+    input.style.top = '-1000px';
+    input.style.left = '-1000px';
+    input.style.width = '0px';
+    input.style.height = '0px';
     input.style.opacity = '0';
     input.style.pointerEvents = 'none';
     input.style.zIndex = '-1';
-    input.style.left = '-1000px';
+
+    input.addEventListener('focus', () => {
+      document.body.style.overflow = 'hidden';
+    });
+
+    input.addEventListener('blur', () => {
+      document.body.style.overflow = '';
+    });
 
     document.body.appendChild(input);
     hiddenInputRef.current = input;
