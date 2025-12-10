@@ -433,14 +433,20 @@ export const CowInfoBox = ({
                   }}
                 />
                 {cursorVisible && (
-                  <pixiText
-                    text="|"
-                    x={renameTextRef.current?.width / 2 || 0}
-                    anchor={{ x: 0, y: 0.5 }}
-                    scale={{ x: renameScale, y: renameScale }}
-                    style={{
-                      fontSize: baseFontSize,
-                      fontFamily: 'pixelFont',
+                  <pixiGraphics
+                    draw={(g) => {
+                      g.clear();
+                      const h = baseFontSize - 4;
+                      g.setStrokeStyle({ width: 2, color: 'black' });
+                      g.moveTo(
+                        renameTextRef.current?.width / 2 + 1 || 0,
+                        -h / 2,
+                      );
+                      g.lineTo(
+                        renameTextRef.current?.width / 2 + 1 || 0,
+                        h / 2,
+                      );
+                      g.stroke();
                     }}
                   />
                 )}
