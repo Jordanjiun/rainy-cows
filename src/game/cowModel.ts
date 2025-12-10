@@ -4,7 +4,6 @@ import {
   cowBrightnessRange,
   cowConfig,
   cowContrastRange,
-  cowDateTimeOptions,
   cowHueRange,
   cowNames,
   cowRarities,
@@ -181,11 +180,8 @@ export class Cow {
     this.xp = 0;
     this.hearts = 0;
     this.pitch = Math.round((0.8 + 0.8 * rng()) * 100) / 100;
-    this.lastPet = yesterday.toLocaleString(undefined, cowDateTimeOptions);
-    this.lastDecayCheck = yesterday.toLocaleString(
-      undefined,
-      cowDateTimeOptions,
-    );
+    this.lastPet = yesterday.toISOString();
+    this.lastDecayCheck = yesterday.toISOString();
   }
 
   eat() {
@@ -210,15 +206,10 @@ export class Cow {
       now.getMonth() !== lastPetDate.getMonth() ||
       now.getDate() !== lastPetDate.getDate();
 
-    if (!isNewDay) {
-      return this.hearts;
-    }
+    if (!isNewDay) return this.hearts;
+    if (this.hearts < 10) this.hearts++;
 
-    if (this.hearts < 10) {
-      this.hearts++;
-    }
-
-    this.lastPet = now.toLocaleString(undefined, cowDateTimeOptions);
+    this.lastPet = now.toISOString();
     return this.hearts;
   }
 }

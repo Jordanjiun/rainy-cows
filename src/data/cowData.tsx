@@ -143,13 +143,3 @@ export const cowXpPerLevel: Record<number, number> = {
   8: 5e5,
   9: 1e6,
 };
-
-export const cowDateTimeOptions: Intl.DateTimeFormatOptions = {
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-  hour: '2-digit',
-  minute: '2-digit',
-  second: '2-digit',
-  hour12: false,
-};
