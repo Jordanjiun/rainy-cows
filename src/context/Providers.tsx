@@ -8,7 +8,7 @@ import {
   SceneContext,
   ToastContext,
 } from './Contexts';
-import { Howl } from 'howler';
+import { Howl, Howler } from 'howler';
 import { ToastOverlay } from '../components/others/Toast';
 import { useGameStore } from '../game/store';
 import type { ReactNode } from 'react';
@@ -192,6 +192,14 @@ export const AudioProvider = ({ children }: { children: ReactNode }) => {
     },
     [audioMap, originalVolumes],
   );
+
+  useEffect(() => {
+    const unlockAudio = () => {
+      Howler.ctx?.resume();
+      document.removeEventListener('click', unlockAudio);
+    };
+    document.addEventListener('click', unlockAudio);
+  }, []);
 
   return (
     <AudioContext.Provider

@@ -15,9 +15,12 @@ const fullscreenSvgSize = 25;
 export const AppContent = () => {
   useGamePersistence();
 
+  const { currentScene } = useScene();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { currentScene } = useScene();
+
+  const isIOS =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
 
   const renderScene = (scene: SceneKey) => {
     switch (scene) {
@@ -36,63 +39,33 @@ export const AppContent = () => {
     if (!elem) return;
 
     const doc: any = document;
-    if (
-      !document.fullscreenElement &&
-      !doc.webkitFullscreenElement &&
-      !doc.mozFullScreenElement &&
-      !doc.msFullscreenElement
-    ) {
-      if (elem.requestFullscreen) {
-        elem
-          .requestFullscreen()
-          .catch((err) =>
-            console.error(
-              `Error attempting to enable fullscreen: ${err.message}`,
-            ),
-          );
-      } else if ((elem as any).webkitRequestFullscreen) {
-        (elem as any).webkitRequestFullscreen();
-      } else if ((elem as any).mozRequestFullScreen) {
-        (elem as any).mozRequestFullScreen();
-      } else if ((elem as any).msRequestFullscreen) {
-        (elem as any).msRequestFullscreen();
-      }
+    const isInFullscreen =
+      !!document.fullscreenElement ||
+      !!doc.webkitFullscreenElement ||
+      !!doc.mozFullScreenElement ||
+      !!doc.msFullscreenElement;
+
+    if (!isInFullscreen) {
+      const requestFullScreen =
+        elem.requestFullscreen?.bind(elem) ||
+        (elem as any).webkitRequestFullscreen?.bind(elem) ||
+        (elem as any).mozRequestFullScreen?.bind(elem) ||
+        (elem as any).msRequestFullscreen?.bind(elem);
+
+      requestFullScreen?.().catch((err: any) =>
+        console.error(`Error attempting to enable fullscreen: ${err.message}`),
+      );
+      setIsFullscreen(true);
     } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      } else if (doc.webkitExitFullscreen) {
-        doc.webkitExitFullscreen();
-      } else if (doc.mozCancelFullScreen) {
-        doc.mozCancelFullScreen();
-      } else if (doc.msExitFullscreen) {
-        doc.msExitFullscreen();
-      }
+      const exitFullScreen =
+        document.exitFullscreen?.bind(document) ||
+        doc.webkitExitFullscreen?.bind(doc) ||
+        doc.mozCancelFullScreen?.bind(doc) ||
+        doc.msExitFullscreen?.bind(doc);
+      exitFullScreen?.();
+      setIsFullscreen(false);
     }
   };
-
-  useEffect(() => {
-    const handler = () => {
-      const doc: any = document;
-      setIsFullscreen(
-        !!document.fullscreenElement ||
-          !!doc.webkitFullscreenElement ||
-          !!doc.mozFullScreenElement ||
-          !!doc.msFullscreenElement,
-      );
-    };
-
-    document.addEventListener('fullscreenchange', handler);
-    document.addEventListener('webkitfullscreenchange', handler);
-    document.addEventListener('mozfullscreenchange', handler);
-    document.addEventListener('MSFullscreenChange', handler);
-
-    return () => {
-      document.removeEventListener('fullscreenchange', handler);
-      document.removeEventListener('webkitfullscreenchange', handler);
-      document.removeEventListener('mozfullscreenchange', handler);
-      document.removeEventListener('MSFullscreenChange', handler);
-    };
-  }, []);
 
   useEffect(() => {
     const canvas = containerRef.current?.querySelector('canvas');
@@ -114,13 +87,15 @@ export const AppContent = () => {
       </div>
 
       <div ref={containerRef} className="app-container">
-        <button className="fullscreen-btn" onClick={toggleFullscreen}>
-          {isFullscreen ? (
-            <Minimize size={fullscreenSvgSize} />
-          ) : (
-            <Maximize size={fullscreenSvgSize} />
-          )}
-        </button>
+        {!isIOS && (
+          <button className="fullscreen-btn" onClick={toggleFullscreen}>
+            {isFullscreen ? (
+              <Minimize size={fullscreenSvgSize} />
+            ) : (
+              <Maximize size={fullscreenSvgSize} />
+            )}
+          </button>
+        )}
 
         <FileInputProvider>
           <AudioProvider>

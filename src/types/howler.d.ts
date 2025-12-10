@@ -18,5 +18,12 @@ declare module 'howler' {
     once(event: string, callback: () => void, id?: number): void;
   }
 
-  export function HowlerGlobal(): void;
+  export const Howler: {
+    ctx: AudioContext | null;
+    autoUnlock: boolean;
+    volume(): number;
+    volume(vol: number): void;
+    mute(muted: boolean): void;
+    codecs(ext: string): boolean;
+  };
 }
