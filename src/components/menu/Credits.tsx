@@ -2,6 +2,7 @@ import { extend } from '@pixi/react';
 import { Container, Graphics, Text } from 'pixi.js';
 import { useCallback } from 'react';
 import { Button } from './Button';
+import { HyperlinkText } from '../others/HyperlinkText';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Container, Graphics, Text });
@@ -16,11 +17,23 @@ const boxColor = '#ebd9c0ff';
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
 const infoRows = [
-  { label: 'Developer:', value: 'Jordan Tay' },
-  { label: 'Pixel Cows:', value: 'Pop Shop Packs' },
-  { label: 'Pixel Grass:', value: 'Bonsaiheldin' },
-  { label: 'Pixel Clouds:', value: 'Kass' },
-  { label: 'Audio:', value: 'Pixabay' },
+  { label: 'Developer:', value: 'Jordan Tay', url: '' },
+  {
+    label: 'Pixel Cows:',
+    value: 'Pop Shop Packs',
+    url: 'https://sites.google.com/view/popshoppacks/home',
+  },
+  {
+    label: 'Pixel Grass:',
+    value: 'Bonsaiheldin',
+    url: 'https://opengameart.org/users/bonsaiheldin',
+  },
+  {
+    label: 'Pixel Clouds:',
+    value: 'Kass',
+    url: 'https://kassjak.itch.io/',
+  },
+  { label: 'Audio:', value: 'Pixabay', url: '' },
 ];
 
 export const Credits = ({
@@ -111,13 +124,22 @@ export const Credits = ({
                 text={row.label}
                 style={{ fontSize: 16, fontFamily: 'pixelFont' }}
               />
-              <pixiText
-                x={boxWidth - padding}
-                y={y}
-                text={row.value}
-                anchor={{ x: 1, y: 0 }}
-                style={{ fontSize: 16, fontFamily: 'pixelFont' }}
-              />
+              {!row.url ? (
+                <pixiText
+                  x={boxWidth - padding}
+                  y={y}
+                  text={row.value}
+                  anchor={{ x: 1, y: 0 }}
+                  style={{ fontSize: 16, fontFamily: 'pixelFont' }}
+                />
+              ) : (
+                <HyperlinkText
+                  x={boxWidth - padding}
+                  y={y}
+                  text={row.value}
+                  url={row.url}
+                />
+              )}
             </pixiContainer>
           );
         })}

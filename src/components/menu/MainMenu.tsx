@@ -17,7 +17,7 @@ import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Graphics, Sprite, Text });
 
-const boxHeight = 353;
+const boxHeight = 380;
 const boxWidth = 200;
 const buttonWidth = 170;
 const buttonHeight = 40;
@@ -25,6 +25,7 @@ const buttonSize = 50;
 const crossSize = 20;
 const crossThickness = 4;
 const offset = 20;
+const yOffset = 28;
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
@@ -214,6 +215,19 @@ export const MainMenu = ({
               anchor={0.5}
               style={{ fontSize: 28, fontFamily: 'pixelFont' }}
             />
+            <pixiText
+              x={14}
+              y={boxHeight - 37.5}
+              text={'©'}
+              style={{ fontSize: 24, fontFamily: 'pixelFont' }}
+            />
+            <pixiText
+              x={boxWidth / 2 + 10}
+              y={boxHeight - 25}
+              text={`Jordan Tay, ${new Date().getFullYear()}`}
+              anchor={0.5}
+              style={{ fontSize: 16, fontFamily: 'pixelFont' }}
+            />
 
             <AudioBar
               x={(boxWidth - buttonWidth) / 2}
@@ -223,7 +237,7 @@ export const MainMenu = ({
 
             <Button
               x={(boxWidth - buttonWidth) / 2}
-              y={boxHeight - (buttonHeight + offset)}
+              y={boxHeight - (buttonHeight + offset) - yOffset}
               buttonWidth={buttonWidth}
               buttonHeight={buttonHeight}
               buttonText={'Delete Save'}
@@ -233,7 +247,7 @@ export const MainMenu = ({
 
             <Button
               x={(boxWidth - buttonWidth) / 2}
-              y={boxHeight - (buttonHeight + offset) * 2}
+              y={boxHeight - (buttonHeight + offset) * 2 - yOffset}
               buttonWidth={buttonWidth}
               buttonHeight={buttonHeight}
               buttonText={'Export Save'}
@@ -243,7 +257,7 @@ export const MainMenu = ({
 
             <Button
               x={(boxWidth - buttonWidth) / 2}
-              y={boxHeight - (buttonHeight + offset) * 3}
+              y={boxHeight - (buttonHeight + offset) * 3 - yOffset}
               buttonWidth={buttonWidth}
               buttonHeight={buttonHeight}
               buttonText={'Import Save'}
@@ -256,7 +270,7 @@ export const MainMenu = ({
 
             <Button
               x={(boxWidth - buttonWidth) / 2}
-              y={boxHeight - (buttonHeight + offset) * 4}
+              y={boxHeight - (buttonHeight + offset) * 4 - yOffset}
               buttonWidth={buttonWidth}
               buttonHeight={buttonHeight}
               buttonText={'Credits'}

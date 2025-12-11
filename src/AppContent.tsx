@@ -82,8 +82,8 @@ export const AppContent = () => {
 
   return (
     <>
-      <div className="banner-container">
-        <div className="banner">Rainy Cows</div>
+      <div className="banner">
+        <span>Rainy Cows</span>
       </div>
 
       <div ref={containerRef} className="app-container">
