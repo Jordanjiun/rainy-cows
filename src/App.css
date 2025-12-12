@@ -25,6 +25,11 @@
   -ms-user-select: none;
 }
 
+.banner span {
+  display: inline-block;
+  transform: translateY(2px);
+}
+
 .app-container {
   position: absolute;
   top: 66px;

@@ -154,9 +154,14 @@ export const HarvestButton = ({ appHeight }: { appHeight: number }) => {
     <>
       <pixiText
         x={70}
-        y={appHeight - buttonSize - 7}
+        y={appHeight - buttonSize - 6}
         text={'Harvest\nCooldown'}
-        style={{ fontSize: 20, fill: 'white', fontFamily: 'pixelFont' }}
+        style={{
+          fontSize: 20,
+          lineHeight: 20,
+          fill: 'white',
+          fontFamily: 'pixelFont',
+        }}
       />
       <pixiContainer x={10} y={appHeight - buttonSize - 10}>
         <pixiGraphics draw={cooldownArcDraw} />
