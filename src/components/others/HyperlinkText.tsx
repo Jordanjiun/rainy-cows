@@ -49,7 +49,7 @@ export const HyperlinkText = ({
       anchor={anchor}
       style={style}
       interactive={true}
-      onPointerDown={openLink}
+      onPointerUp={openLink}
       onPointerOver={(e: FederatedPointerEvent) => {
         setIsHover(true);
         (e.currentTarget as any).cursor = 'pointer';
