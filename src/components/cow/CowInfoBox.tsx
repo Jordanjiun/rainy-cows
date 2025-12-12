@@ -113,18 +113,18 @@ export const CowInfoBox = ({
     input.maxLength = maxNameLength;
     input.value = tempName;
     input.style.position = 'absolute';
+    input.style.width = `${titleWidth}px`;
+    input.style.fontSize = `${baseFontSize}px`;
     input.style.left = `${appWidth - 187}px`;
     input.style.top = `80px`;
-    input.style.width = `${titleWidth}px`;
     input.style.height = '20px';
-    input.style.opacity = '0.1';
     input.style.zIndex = '1000';
-    input.style.fontSize = `${baseFontSize}px`;
+    input.style.opacity = '0.5';
     input.style.fontFamily = 'pixelFont';
-    input.style.color = 'black';
+    input.style.background = '#808080';
     input.style.border = 'none';
-    input.style.background = '#000';
     input.style.outline = 'none';
+    input.style.color = 'transparent';
     input.style.caretColor = 'transparent';
     input.style.pointerEvents = 'auto';
 
@@ -134,8 +134,11 @@ export const CowInfoBox = ({
     const onInput = () => {
       const filtered = [...input.value]
         .filter((ch) => allowedCharRegex.test(ch))
+        .slice(0, maxNameLength)
         .join('');
-      input.value = filtered;
+      if (filtered !== input.value) {
+        input.value = filtered;
+      }
       setTempName(filtered);
     };
     input.addEventListener('input', onInput);
@@ -148,14 +151,6 @@ export const CowInfoBox = ({
       if (e.key === 'Escape') {
         setTempName(cow.name);
         setIsRenaming(false);
-      }
-      if (e.key === 'Backspace') {
-        setTempName((prev) => prev.slice(0, -1));
-      }
-      if (e.key.length === 1 && allowedCharRegex.test(e.key)) {
-        setTempName((prev) =>
-          prev.length < maxNameLength ? prev + e.key : prev,
-        );
       }
     };
     window.addEventListener('keydown', handleKey);
