@@ -217,7 +217,7 @@ export const MainMenu = ({
             />
             <pixiText
               x={14}
-              y={boxHeight - 37.5}
+              y={boxHeight - 38}
               text={'©'}
               style={{ fontSize: 24, fontFamily: 'pixelFont' }}
             />

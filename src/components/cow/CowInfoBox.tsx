@@ -113,8 +113,8 @@ export const CowInfoBox = ({
     input.maxLength = maxNameLength;
     input.value = tempName;
     input.style.position = 'absolute';
-    input.style.width = `${titleWidth}px`;
-    input.style.fontSize = `${baseFontSize}px`;
+    input.style.fontSize = `20px`;
+    input.style.width = `${titleWidth + 4}px`;
     input.style.left = `${appWidth - 187}px`;
     input.style.top = `80px`;
     input.style.height = '20px';
@@ -124,9 +124,14 @@ export const CowInfoBox = ({
     input.style.background = '#808080';
     input.style.border = 'none';
     input.style.outline = 'none';
-    input.style.color = 'transparent';
+    input.style.color = '#00000001';
     input.style.caretColor = 'transparent';
     input.style.pointerEvents = 'auto';
+    input.style.appearance = 'none';
+    input.style.borderRadius = '0';
+    input.style.padding = '0';
+    input.style.margin = '0';
+    input.spellcheck = false;
 
     document.body.appendChild(input);
     input.focus({ preventScroll: true });
