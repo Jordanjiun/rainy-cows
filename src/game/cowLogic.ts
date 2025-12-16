@@ -2,6 +2,7 @@ import { useTick } from '@pixi/react';
 import { Ticker } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
 import { createSeededRNG, getCowScale } from './utils';
+import { useGameStore } from './store';
 import { animationsDef } from './cowBuilder';
 import { useAudio } from '../context/hooks';
 import { cowConfig } from '../data/cowData';
@@ -21,6 +22,7 @@ const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
 export function useCowActions(appWidth: number, appHeight: number, cow: Cow) {
   const { audioMap } = useAudio();
+  const { addStats } = useGameStore();
   const cowScale = getCowScale(appWidth * appHeight);
   const cowHalfSize = (frameSize * cowScale) / 2;
   const landBoundary = appHeight * (1 - landRatio) - frameSize * cowScale + 10;
@@ -107,6 +109,7 @@ export function useCowActions(appWidth: number, appHeight: number, cow: Cow) {
     var soundId = audioMap.moo.play();
     audioMap.moo.rate(cow.pitch ?? 1, soundId);
     isBeingPetted.current = true;
+    addStats('cowsPet');
     playAnimation('pet');
     setTimeout(() => {
       isBeingPetted.current = false;

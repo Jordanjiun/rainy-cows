@@ -54,6 +54,7 @@ function getSerializableState(state: GameState) {
     tutorial: state.tutorial,
     isHarvest: state.isHarvest,
     upgrades: state.upgrades,
+    stats: state.stats,
   };
 }
 
@@ -113,12 +114,14 @@ interface GameState {
   tutorial: number;
   isHarvest: boolean;
   upgrades: Upgrades;
+  stats: Stats;
   setVolume: (volume: number) => void;
   setTutorial: (scene: number) => void;
   setLastExportReminder: (datetime: number) => void;
   addMooney: (amount: number) => void;
   addCow: (cow: Cow) => void;
   addUpgrade: (key: keyof Upgrades) => void;
+  addStats: (key: keyof Stats) => void;
   removeMooney: (amount: number) => void;
   removeCow: (cowId: string) => void;
   updateCowName: (cowId: string, newName: string) => void;
@@ -134,12 +137,32 @@ export interface Upgrades {
   harvestMultiplierLevel: number;
 }
 
+export interface Stats {
+  clicks: number;
+  mooneyEarned: number;
+  upgradesBought: number;
+  cowsBought: number;
+  cowsSold: number;
+  cowsRenamed: number;
+  cowsPet: number;
+}
+
 export const upgrades: Upgrades = {
   clickLevel: 1,
   farmLevel: 1,
   harvestCooldownLevel: 1,
   harvestDurationLevel: 1,
   harvestMultiplierLevel: 1,
+};
+
+export const stats: Stats = {
+  clicks: 0,
+  mooneyEarned: 0,
+  upgradesBought: 0,
+  cowsBought: 0,
+  cowsSold: 0,
+  cowsRenamed: 0,
+  cowsPet: 0,
 };
 
 export const useGameStore = create<GameState>((set, get) => {
@@ -157,6 +180,7 @@ export const useGameStore = create<GameState>((set, get) => {
     lastHarvest: null,
     isHarvest: false,
     upgrades: upgrades,
+    stats: stats,
     lastExportReminder: Date.now(),
     volume: 1,
     tutorial: 1,
@@ -166,29 +190,61 @@ export const useGameStore = create<GameState>((set, get) => {
     setLastExportReminder: (datetime: number) =>
       set({ lastExportReminder: datetime }),
 
-    addMooney: (amount) => set({ mooney: get().mooney + amount }),
+    addMooney: (amount: number) =>
+      set((state) => ({
+        mooney: state.mooney + amount,
+        stats: {
+          ...state.stats,
+          mooneyEarned: state.stats.mooneyEarned + amount,
+        },
+      })),
     removeMooney: (amount) => set({ mooney: get().mooney - amount }),
 
-    addCow: (cow) => set((state) => ({ cows: [...state.cows, cow] })),
+    addCow: (cow) =>
+      set((state) => ({
+        cows: [...state.cows, cow],
+        stats: {
+          ...state.stats,
+          cowsBought: state.stats.cowsBought + 1,
+        },
+      })),
     removeCow: (cowId: string) =>
       set((state) => ({
         cows: state.cows.filter((cow) => cow.id !== cowId),
+        stats: {
+          ...state.stats,
+          cowsSold: state.stats.cowsSold + 1,
+        },
       })),
     updateCowName: (cowId: string, newName: string) =>
-      set((state) => ({
-        cows: state.cows.map((cow) => {
-          if (cow.id === cowId) {
-            cow.name = newName;
-          }
-          return cow;
-        }),
-      })),
+      set((state) => {
+        const cow = state.cows.find((c) => c.id === cowId);
+        if (!cow || cow.name === newName) return state;
+        cow.name = newName;
+        return {
+          stats: {
+            ...state.stats,
+            cowsRenamed: state.stats.cowsRenamed + 1,
+          },
+        };
+      }),
 
     addUpgrade: (key: keyof Upgrades) =>
       set((state) => ({
         upgrades: {
           ...state.upgrades,
           [key]: (state.upgrades[key] || 0) + 1,
+        },
+        stats: {
+          ...state.stats,
+          upgradesBought: state.stats.upgradesBought + 1,
+        },
+      })),
+    addStats: (key: keyof Stats) =>
+      set((state) => ({
+        stats: {
+          ...state.stats,
+          [key]: (state.stats[key] || 0) + 1,
         },
       })),
 
@@ -221,6 +277,10 @@ export const useGameStore = create<GameState>((set, get) => {
             ...upgrades,
             ...(data.upgrades ?? {}),
           },
+          stats: {
+            ...stats,
+            ...(data.stats ?? {}),
+          },
           lastExportReminder:
             data.lastExportReminder ?? state.lastExportReminder,
           volume: data.volume ?? state.volume,
@@ -235,6 +295,7 @@ export const useGameStore = create<GameState>((set, get) => {
         lastHarvest: null,
         isHarvest: false,
         upgrades: upgrades,
+        stats: stats,
         lastExportReminder: Date.now(),
         volume: 1,
         tutorial: 1,
