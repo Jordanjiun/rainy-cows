@@ -296,7 +296,7 @@ export const CowInfoBox = ({
           y={xpBarY + 7}
           text={`${xpText}`}
           anchor={0.5}
-          style={{ fontSize: 14, fill: 'white', fontFamily: 'pixelFont' }}
+          style={{ fontSize: 16, fill: 'white', fontFamily: 'pixelFont' }}
         />
       </>
     );

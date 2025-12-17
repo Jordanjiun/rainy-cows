@@ -143,3 +143,31 @@ export const shopItemData = [
     },
   },
 ];
+
+export const achievementItemData = [
+  {
+    label: 'Click 100 times',
+    statName: 'clicks',
+    target: 100,
+  },
+  {
+    label: 'Click 1,000 times',
+    statName: 'clicks',
+    target: 1e3,
+  },
+  {
+    label: 'Click 10,000 times',
+    statName: 'clicks',
+    target: 1e4,
+  },
+  {
+    label: 'Click 100,000 times',
+    statName: 'clicks',
+    target: 1e5,
+  },
+  {
+    label: 'Click 1,000,000 times',
+    statName: 'clicks',
+    target: 1e6,
+  },
+];
