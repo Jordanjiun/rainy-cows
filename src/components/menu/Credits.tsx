@@ -7,7 +7,7 @@ import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Container, Graphics, Text });
 
-const boxHeight = 300;
+const boxHeight = 320;
 const boxWidth = 300;
 const buttonWidth = 80;
 const buttonHeight = 40;
@@ -18,6 +18,11 @@ const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
 const infoRows = [
   { label: 'Developer:', value: 'Jordan Tay', url: '' },
+  {
+    label: 'Pixel Font:',
+    value: 'Yuji Oshimoto',
+    url: 'https://www.dafont.com/04b-03.font',
+  },
   {
     label: 'Pixel Cows:',
     value: 'Pop Shop Packs',

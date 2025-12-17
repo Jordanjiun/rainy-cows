@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
 import { useEffect } from 'react';
 import { gameUpgrades } from '../data/gameData';
+import { achievementItemData } from '../data/gameData';
 import { Cow } from './cowModel';
 
 const dbName = String(import.meta.env.VITE_DB_NAME);
@@ -55,6 +56,7 @@ function getSerializableState(state: GameState) {
     isHarvest: state.isHarvest,
     upgrades: state.upgrades,
     stats: state.stats,
+    achievements: state.achievements,
   };
 }
 
@@ -115,6 +117,7 @@ interface GameState {
   isHarvest: boolean;
   upgrades: Upgrades;
   stats: Stats;
+  achievements: AchievementsState;
   setVolume: (volume: number) => void;
   setTutorial: (scene: number) => void;
   setLastExportReminder: (datetime: number) => void;
@@ -125,6 +128,8 @@ interface GameState {
   removeMooney: (amount: number) => void;
   removeCow: (cowId: string) => void;
   updateCowName: (cowId: string, newName: string) => void;
+  unlockAchievement: (label: string) => void;
+  checkAchievements: () => void;
   loadData: (data: Partial<GameState>) => void;
   reset: () => void;
 }
@@ -147,6 +152,8 @@ export interface Stats {
   cowsPet: number;
 }
 
+type AchievementsState = Record<string, boolean>;
+
 export const upgrades: Upgrades = {
   clickLevel: 1,
   farmLevel: 1,
@@ -165,6 +172,18 @@ export const stats: Stats = {
   cowsPet: 0,
 };
 
+const achievements: AchievementsState = achievementItemData.reduce(
+  (acc, item) => {
+    acc[item.label] = false;
+    return acc;
+  },
+  {} as AchievementsState,
+);
+
+function isStatKey(key: string): key is keyof Stats {
+  return key in stats;
+}
+
 export const useGameStore = create<GameState>((set, get) => {
   const getHarvestDuration = () => {
     const level = get().upgrades.harvestDurationLevel || 1;
@@ -174,6 +193,16 @@ export const useGameStore = create<GameState>((set, get) => {
     );
   };
 
+  const updateStats = (updates: Partial<Stats>) => {
+    set((state) => ({
+      stats: {
+        ...state.stats,
+        ...updates,
+      },
+    }));
+    get().checkAchievements();
+  };
+
   return {
     mooney: 100,
     cows: [],
@@ -181,6 +210,7 @@ export const useGameStore = create<GameState>((set, get) => {
     isHarvest: false,
     upgrades: upgrades,
     stats: stats,
+    achievements: achievements,
     lastExportReminder: Date.now(),
     volume: 1,
     tutorial: 1,
@@ -190,63 +220,71 @@ export const useGameStore = create<GameState>((set, get) => {
     setLastExportReminder: (datetime: number) =>
       set({ lastExportReminder: datetime }),
 
-    addMooney: (amount: number) =>
-      set((state) => ({
-        mooney: state.mooney + amount,
-        stats: {
-          ...state.stats,
-          mooneyEarned: state.stats.mooneyEarned + amount,
-        },
-      })),
-    removeMooney: (amount) => set({ mooney: get().mooney - amount }),
+    addMooney: (amount: number) => {
+      updateStats({
+        mooneyEarned: get().stats.mooneyEarned + amount,
+      });
+      set((state) => ({ mooney: state.mooney + amount }));
+    },
 
-    addCow: (cow) =>
-      set((state) => ({
-        cows: [...state.cows, cow],
-        stats: {
-          ...state.stats,
-          cowsBought: state.stats.cowsBought + 1,
-        },
-      })),
-    removeCow: (cowId: string) =>
+    removeMooney: (amount: number) => set({ mooney: get().mooney - amount }),
+
+    addCow: (cow) => {
+      updateStats({ cowsBought: get().stats.cowsBought + 1 });
+      set((state) => ({ cows: [...state.cows, cow] }));
+    },
+
+    removeCow: (cowId: string) => {
+      updateStats({ cowsSold: get().stats.cowsSold + 1 });
       set((state) => ({
         cows: state.cows.filter((cow) => cow.id !== cowId),
-        stats: {
-          ...state.stats,
-          cowsSold: state.stats.cowsSold + 1,
-        },
-      })),
-    updateCowName: (cowId: string, newName: string) =>
-      set((state) => {
-        const cow = state.cows.find((c) => c.id === cowId);
-        if (!cow || cow.name === newName) return state;
-        cow.name = newName;
-        return {
-          stats: {
-            ...state.stats,
-            cowsRenamed: state.stats.cowsRenamed + 1,
-          },
-        };
-      }),
+      }));
+    },
 
-    addUpgrade: (key: keyof Upgrades) =>
+    updateCowName: (cowId: string, newName: string) => {
+      const cow = get().cows.find((c) => c.id === cowId);
+      if (!cow || cow.name === newName) return;
+      cow.name = newName;
+      updateStats({ cowsRenamed: get().stats.cowsRenamed + 1 });
+    },
+
+    addUpgrade: (key: keyof Upgrades) => {
+      updateStats({ upgradesBought: get().stats.upgradesBought + 1 });
       set((state) => ({
         upgrades: {
           ...state.upgrades,
           [key]: (state.upgrades[key] || 0) + 1,
         },
-        stats: {
-          ...state.stats,
-          upgradesBought: state.stats.upgradesBought + 1,
-        },
-      })),
-    addStats: (key: keyof Stats) =>
+      }));
+    },
+
+    addStats: (key: keyof Stats) => {
+      updateStats({ [key]: (get().stats[key] || 0) + 1 });
+    },
+
+    unlockAchievement: (label: string) =>
       set((state) => ({
-        stats: {
-          ...state.stats,
-          [key]: (state.stats[key] || 0) + 1,
+        achievements: {
+          ...state.achievements,
+          [label]: true,
         },
       })),
+
+    checkAchievements: () => {
+      const { stats, achievements } = get();
+      achievementItemData.forEach((item) => {
+        if (!achievements[item.label] && isStatKey(item.statName)) {
+          if (stats[item.statName] >= item.target) {
+            set((state) => ({
+              achievements: {
+                ...state.achievements,
+                [item.label]: true,
+              },
+            }));
+          }
+        }
+      });
+    },
 
     loadData: (data) =>
       set((state) => {
@@ -281,6 +319,10 @@ export const useGameStore = create<GameState>((set, get) => {
             ...stats,
             ...(data.stats ?? {}),
           },
+          achievements: {
+            ...achievements,
+            ...(data.achievements ?? {}),
+          },
           lastExportReminder:
             data.lastExportReminder ?? state.lastExportReminder,
           volume: data.volume ?? state.volume,
@@ -296,6 +338,7 @@ export const useGameStore = create<GameState>((set, get) => {
         isHarvest: false,
         upgrades: upgrades,
         stats: stats,
+        achievements: achievements,
         lastExportReminder: Date.now(),
         volume: 1,
         tutorial: 1,

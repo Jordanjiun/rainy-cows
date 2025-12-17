@@ -29,7 +29,7 @@ export const Stats = ({
 
   const statsRows = [
     { label: 'Clicks', value: stats.clicks },
-    { label: 'Mooney Earned', value: stats.mooneyEarned },
+    { label: 'Moonies Earned', value: stats.mooneyEarned },
     { label: 'Upgrades Bought', value: stats.upgradesBought },
     { label: 'Cows Bought', value: stats.cowsBought },
     { label: 'Cows Sold', value: stats.cowsSold },

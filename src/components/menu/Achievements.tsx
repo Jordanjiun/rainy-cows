@@ -2,8 +2,9 @@ import { extend } from '@pixi/react';
 import { Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AchieveItem } from './AchieveItem';
-import { useAudio, useCow, useMenu } from '../../context/hooks';
+import { useAudio, useCow, useMenu, useToast } from '../../context/hooks';
 import { achievementItemData } from '../../data/gameData';
+import { useGameStore } from '../../game/store';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Container, Graphics, Sprite, Text });
@@ -31,6 +32,8 @@ export const Achievements = ({
   appHeight: number;
 }) => {
   const { audioMap } = useAudio();
+  const { achievements } = useGameStore();
+  const { showToast } = useToast();
   const { selectedCow, setSelectedCow } = useCow();
   const { selectedMenu, setSelectedMenu } = useMenu();
 
@@ -38,6 +41,12 @@ export const Achievements = ({
   const [closeHovered, setCloseHovered] = useState(false);
   const [trophyImage, setTrophyImage] = useState<Texture | null>(null);
   const [scrollY, setScrollY] = useState(0);
+  const [seenAchievements, setSeenAchievements] = useState<Set<string>>(() => {
+    const saved = Object.keys(achievements).filter(
+      (label) => achievements[label],
+    );
+    return new Set(saved);
+  });
 
   const maskRef = useRef<Graphics>(null);
   const scrollContainerRef = useRef<Container>(null);
@@ -45,7 +54,7 @@ export const Achievements = ({
   const lastY = useRef(0);
 
   const iconColor = isHovered ? 'yellow' : 'white';
-  const contentHeight = 500;
+  const contentHeight = achievementItemData.length * achieveItemHeight;
   const maxScroll = Math.max(0, contentHeight - maskHeight);
   const trackHeight = scrollBarHeight;
   const thumbHeight = Math.max(
@@ -66,6 +75,23 @@ export const Achievements = ({
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    const newlyUnlocked = Object.keys(achievements).filter(
+      (label) => achievements[label] && !seenAchievements.has(label),
+    );
+    if (newlyUnlocked.length > 0) {
+      newlyUnlocked.forEach((label) => {
+        audioMap.powerup.play();
+        showToast(`Achievement unlocked: ${label}`);
+      });
+      setSeenAchievements((prev) => {
+        const updated = new Set(prev);
+        newlyUnlocked.forEach((label) => updated.add(label));
+        return updated;
+      });
+    }
+  }, [achievements, seenAchievements]);
 
   function handleClick() {
     audioMap.click.play();

@@ -41,6 +41,7 @@ export const AchieveItem = ({
   }
 
   const stat = getStat(statName);
+  const achieved = useGameStore((s) => s.achievements[label]);
 
   const drawBox = useMemo(() => {
     return (g: Graphics) => {
@@ -71,7 +72,7 @@ export const AchieveItem = ({
 
   const drawProgress = useMemo(() => {
     let text;
-    if (stat >= target) text = 'Achieved';
+    if (achieved) text = 'Achieved';
     else {
       text = `${stat.toLocaleString('en-US')} / ${target.toLocaleString('en-US')}`;
     }
@@ -88,11 +89,9 @@ export const AchieveItem = ({
         />
       </>
     );
-  }, [maxWidth, stat]);
+  }, [maxWidth, stat, achieved]);
 
   const drawTick = useMemo(() => {
-    let achieved = false;
-    if (stat >= target) achieved = true;
     return (
       <>
         <pixiGraphics draw={drawBox} />
@@ -112,7 +111,7 @@ export const AchieveItem = ({
         )}
       </>
     );
-  }, [maxWidth, stat]);
+  }, [maxWidth, stat, achieved]);
 
   return (
     <pixiContainer y={y}>
