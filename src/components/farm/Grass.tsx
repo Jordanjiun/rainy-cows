@@ -9,7 +9,7 @@ extend({ Container, Sprite, TilingSprite });
 const indexes = [24, 32, 40, 42];
 const frameSize = 16;
 const scale = 3;
-const jitter = 5;
+const jitter = 4;
 
 const landRatio = Number(import.meta.env.VITE_LAND_RATIO);
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);

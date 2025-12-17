@@ -1,11 +1,10 @@
 import { extend } from '@pixi/react';
 import { Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useAudio, useCow, useMenu } from '../../context/hooks';
-import { cowPrices, shopItemData } from '../../data/gameData';
+import { AchieveItem } from './AchieveItem';
+import { useAudio, useCow, useMenu, useToast } from '../../context/hooks';
+import { achievementItemData } from '../../data/gameData';
 import { useGameStore } from '../../game/store';
-import { BuyCow } from './BuyCow';
-import { ShopItem } from './ShopItem';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Container, Graphics, Sprite, Text });
@@ -16,8 +15,7 @@ const buttonSize = 50;
 const crossSize = 20;
 const crossThickness = 4;
 const offset = 20;
-const shopItemHeight = 160;
-const shopItemOffset = 70;
+const achieveItemHeight = 60;
 const maskHeight = boxHeight - 80;
 const scrollBarWidth = 5;
 const scrollBarHeight = boxHeight - 2 * offset;
@@ -26,7 +24,7 @@ const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
 const boxColor = '#ebd9c0ff';
 
-export const Shop = ({
+export const Achievements = ({
   appWidth,
   appHeight,
 }: {
@@ -34,14 +32,21 @@ export const Shop = ({
   appHeight: number;
 }) => {
   const { audioMap } = useAudio();
+  const { achievements } = useGameStore();
+  const { showToast } = useToast();
   const { selectedCow, setSelectedCow } = useCow();
   const { selectedMenu, setSelectedMenu } = useMenu();
-  const { tutorial, setTutorial } = useGameStore();
 
   const [isHovered, setIsHovered] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
-  const [shopImage, setShopImage] = useState<Texture | null>(null);
+  const [trophyImage, setTrophyImage] = useState<Texture | null>(null);
   const [scrollY, setScrollY] = useState(0);
+  const [seenAchievements, setSeenAchievements] = useState<Set<string>>(() => {
+    const saved = Object.keys(achievements).filter(
+      (label) => achievements[label],
+    );
+    return new Set(saved);
+  });
 
   const maskRef = useRef<Graphics>(null);
   const scrollContainerRef = useRef<Container>(null);
@@ -49,7 +54,7 @@ export const Shop = ({
   const lastY = useRef(0);
 
   const iconColor = isHovered ? 'yellow' : 'white';
-  const contentHeight = shopItemOffset + shopItemData.length * shopItemHeight;
+  const contentHeight = achievementItemData.length * achieveItemHeight;
   const maxScroll = Math.max(0, contentHeight - maskHeight);
   const trackHeight = scrollBarHeight;
   const thumbHeight = Math.max(
@@ -60,22 +65,38 @@ export const Shop = ({
 
   useEffect(() => {
     let mounted = true;
-    async function loadShopImage() {
-      const loaded = await Assets.load<Texture>('store');
+    async function loadTrophyImage() {
+      const loaded = await Assets.load<Texture>('trophy');
       loaded.source.scaleMode = 'linear';
-      if (mounted) setShopImage(loaded);
+      if (mounted) setTrophyImage(loaded);
     }
-    loadShopImage();
+    loadTrophyImage();
     return () => {
       mounted = false;
     };
   }, []);
 
+  useEffect(() => {
+    const newlyUnlocked = Object.keys(achievements).filter(
+      (label) => achievements[label] && !seenAchievements.has(label),
+    );
+    if (newlyUnlocked.length > 0) {
+      newlyUnlocked.forEach((label) => {
+        audioMap.powerup.play();
+        showToast(`Achievement unlocked: ${label}`);
+      });
+      setSeenAchievements((prev) => {
+        const updated = new Set(prev);
+        newlyUnlocked.forEach((label) => updated.add(label));
+        return updated;
+      });
+    }
+  }, [achievements, seenAchievements]);
+
   function handleClick() {
     audioMap.click.play();
-    if (tutorial == 2) setTutorial(3);
     if (selectedCow) setSelectedCow(null);
-    if (selectedMenu != 'shop') setSelectedMenu('shop');
+    if (selectedMenu != 'achievements') setSelectedMenu('achievements');
     else {
       setSelectedMenu(null);
       setScrollY(0);
@@ -83,7 +104,6 @@ export const Shop = ({
   }
 
   function handleScroll(delta: number) {
-    if (tutorial > 0) return;
     setScrollY((prev) => Math.min(maxScroll, Math.max(0, prev + delta)));
   }
 
@@ -163,12 +183,12 @@ export const Shop = ({
     g.fill({ alpha: 0 });
   }, []);
 
-  if (!shopImage) return null;
+  if (!trophyImage) return null;
 
   return (
     <>
       <pixiContainer
-        x={appWidth - (buttonSize + 10) * 3}
+        x={appWidth - (buttonSize + 10) * 2}
         y={appHeight - buttonSize - 10}
         interactive={true}
         cursor="pointer"
@@ -178,7 +198,7 @@ export const Shop = ({
       >
         <pixiGraphics draw={drawButtonBase} />
         <pixiSprite
-          texture={shopImage}
+          texture={trophyImage}
           anchor={0.5}
           x={buttonSize / 2}
           y={buttonSize / 2}
@@ -186,7 +206,7 @@ export const Shop = ({
         />
       </pixiContainer>
 
-      {selectedMenu == 'shop' && (
+      {selectedMenu == 'achievements' && (
         <>
           <pixiGraphics
             interactive={true}
@@ -243,7 +263,7 @@ export const Shop = ({
             <pixiText
               x={boxWidth / 2}
               y={29}
-              text={'Shop'}
+              text={'Achievements'}
               anchor={0.5}
               style={{ fontSize: 28, fontFamily: 'pixelFont' }}
             />
@@ -267,21 +287,16 @@ export const Shop = ({
                 }}
                 y={-scrollY}
               >
-                <BuyCow y={0} maxWidth={boxWidth} prices={cowPrices} />
-
-                {shopItemData.map((item, i) => {
-                  const y = shopItemOffset + i * shopItemHeight;
+                {achievementItemData.map((item, i) => {
+                  const y = i * achieveItemHeight;
                   return (
-                    <ShopItem
+                    <AchieveItem
                       key={item.label}
                       y={y}
                       maxWidth={boxWidth}
                       label={item.label}
-                      description={item.description}
-                      levelText={item.levelText}
-                      imageString={item.image}
-                      upgradeName={item.upgradeName}
-                      prices={item.prices}
+                      statName={item.statName}
+                      target={item.target}
                     />
                   );
                 })}

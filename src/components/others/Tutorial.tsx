@@ -128,10 +128,10 @@ export const Tutorial = ({
           onPointerUp={(e: FederatedPointerEvent) => e.stopPropagation()}
           draw={(g) => {
             g.clear();
-            g.rect(0, 0, appWidth - 120, appHeight);
-            g.rect(appWidth - 120, 0, appWidth, appHeight - 60);
-            g.rect(appWidth - 120, appHeight - 10, appWidth, 10);
-            g.rect(appWidth - 70, appHeight - 60, appWidth, 50);
+            g.rect(0, 0, appWidth - 180, appHeight);
+            g.rect(appWidth - 180, 0, appWidth, appHeight - 60);
+            g.rect(appWidth - 180, appHeight - 10, appWidth, 10);
+            g.rect(appWidth - 130, appHeight - 60, appWidth, 50);
             g.fill({ color: 'black', alpha: 0.5 });
           }}
         />
@@ -290,7 +290,7 @@ export const Tutorial = ({
         <>
           {drawSecondScene}
           <FloatingArrow
-            x={appWidth - 95}
+            x={appWidth - 155}
             y={appHeight - 90}
             rotation={Math.PI}
           />

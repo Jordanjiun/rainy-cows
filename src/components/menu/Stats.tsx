@@ -2,46 +2,21 @@ import { extend } from '@pixi/react';
 import { Container, Graphics, Text } from 'pixi.js';
 import { useCallback } from 'react';
 import { Button } from './Button';
-import { HyperlinkText } from '../others/HyperlinkText';
+import { useGameStore } from '../../game/store';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Container, Graphics, Text });
 
-const boxHeight = 320;
-const boxWidth = 300;
+const boxHeight = 290;
+const boxWidth = 320;
 const buttonWidth = 80;
 const buttonHeight = 40;
-const padding = 30;
+const padding = 25;
 const boxColor = '#ebd9c0ff';
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
-const infoRows = [
-  { label: 'Developer:', value: 'Jordan Tay', url: '' },
-  {
-    label: 'Pixel Font:',
-    value: 'Yuji Oshimoto',
-    url: 'https://www.dafont.com/04b-03.font',
-  },
-  {
-    label: 'Pixel Cows:',
-    value: 'Pop Shop Packs',
-    url: 'https://sites.google.com/view/popshoppacks/home',
-  },
-  {
-    label: 'Pixel Grass:',
-    value: 'Bonsaiheldin',
-    url: 'https://opengameart.org/users/bonsaiheldin',
-  },
-  {
-    label: 'Pixel Clouds:',
-    value: 'Kass',
-    url: 'https://kassjak.itch.io/',
-  },
-  { label: 'Audio:', value: 'Pixabay', url: '' },
-];
-
-export const Credits = ({
+export const Stats = ({
   appWidth,
   appHeight,
   onClick,
@@ -50,6 +25,18 @@ export const Credits = ({
   appHeight: number;
   onClick: () => void;
 }) => {
+  const { stats } = useGameStore();
+
+  const statsRows = [
+    { label: 'Clicks', value: stats.clicks },
+    { label: 'Moonies Earned', value: stats.mooneyEarned },
+    { label: 'Upgrades Bought', value: stats.upgradesBought },
+    { label: 'Cows Bought', value: stats.cowsBought },
+    { label: 'Cows Sold', value: stats.cowsSold },
+    { label: 'Cows Renamed', value: stats.cowsRenamed },
+    { label: 'Cows Pet', value: stats.cowsPet },
+  ];
+
   function handleClick() {
     onClick();
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;
@@ -71,7 +58,7 @@ export const Credits = ({
 
   const drawLine = useCallback(
     (g: Graphics) => {
-      const lineY = 112.5;
+      const lineY = 60;
       g.clear();
       g.moveTo(padding - 5, lineY);
       g.lineTo(boxWidth - padding + 5, lineY);
@@ -101,26 +88,13 @@ export const Credits = ({
         <pixiText
           x={boxWidth / 2}
           y={30}
-          text={'Credits'}
+          text={'Statistics'}
           anchor={0.5}
           style={{ fontSize: 28, fontFamily: 'pixelFont' }}
         />
-        <pixiText
-          x={boxWidth / 2}
-          y={55}
-          text={'This game is dedicated to the love of my life, RainyBearry❤️'}
-          anchor={{ x: 0.5, y: 0 }}
-          style={{
-            fontSize: 16,
-            fontFamily: 'pixelFont',
-            align: 'center',
-            wordWrap: true,
-            wordWrapWidth: boxWidth - padding,
-          }}
-        />
         <pixiGraphics draw={drawLine} />
-        {infoRows.map((row, i) => {
-          const y = 130 + i * 20;
+        {statsRows.map((row, i) => {
+          const y = 80 + i * 20;
           return (
             <pixiContainer key={row.label}>
               <pixiText
@@ -129,22 +103,13 @@ export const Credits = ({
                 text={row.label}
                 style={{ fontSize: 16, fontFamily: 'pixelFont' }}
               />
-              {!row.url ? (
-                <pixiText
-                  x={boxWidth - padding}
-                  y={y}
-                  text={row.value}
-                  anchor={{ x: 1, y: 0 }}
-                  style={{ fontSize: 16, fontFamily: 'pixelFont' }}
-                />
-              ) : (
-                <HyperlinkText
-                  x={boxWidth - padding}
-                  y={y}
-                  text={row.value}
-                  url={row.url}
-                />
-              )}
+              <pixiText
+                x={boxWidth - padding}
+                y={y}
+                text={row.value.toLocaleString('en-US')}
+                anchor={{ x: 1, y: 0 }}
+                style={{ fontSize: 16, fontFamily: 'pixelFont' }}
+              />
             </pixiContainer>
           );
         })}

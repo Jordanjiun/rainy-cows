@@ -1,6 +1,7 @@
 import { extend, useApplication } from '@pixi/react';
 import { Container } from 'pixi.js';
 import { useEffect, useMemo, useState } from 'react';
+import { Achievements } from '../components/menu/Achievements';
 import { CowManager } from '../components/cow/CowManager';
 import { Farm } from '../components/farm/Farm';
 import { FarmHud } from '../components/farm/FarmHud';
@@ -58,6 +59,7 @@ export const MainScene = () => {
               <HarvestButton appHeight={size.height} />
               <FloatingMooney appWidth={size.width} appHeight={size.height} />
               <Shop appWidth={size.width} appHeight={size.height} />
+              <Achievements appWidth={size.width} appHeight={size.height} />
               <MainMenu appWidth={size.width} appHeight={size.height} />
               <SellCow appWidth={size.width} appHeight={size.height} />
               {isTutorial && (

@@ -13,19 +13,21 @@ import { AudioBar } from './AudioBar';
 import { Button } from './Button';
 import { Credits } from './Credits';
 import { FinalWarning } from './FinalWarning';
+import { Stats } from './Stats';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Graphics, Sprite, Text });
 
-const boxHeight = 380;
+const boxHeight = 415;
 const boxWidth = 200;
 const buttonWidth = 170;
 const buttonHeight = 40;
 const buttonSize = 50;
 const crossSize = 20;
 const crossThickness = 4;
-const offset = 20;
-const yOffset = 28;
+const padding = 20;
+const buttonGap = 15;
+const yOffset = 32;
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
@@ -49,6 +51,7 @@ export const MainMenu = ({
 
   const [isHovered, setIsHovered] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
+  const [isStats, setIsStats] = useState(false);
   const [isCredit, setIsCredit] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
   const [menuImage, setMenuImage] = useState<Texture | null>(null);
@@ -177,7 +180,7 @@ export const MainMenu = ({
         />
       </pixiContainer>
 
-      {selectedMenu == 'menu' && !isCredit && (
+      {selectedMenu == 'menu' && !isCredit && !isStats && (
         <>
           <pixiGraphics
             interactive={true}
@@ -197,8 +200,8 @@ export const MainMenu = ({
             <pixiGraphics draw={drawBase} />
 
             <pixiContainer
-              x={offset}
-              y={offset}
+              x={padding}
+              y={padding}
               interactive={true}
               cursor="pointer"
               onPointerOver={() => setCloseHovered(true)}
@@ -237,7 +240,7 @@ export const MainMenu = ({
 
             <Button
               x={(boxWidth - buttonWidth) / 2}
-              y={boxHeight - (buttonHeight + offset) - yOffset}
+              y={boxHeight - (buttonHeight + buttonGap) - yOffset}
               buttonWidth={buttonWidth}
               buttonHeight={buttonHeight}
               buttonText={'Delete Save'}
@@ -247,7 +250,7 @@ export const MainMenu = ({
 
             <Button
               x={(boxWidth - buttonWidth) / 2}
-              y={boxHeight - (buttonHeight + offset) * 2 - yOffset}
+              y={boxHeight - (buttonHeight + buttonGap) * 2 - yOffset}
               buttonWidth={buttonWidth}
               buttonHeight={buttonHeight}
               buttonText={'Export Save'}
@@ -257,7 +260,7 @@ export const MainMenu = ({
 
             <Button
               x={(boxWidth - buttonWidth) / 2}
-              y={boxHeight - (buttonHeight + offset) * 3 - yOffset}
+              y={boxHeight - (buttonHeight + buttonGap) * 3 - yOffset}
               buttonWidth={buttonWidth}
               buttonHeight={buttonHeight}
               buttonText={'Import Save'}
@@ -270,7 +273,20 @@ export const MainMenu = ({
 
             <Button
               x={(boxWidth - buttonWidth) / 2}
-              y={boxHeight - (buttonHeight + offset) * 4 - yOffset}
+              y={boxHeight - (buttonHeight + buttonGap) * 4 - yOffset}
+              buttonWidth={buttonWidth}
+              buttonHeight={buttonHeight}
+              buttonText={'Statistics'}
+              buttonColor={'white'}
+              onClick={() => {
+                audioMap.type.play();
+                setIsStats(true);
+              }}
+            />
+
+            <Button
+              x={(boxWidth - buttonWidth) / 2}
+              y={boxHeight - (buttonHeight + buttonGap) * 5 - yOffset}
               buttonWidth={buttonWidth}
               buttonHeight={buttonHeight}
               buttonText={'Credits'}
@@ -289,6 +305,17 @@ export const MainMenu = ({
           appWidth={appWidth}
           appHeight={appHeight}
           onClick={() => setIsWarning(false)}
+        />
+      )}
+
+      {isStats && (
+        <Stats
+          appWidth={appWidth}
+          appHeight={appHeight}
+          onClick={() => {
+            audioMap.type.play();
+            setIsStats(false);
+          }}
         />
       )}
 

@@ -143,3 +143,126 @@ export const shopItemData = [
     },
   },
 ];
+
+export const achievementItemData = [
+  {
+    label: 'Click 100 times',
+    statName: 'clicks',
+    target: 100,
+  },
+  {
+    label: 'Click 1,000 times',
+    statName: 'clicks',
+    target: 1e3,
+  },
+  {
+    label: 'Click 10,000 times',
+    statName: 'clicks',
+    target: 1e4,
+  },
+  {
+    label: 'Click 100,000 times',
+    statName: 'clicks',
+    target: 1e5,
+  },
+  {
+    label: 'Click a million times',
+    statName: 'clicks',
+    target: 1e6,
+  },
+  {
+    label: 'Earn 1,000 moonies',
+    statName: 'mooneyEarned',
+    target: 1e3,
+  },
+  {
+    label: 'Earn 10,000 moonies',
+    statName: 'mooneyEarned',
+    target: 1e4,
+  },
+  {
+    label: 'Earn 100,000 moonies',
+    statName: 'mooneyEarned',
+    target: 1e5,
+  },
+  {
+    label: 'Earn a million moonies',
+    statName: 'mooneyEarned',
+    target: 1e6,
+  },
+  {
+    label: 'Earn a billion moonies',
+    statName: 'mooneyEarned',
+    target: 1e9,
+  },
+  {
+    label: 'Get 10 upgrades',
+    statName: 'upgradesBought',
+    target: 10,
+  },
+  {
+    label: 'Get 20 upgrades',
+    statName: 'upgradesBought',
+    target: 20,
+  },
+  {
+    label: 'Get 30 upgrades',
+    statName: 'upgradesBought',
+    target: 30,
+  },
+  {
+    label: 'Get 40 upgrades',
+    statName: 'upgradesBought',
+    target: 40,
+  },
+  {
+    label: 'Get 50 upgrades',
+    statName: 'upgradesBought',
+    target: 50,
+  },
+  {
+    label: 'Get all upgrades',
+    statName: 'upgradesBought',
+    target: 61,
+  },
+  {
+    label: 'Buy 5 cows',
+    statName: 'cowsBought',
+    target: 5,
+  },
+  {
+    label: 'Buy 10 cows',
+    statName: 'cowsBought',
+    target: 10,
+  },
+  {
+    label: 'Buy 15 cows',
+    statName: 'cowsBought',
+    target: 15,
+  },
+  {
+    label: 'Buy 20 cows',
+    statName: 'cowsBought',
+    target: 20,
+  },
+  {
+    label: 'Sell a cow',
+    statName: 'cowsSold',
+    target: 1,
+  },
+  {
+    label: 'Rename a cow',
+    statName: 'cowsRenamed',
+    target: 1,
+  },
+  {
+    label: 'Pet cows 100 times',
+    statName: 'cowsPet',
+    target: 100,
+  },
+  {
+    label: 'Pet cows 1,000 times',
+    statName: 'cowsPet',
+    target: 1e3,
+  },
+];

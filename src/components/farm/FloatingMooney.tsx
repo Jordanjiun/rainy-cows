@@ -16,7 +16,7 @@ export const FloatingMooney = ({
   appWidth: number;
   appHeight: number;
 }) => {
-  const { isHarvest, upgrades, addMooney } = useGameStore();
+  const { isHarvest, upgrades, addMooney, addStats } = useGameStore();
   const { moonies, addMooneyEffect } = useMooney();
   const { audioMap } = useAudio();
 
@@ -36,6 +36,7 @@ export const FloatingMooney = ({
 
   function handleClick(event: any) {
     const { x, y } = event.data.global;
+    addStats('clicks');
     addMooney(upgrades.clickLevel);
     addMooneyEffect(x, y, upgrades.clickLevel);
     audioMap.coin.play();
