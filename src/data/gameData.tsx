@@ -161,16 +161,6 @@ export const achievementItemData = [
     target: 1e4,
   },
   {
-    label: 'Click 100,000 times',
-    statName: 'clicks',
-    target: 1e5,
-  },
-  {
-    label: 'Click a million times',
-    statName: 'clicks',
-    target: 1e6,
-  },
-  {
     label: 'Earn 1,000 moonies',
     statName: 'mooneyEarned',
     target: 1e3,
