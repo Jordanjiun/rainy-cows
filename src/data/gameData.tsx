@@ -3,8 +3,8 @@ export const gameUpgrades = {
   harvestCooldownDecreasePerUpgrade: 5,
   harvestDurationSeconds: 10,
   harvetDurationIncreasePerUpgrade: 5,
-  harvestMultiplier: 10,
-  harvestMultiplierIncreasePerUpgrade: 10,
+  harvestMultiplier: 50,
+  harvestMultiplierIncreasePerUpgrade: 50,
 };
 
 export const cowPrices = {
@@ -125,7 +125,7 @@ export const shopItemData = [
   },
   {
     label: 'Upgrade Multiplier',
-    description: 'Increases cow harvest multiplier by 10.',
+    description: 'Increases cow harvest multiplier by 50.',
     levelText: 'Current multiplier:',
     image: 'x',
     upgradeName: 'harvestMultiplierLevel',
