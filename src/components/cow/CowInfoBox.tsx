@@ -78,8 +78,14 @@ export const CowInfoBox = ({
 
   const base = cowXpPerLevel[cow.level - 1] ?? 0;
   let value: number;
-  if (cow.level == 10) value = Math.round(base * cow.stats.valueMultiplier);
-  else value = Math.round((base + cow.xp) * cow.stats.valueMultiplier);
+  if (cow.level == 10)
+    value = Math.round(
+      base * cow.stats.valueMultiplier * (1 + cow.hearts / 10),
+    );
+  else
+    value = Math.round(
+      (base + cow.xp) * cow.stats.valueMultiplier * (1 + cow.hearts / 10),
+    );
 
   useEffect(() => {
     let mounted = true;
