@@ -79,10 +79,14 @@ export const SellCow = ({
   const base = cowXpPerLevel[selectedCow.level - 1] ?? 0;
   let value: number;
   if (selectedCow.level == 10)
-    value = Math.round(base * selectedCow.stats.valueMultiplier);
+    value = Math.round(
+      base * selectedCow.stats.valueMultiplier * (1 + selectedCow.hearts / 10),
+    );
   else
     value = Math.round(
-      (base + selectedCow.xp) * selectedCow.stats.valueMultiplier,
+      (base + selectedCow.xp) *
+        selectedCow.stats.valueMultiplier *
+        (1 + selectedCow.hearts / 10),
     );
 
   const iconWidth = mooneyImage.width;
