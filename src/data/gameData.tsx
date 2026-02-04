@@ -26,8 +26,8 @@ export const cowPrices = {
   16: 2e6,
   17: 3e6,
   18: 4e6,
-  19: 6e6,
-  20: 1e7,
+  19: 5e6,
+  20: 6e6,
 };
 
 export const shopItemData = [
@@ -53,11 +53,11 @@ export const shopItemData = [
       13: 4e5,
       14: 7e5,
       15: 1e6,
-      16: 2e6,
-      17: 3e6,
-      18: 4e6,
-      19: 5e6,
-      20: 6e6,
+      16: 1.5e6,
+      17: 2e6,
+      18: 2.5e6,
+      19: 3e6,
+      20: 3.5e6,
     },
   },
   {
@@ -76,7 +76,7 @@ export const shopItemData = [
       7: 5e5,
       8: 1e6,
       9: 3e6,
-      10: 6e6,
+      10: 5e6,
     },
   },
   {
@@ -181,9 +181,9 @@ export const achievementItemData = [
     target: 1e6,
   },
   {
-    label: 'Earn a billion moonies',
+    label: 'Earn 100 million moonies',
     statName: 'mooneyEarned',
-    target: 1e9,
+    target: 1e8,
   },
   {
     label: 'Get 10 upgrades',
