@@ -11,6 +11,8 @@ extend({ Container, Graphics, Text });
 
 const boxHeight = 200;
 const boxWidth = 300;
+const menuWidth = 210;
+const menuHeight = 300;
 const buttonWidth = 80;
 const buttonHeight = 40;
 const buttonOffset = 20;
@@ -34,7 +36,8 @@ export const Tutorial = ({
   const { cows, tutorial, setTutorial } = useGameStore();
 
   useEffect(() => {
-    if (tutorial === 3) setSelectedMenu('shop');
+    if (tutorial == 2.5) setSelectedMenu('menu');
+    else if (tutorial == 3) setSelectedMenu('shop');
     else if (tutorial == 4) setSelectedCow(cows[0]);
   }, [tutorial, setSelectedMenu]);
 
@@ -128,10 +131,10 @@ export const Tutorial = ({
           onPointerUp={(e: FederatedPointerEvent) => e.stopPropagation()}
           draw={(g) => {
             g.clear();
-            g.rect(0, 0, appWidth - 180, appHeight);
-            g.rect(appWidth - 180, 0, appWidth, appHeight - 60);
-            g.rect(appWidth - 180, appHeight - 10, appWidth, 10);
-            g.rect(appWidth - 130, appHeight - 60, appWidth, 50);
+            g.rect(0, 0, appWidth - 60, appHeight);
+            g.rect(appWidth - 60, 0, appWidth, appHeight - 60);
+            g.rect(appWidth - 60, appHeight - 10, appWidth, 10);
+            g.rect(appWidth - 10, appHeight - 60, appWidth, 50);
             g.fill({ color: 'black', alpha: 0.5 });
           }}
         />
@@ -154,40 +157,74 @@ export const Tutorial = ({
             }}
           />
         </pixiContainer>
+        <FloatingArrow
+          x={appWidth - 35}
+          y={appHeight - 90}
+          rotation={Math.PI}
+        />
+      </>
+    );
+  }, [appWidth, appHeight]);
+
+  const drawSecondHalfScene = useMemo(() => {
+    const buttonX = (appWidth - menuWidth) / 2 + buttonOffset;
+    const buttonY = (appHeight - menuHeight) / 2 + buttonOffset;
+    return (
+      <>
+        <pixiGraphics
+          interactive={true}
+          onPointerDown={(e: FederatedPointerEvent) => e.stopPropagation()}
+          onPointerUp={(e: FederatedPointerEvent) => e.stopPropagation()}
+          draw={(g) => {
+            g.clear();
+            g.rect(0, 0, buttonX, appHeight);
+            g.rect(buttonX, 0, appWidth, buttonY);
+            g.rect(buttonX, buttonY + 50, appWidth, appHeight);
+            g.rect(buttonX + 50, buttonY, appWidth, 50);
+            g.fill({ color: 'black', alpha: 0.5 });
+          }}
+        />
+        <FloatingArrow x={buttonX + 25} y={buttonY - 25} rotation={Math.PI} />
       </>
     );
   }, [appWidth, appHeight]);
 
   const drawThirdScene = useMemo(() => {
     return (
-      <pixiGraphics
-        interactive={true}
-        onPointerDown={(e: FederatedPointerEvent) => e.stopPropagation()}
-        onPointerUp={(e: FederatedPointerEvent) => e.stopPropagation()}
-        draw={(g) => {
-          g.clear();
-          g.rect(0, 0, (appWidth - shopWidth) / 2 + 245, appHeight);
-          g.rect(
-            (appWidth - shopWidth) / 2 + 245,
-            0,
-            appWidth,
-            (appHeight - shopHeight) / 2 + 32,
-          );
-          g.rect(
-            (appWidth - shopWidth) / 2 + 245,
-            (appHeight - shopHeight) / 2 + 67,
-            appWidth,
-            appHeight,
-          );
-          g.rect(
-            (appWidth - shopWidth) / 2 + 305,
-            (appHeight - shopHeight) / 2 + 32,
-            appWidth,
-            35,
-          );
-          g.fill({ color: 'black', alpha: 0.5 });
-        }}
-      />
+      <>
+        <pixiGraphics
+          interactive={true}
+          onPointerDown={(e: FederatedPointerEvent) => e.stopPropagation()}
+          onPointerUp={(e: FederatedPointerEvent) => e.stopPropagation()}
+          draw={(g) => {
+            g.clear();
+            g.rect(0, 0, (appWidth - shopWidth) / 2 + 245, appHeight);
+            g.rect(
+              (appWidth - shopWidth) / 2 + 245,
+              0,
+              appWidth,
+              (appHeight - shopHeight) / 2 + 32,
+            );
+            g.rect(
+              (appWidth - shopWidth) / 2 + 245,
+              (appHeight - shopHeight) / 2 + 67,
+              appWidth,
+              appHeight,
+            );
+            g.rect(
+              (appWidth - shopWidth) / 2 + 305,
+              (appHeight - shopHeight) / 2 + 32,
+              appWidth,
+              35,
+            );
+            g.fill({ color: 'black', alpha: 0.5 });
+          }}
+        />
+        <FloatingArrow
+          x={(appWidth - shopWidth) / 2 + 275}
+          y={(appHeight - shopHeight) / 2 + 95}
+        />
+      </>
     );
   }, [appWidth, appHeight]);
 
@@ -279,6 +316,7 @@ export const Tutorial = ({
             }}
           />
         </pixiContainer>
+        <FloatingArrow x={35} y={appHeight - 90} rotation={Math.PI} />
       </>
     );
   }, [appWidth, appHeight]);
@@ -286,32 +324,11 @@ export const Tutorial = ({
   return (
     <>
       {tutorial == 1 && drawFirstScene}
-      {tutorial == 2 && (
-        <>
-          {drawSecondScene}
-          <FloatingArrow
-            x={appWidth - 155}
-            y={appHeight - 90}
-            rotation={Math.PI}
-          />
-        </>
-      )}
-      {tutorial == 3 && (
-        <>
-          {drawThirdScene}
-          <FloatingArrow
-            x={(appWidth - shopWidth) / 2 + 275}
-            y={(appHeight - shopHeight) / 2 + 95}
-          />
-        </>
-      )}
+      {tutorial == 2 && drawSecondScene}
+      {tutorial == 2.5 && drawSecondHalfScene}
+      {tutorial == 3 && drawThirdScene}
       {tutorial == 4 && drawFourthScene}
-      {tutorial == 5 && (
-        <>
-          {drawFifthScene}
-          <FloatingArrow x={35} y={appHeight - 90} rotation={Math.PI} />
-        </>
-      )}
+      {tutorial == 5 && drawFifthScene}
     </>
   );
 };

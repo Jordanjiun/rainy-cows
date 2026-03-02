@@ -11,7 +11,6 @@ extend({ Container, Graphics, Sprite, Text });
 
 const boxHeight = 400;
 const boxWidth = 325;
-const buttonSize = 50;
 const crossSize = 20;
 const crossThickness = 4;
 const offset = 20;
@@ -27,9 +26,15 @@ const boxColor = '#ebd9c0ff';
 export const Achievements = ({
   appWidth,
   appHeight,
+  buttonX,
+  buttonY,
+  buttonSize,
 }: {
   appWidth: number;
   appHeight: number;
+  buttonX: number;
+  buttonY: number;
+  buttonSize: number;
 }) => {
   const { audioMap } = useAudio();
   const { achievements } = useGameStore();
@@ -53,7 +58,7 @@ export const Achievements = ({
   const dragging = useRef(false);
   const lastY = useRef(0);
 
-  const iconColor = isHovered ? 'yellow' : 'white';
+  const iconColor = isHovered ? 'white' : 'black';
   const contentHeight = achievementItemData.length * achieveItemHeight;
   const maxScroll = Math.max(0, contentHeight - maskHeight);
   const trackHeight = scrollBarHeight;
@@ -124,7 +129,7 @@ export const Achievements = ({
       g.roundRect(0, 0, buttonSize, buttonSize, 10);
       g.fill({ alpha: 0 });
       g.roundRect(0, 0, buttonSize, buttonSize, 10);
-      g.stroke({ width: 2, color: isHovered ? 'yellow' : 'white' });
+      g.stroke({ width: 3, color: isHovered ? 'white' : 'black' });
     };
   }, [isHovered]);
 
@@ -188,8 +193,8 @@ export const Achievements = ({
   return (
     <>
       <pixiContainer
-        x={appWidth - (buttonSize + 10) * 2}
-        y={appHeight - buttonSize - 10}
+        x={buttonX}
+        y={buttonY}
         interactive={true}
         cursor="pointer"
         onPointerOver={() => setIsHovered(true)}

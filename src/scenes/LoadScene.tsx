@@ -60,6 +60,7 @@ const manifest = {
     {
       name: 'icons',
       assets: [
+        { alias: 'barn', src: '/assets/icons/warehouse.png' },
         { alias: 'cowIcon', src: '/assets/icons/cow-head.png' },
         { alias: 'click', src: '/assets/icons/mouse-pointer-click.png' },
         { alias: 'clockDown', src: '/assets/icons/clock-arrow-down.png' },
@@ -68,7 +69,7 @@ const manifest = {
         { alias: 'menu', src: '/assets/icons/menu.png' },
         { alias: 'pen', src: '/assets/icons/square-pen.png' },
         { alias: 'settings', src: '/assets/icons/settings.png' },
-        { alias: 'store', src: '/assets/icons/store.png' },
+        { alias: 'store', src: '/assets/icons/shopping-cart.png' },
         { alias: 'trophy', src: '/assets/icons/trophy.png' },
         { alias: 'upgradeClick', src: '/assets/icons/mouse-pointer-2.png' },
         { alias: 'x', src: '/assets/icons/x.png' },

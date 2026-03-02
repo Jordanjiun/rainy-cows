@@ -2,16 +2,21 @@ import { extend } from '@pixi/react';
 import { Assets, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useCallback, useMemo, useState, useEffect } from 'react';
 import { useAudio, useCow, useMenu } from '../../context/hooks';
+import { useGameStore } from '../../game/store';
+import { Achievements } from './Achievements.tsx';
+import { BarnButton } from './BarnButton.tsx';
+import { Shop } from './Shop.tsx';
 import { Settings } from './Settings.tsx';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Graphics, Sprite, Text });
 
 const boxHeight = 300;
-const boxWidth = 200;
+const boxWidth = 210;
 const buttonSize = 50;
 const crossSize = 20;
 const crossThickness = 4;
+const itemsPerRow = 3;
 const padding = 20;
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
@@ -28,10 +33,30 @@ export const Menu = ({
   const { audioMap } = useAudio();
   const { selectedCow, setSelectedCow } = useCow();
   const { selectedMenu, setSelectedMenu } = useMenu();
+  const { tutorial, setTutorial } = useGameStore();
 
   const [isHovered, setIsHovered] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
   const [menuImage, setMenuImage] = useState<Texture | null>(null);
+
+  const menuComponents = [
+    {
+      keys: ['menu', 'shop'],
+      Component: Shop,
+    },
+    {
+      keys: ['menu'],
+      Component: BarnButton,
+    },
+    {
+      keys: ['menu', 'achievements'],
+      Component: Achievements,
+    },
+    {
+      keys: ['menu', 'settings', 'warning'],
+      Component: Settings,
+    },
+  ];
 
   const iconColor = isHovered ? 'yellow' : 'white';
 
@@ -50,6 +75,7 @@ export const Menu = ({
 
   function handleClick() {
     audioMap.click.play();
+    if (tutorial == 2) setTutorial(2.5);
     if (selectedCow) {
       setSelectedCow(null);
     }
@@ -185,14 +211,25 @@ export const Menu = ({
       )}
 
       {selectedMenu &&
-        ['menu', 'settings', 'warning'].includes(selectedMenu) && (
-          <Settings
-            appWidth={appWidth}
-            appHeight={appHeight}
-            menuWidth={boxWidth}
-            menuHeight={boxHeight}
-          />
-        )}
+        menuComponents
+          .filter(({ keys }) => keys.includes(selectedMenu))
+          .map(({ Component }, index) => {
+            const col = index % itemsPerRow;
+            const row = Math.floor(index / itemsPerRow);
+            const startX = (appWidth - boxWidth) / 2 + padding;
+            const startY = (appHeight - boxHeight) / 2 + padding;
+
+            return (
+              <Component
+                key={index}
+                appWidth={appWidth}
+                appHeight={appHeight}
+                buttonSize={buttonSize}
+                buttonX={startX + col * (buttonSize + padding / 2)}
+                buttonY={startY + row * (buttonSize + padding / 2)}
+              />
+            );
+          })}
     </>
   );
 };

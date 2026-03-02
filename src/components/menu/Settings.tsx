@@ -22,7 +22,6 @@ const boxHeight = 400;
 const boxWidth = 240;
 const buttonWidth = 200;
 const buttonHeight = 40;
-const buttonSize = 50;
 const crossSize = 20;
 const crossThickness = 4;
 const padding = 20;
@@ -38,13 +37,15 @@ const redColor = '#E28C80';
 export const Settings = ({
   appWidth,
   appHeight,
-  menuWidth,
-  menuHeight,
+  buttonX,
+  buttonY,
+  buttonSize,
 }: {
   appWidth: number;
   appHeight: number;
-  menuWidth: number;
-  menuHeight: number;
+  buttonX: number;
+  buttonY: number;
+  buttonSize: number;
 }) => {
   const { setLastExportReminder } = useGameStore();
   const { audioMap, setGlobalVolume } = useAudio();
@@ -60,7 +61,7 @@ export const Settings = ({
   const [closeHovered, setCloseHovered] = useState(false);
   const [menuImage, setMenuImage] = useState<Texture | null>(null);
 
-  const iconColor = isHovered ? 'yellow' : 'black';
+  const iconColor = isHovered ? 'white' : 'black';
 
   onFileSelected((file) => handleImport(file));
 
@@ -131,7 +132,7 @@ export const Settings = ({
       g.roundRect(0, 0, buttonSize, buttonSize, 10);
       g.fill({ alpha: 0 });
       g.roundRect(0, 0, buttonSize, buttonSize, 10);
-      g.stroke({ width: 3, color: isHovered ? 'yellow' : 'black' });
+      g.stroke({ width: 3, color: isHovered ? 'white' : 'black' });
     };
   }, [isHovered]);
 
@@ -166,8 +167,8 @@ export const Settings = ({
   return (
     <>
       <pixiContainer
-        x={(appWidth - menuWidth) / 2 + padding}
-        y={(appHeight - menuHeight) / 2 + padding}
+        x={buttonX}
+        y={buttonY}
         interactive={true}
         cursor="pointer"
         onPointerOver={() => setIsHovered(true)}
