@@ -7,7 +7,7 @@ import { Farm } from '../components/farm/Farm';
 import { FarmHud } from '../components/farm/FarmHud';
 import { FloatingMooney } from '../components/farm/FloatingMooney';
 import { HarvestButton } from '../components/farm/HarvestButton';
-import { MainMenu } from '../components/menu/MainMenu';
+import { Menu } from '../components/menu/Menu';
 import { SellCow } from '../components/menu/SellCow';
 import { Shop } from '../components/menu/Shop';
 import { Tutorial } from '../components/others/Tutorial';
@@ -60,7 +60,7 @@ export const MainScene = () => {
               <FloatingMooney appWidth={size.width} appHeight={size.height} />
               <Shop appWidth={size.width} appHeight={size.height} />
               <Achievements appWidth={size.width} appHeight={size.height} />
-              <MainMenu appWidth={size.width} appHeight={size.height} />
+              <Menu appWidth={size.width} appHeight={size.height} />
               <SellCow appWidth={size.width} appHeight={size.height} />
               {isTutorial && (
                 <Tutorial appWidth={size.width} appHeight={size.height} />

@@ -18,16 +18,16 @@ import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Graphics, Sprite, Text });
 
-const boxHeight = 415;
-const boxWidth = 200;
-const buttonWidth = 170;
+const boxHeight = 400;
+const boxWidth = 240;
+const buttonWidth = 200;
 const buttonHeight = 40;
 const buttonSize = 50;
 const crossSize = 20;
 const crossThickness = 4;
 const padding = 20;
 const buttonGap = 15;
-const yOffset = 32;
+const yOffset = 12;
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
@@ -35,12 +35,16 @@ const boxColor = '#ebd9c0ff';
 const greenColor = '#80E28C';
 const redColor = '#E28C80';
 
-export const MainMenu = ({
+export const Settings = ({
   appWidth,
   appHeight,
+  menuWidth,
+  menuHeight,
 }: {
   appWidth: number;
   appHeight: number;
+  menuWidth: number;
+  menuHeight: number;
 }) => {
   const { setLastExportReminder } = useGameStore();
   const { audioMap, setGlobalVolume } = useAudio();
@@ -56,14 +60,14 @@ export const MainMenu = ({
   const [closeHovered, setCloseHovered] = useState(false);
   const [menuImage, setMenuImage] = useState<Texture | null>(null);
 
-  const iconColor = isHovered ? 'yellow' : 'white';
+  const iconColor = isHovered ? 'yellow' : 'black';
 
   onFileSelected((file) => handleImport(file));
 
   useEffect(() => {
     let mounted = true;
     async function loadMenuImage() {
-      const loaded = await Assets.load<Texture>('menu');
+      const loaded = await Assets.load<Texture>('settings');
       loaded.source.scaleMode = 'linear';
       if (mounted) setMenuImage(loaded);
     }
@@ -98,8 +102,8 @@ export const MainMenu = ({
     if (selectedCow) {
       setSelectedCow(null);
     }
-    if (selectedMenu != 'menu') {
-      setSelectedMenu('menu');
+    if (selectedMenu != 'settings') {
+      setSelectedMenu('settings');
     } else {
       setSelectedMenu(null);
     }
@@ -107,7 +111,7 @@ export const MainMenu = ({
 
   function handleDeleteButton() {
     audioMap.type.play();
-    setSelectedMenu(null);
+    setSelectedMenu('warning');
     setIsWarning(true);
   }
 
@@ -127,7 +131,7 @@ export const MainMenu = ({
       g.roundRect(0, 0, buttonSize, buttonSize, 10);
       g.fill({ alpha: 0 });
       g.roundRect(0, 0, buttonSize, buttonSize, 10);
-      g.stroke({ width: 2, color: isHovered ? 'yellow' : 'white' });
+      g.stroke({ width: 3, color: isHovered ? 'yellow' : 'black' });
     };
   }, [isHovered]);
 
@@ -162,8 +166,8 @@ export const MainMenu = ({
   return (
     <>
       <pixiContainer
-        x={appWidth - buttonSize - 10}
-        y={appHeight - buttonSize - 10}
+        x={(appWidth - menuWidth) / 2 + padding}
+        y={(appHeight - menuHeight) / 2 + padding}
         interactive={true}
         cursor="pointer"
         onPointerOver={() => setIsHovered(true)}
@@ -180,7 +184,7 @@ export const MainMenu = ({
         />
       </pixiContainer>
 
-      {selectedMenu == 'menu' && !isCredit && !isStats && (
+      {selectedMenu == 'settings' && !isCredit && !isStats && (
         <>
           <pixiGraphics
             interactive={true}
@@ -214,22 +218,9 @@ export const MainMenu = ({
             <pixiText
               x={boxWidth / 2}
               y={29}
-              text={'Menu'}
+              text={'Settings'}
               anchor={0.5}
               style={{ fontSize: 28, fontFamily: 'pixelFont' }}
-            />
-            <pixiText
-              x={14}
-              y={boxHeight - 38}
-              text={'©'}
-              style={{ fontSize: 24, fontFamily: 'pixelFont' }}
-            />
-            <pixiText
-              x={boxWidth / 2 + 10}
-              y={boxHeight - 25}
-              text={`Jordan Tay, ${new Date().getFullYear()}`}
-              anchor={0.5}
-              style={{ fontSize: 16, fontFamily: 'pixelFont' }}
             />
 
             <AudioBar
