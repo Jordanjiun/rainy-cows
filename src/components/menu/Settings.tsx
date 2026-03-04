@@ -11,16 +11,14 @@ import {
 import { exportGameSave, importGameSave, useGameStore } from '../../game/store';
 import { AudioBar } from './AudioBar';
 import { Button } from './Button';
-import { Credits } from './Credits';
 import { FinalWarning } from './FinalWarning';
-import { Stats } from './Stats';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Graphics, Sprite, Text });
 
-const boxHeight = 400;
-const boxWidth = 240;
-const buttonWidth = 200;
+const boxHeight = 350;
+const boxWidth = 260;
+const buttonWidth = 220;
 const buttonHeight = 40;
 const crossSize = 20;
 const crossThickness = 4;
@@ -56,8 +54,6 @@ export const Settings = ({
 
   const [isHovered, setIsHovered] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
-  const [isStats, setIsStats] = useState(false);
-  const [isCredit, setIsCredit] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
   const [menuImage, setMenuImage] = useState<Texture | null>(null);
 
@@ -185,7 +181,7 @@ export const Settings = ({
         />
       </pixiContainer>
 
-      {selectedMenu == 'settings' && !isCredit && !isStats && (
+      {selectedMenu == 'settings' && (
         <>
           <pixiGraphics
             interactive={true}
@@ -268,24 +264,11 @@ export const Settings = ({
               y={boxHeight - (buttonHeight + buttonGap) * 4 - yOffset}
               buttonWidth={buttonWidth}
               buttonHeight={buttonHeight}
-              buttonText={'Statistics'}
+              buttonText={'Return to Menu'}
               buttonColor={'white'}
               onClick={() => {
                 audioMap.type.play();
-                setIsStats(true);
-              }}
-            />
-
-            <Button
-              x={(boxWidth - buttonWidth) / 2}
-              y={boxHeight - (buttonHeight + buttonGap) * 5 - yOffset}
-              buttonWidth={buttonWidth}
-              buttonHeight={buttonHeight}
-              buttonText={'Credits'}
-              buttonColor={'white'}
-              onClick={() => {
-                audioMap.type.play();
-                setIsCredit(true);
+                setSelectedMenu('menu');
               }}
             />
           </pixiContainer>
@@ -297,28 +280,6 @@ export const Settings = ({
           appWidth={appWidth}
           appHeight={appHeight}
           onClick={() => setIsWarning(false)}
-        />
-      )}
-
-      {isStats && (
-        <Stats
-          appWidth={appWidth}
-          appHeight={appHeight}
-          onClick={() => {
-            audioMap.type.play();
-            setIsStats(false);
-          }}
-        />
-      )}
-
-      {isCredit && (
-        <Credits
-          appWidth={appWidth}
-          appHeight={appHeight}
-          onClick={() => {
-            audioMap.type.play();
-            setIsCredit(false);
-          }}
         />
       )}
     </>

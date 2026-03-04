@@ -5,13 +5,15 @@ import { useAudio, useCow, useMenu } from '../../context/hooks';
 import { useGameStore } from '../../game/store';
 import { Achievements } from './Achievements.tsx';
 import { BarnButton } from './BarnButton.tsx';
+import { Credits } from './Credits.tsx';
 import { Shop } from './Shop.tsx';
 import { Settings } from './Settings.tsx';
+import { Stats } from './Stats.tsx';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Graphics, Sprite, Text });
 
-const boxHeight = 300;
+const boxHeight = 280;
 const boxWidth = 210;
 const buttonSize = 50;
 const crossSize = 20;
@@ -51,6 +53,14 @@ export const Menu = ({
     {
       keys: ['menu', 'achievements'],
       Component: Achievements,
+    },
+    {
+      keys: ['menu', 'stats'],
+      Component: Stats,
+    },
+    {
+      keys: ['menu', 'credits'],
+      Component: Credits,
     },
     {
       keys: ['menu', 'settings', 'warning'],

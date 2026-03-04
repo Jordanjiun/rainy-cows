@@ -4,20 +4,23 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAudio, useCow, useMenu } from '../../context/hooks';
 import { cowPrices, shopItemData } from '../../data/gameData';
 import { useGameStore } from '../../game/store';
+import { Button } from './Button';
 import { BuyCow } from './BuyCow';
 import { ShopItem } from './ShopItem';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Container, Graphics, Sprite, Text });
 
-const boxHeight = 400;
+const boxHeight = 420;
 const boxWidth = 325;
+const buttonWidth = 80;
+const buttonHeight = 35;
 const crossSize = 20;
 const crossThickness = 4;
 const offset = 20;
 const shopItemHeight = 160;
 const shopItemOffset = 70;
-const maskHeight = boxHeight - 80;
+const maskHeight = boxHeight - 110;
 const scrollBarWidth = 5;
 const scrollBarHeight = boxHeight - 2 * offset;
 
@@ -76,15 +79,15 @@ export const Shop = ({
     };
   }, []);
 
-  function handleClick() {
+  function handleClick(backClick: boolean) {
+    setScrollY(0);
     audioMap.click.play();
     if (tutorial == 2.5) setTutorial(3);
     if (selectedCow) setSelectedCow(null);
-    if (selectedMenu != 'shop') setSelectedMenu('shop');
-    else {
-      setSelectedMenu(null);
-      setScrollY(0);
-    }
+    if (selectedMenu == 'shop') {
+      if (backClick) setSelectedMenu('menu');
+      else setSelectedMenu(null);
+    } else setSelectedMenu('shop');
   }
 
   function handleScroll(delta: number) {
@@ -179,7 +182,7 @@ export const Shop = ({
         cursor="pointer"
         onPointerOver={() => setIsHovered(true)}
         onPointerOut={() => setIsHovered(false)}
-        onPointerTap={handleClick}
+        onPointerTap={() => handleClick(false)}
       >
         <pixiGraphics draw={drawButtonBase} />
         <pixiSprite
@@ -251,6 +254,16 @@ export const Shop = ({
               text={'Shop'}
               anchor={0.5}
               style={{ fontSize: 28, fontFamily: 'pixelFont' }}
+            />
+
+            <Button
+              x={(boxWidth - buttonWidth) / 2}
+              y={boxHeight - buttonHeight - 10}
+              buttonWidth={buttonWidth}
+              buttonHeight={buttonHeight}
+              buttonText={'Back'}
+              buttonColor={'white'}
+              onClick={() => handleClick(true)}
             />
 
             <pixiContainer x={offset} y={60}>
