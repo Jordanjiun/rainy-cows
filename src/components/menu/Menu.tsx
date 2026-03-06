@@ -112,7 +112,7 @@ export const Menu = ({
       g.roundRect(0, 0, buttonSize, buttonSize, 10);
       g.fill({ alpha: 0 });
       g.roundRect(0, 0, buttonSize, buttonSize, 10);
-      g.stroke({ width: 2, color: isHovered ? 'yellow' : 'white' });
+      g.stroke({ width: 3, color: isHovered ? 'yellow' : 'white' });
     };
   }, [isHovered]);
 

@@ -131,6 +131,7 @@ interface GameState {
   unlockAchievement: (label: string) => void;
   checkAchievements: () => void;
   loadData: (data: Partial<GameState>) => void;
+  reloadCows: () => void;
   reset: () => void;
 }
 
@@ -285,6 +286,18 @@ export const useGameStore = create<GameState>((set, get) => {
         }
       });
     },
+
+    reloadCows: () =>
+      set((state) => ({
+        cows: state.cows.map((c) => {
+          const cow = Object.assign(new Cow(), c);
+          cow.seed = Number.parseInt(
+            crypto.randomUUID().replace(/-/g, '').slice(0, 12),
+            16,
+          );
+          return cow;
+        }),
+      })),
 
     loadData: (data) =>
       set((state) => {

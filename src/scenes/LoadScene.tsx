@@ -73,6 +73,7 @@ const manifest = {
         { alias: 'stats', src: '/assets/icons/chart-no-axes-combined.png' },
         { alias: 'store', src: '/assets/icons/shopping-cart.png' },
         { alias: 'trophy', src: '/assets/icons/trophy.png' },
+        { alias: 'undo', src: '/assets/icons/undo-2.png' },
         { alias: 'upgradeClick', src: '/assets/icons/mouse-pointer-2.png' },
         { alias: 'x', src: '/assets/icons/x.png' },
       ],

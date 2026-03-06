@@ -1,7 +1,7 @@
 import { extend } from '@pixi/react';
 import { Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useEffect, useMemo, useState } from 'react';
-import { useAudio } from '../../context/hooks';
+import { useAudio, useScene } from '../../context/hooks';
 
 extend({ Container, Graphics, Sprite, Text });
 
@@ -15,6 +15,7 @@ export const BarnButton = ({
   buttonSize: number;
 }) => {
   const { audioMap } = useAudio();
+  const { switchScene } = useScene();
   const [isHovered, setIsHovered] = useState(false);
   const [barnImage, setBarnImage] = useState<Texture | null>(null);
 
@@ -35,6 +36,7 @@ export const BarnButton = ({
 
   function handleClick() {
     audioMap.click.play();
+    switchScene('BarnScene');
   }
 
   const drawButtonBase = useMemo(() => {

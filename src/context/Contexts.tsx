@@ -2,7 +2,7 @@ import { createContext } from 'react';
 import { Howl } from 'howler';
 import type { Cow } from '../game/cowModel';
 
-export type SceneKey = 'LoadScreen' | 'MainScene';
+export type SceneKey = 'LoadScreen' | 'MainScene' | 'BarnScene';
 export type MooneyEffect = {
   x: number;
   y: number;
