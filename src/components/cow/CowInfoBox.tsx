@@ -1,13 +1,5 @@
 import { extend } from '@pixi/react';
-import {
-  Assets,
-  Container,
-  Graphics,
-  Sprite,
-  Text,
-  TextStyle,
-  Texture,
-} from 'pixi.js';
+import { Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAudio, useMenu } from '../../context/hooks';
 import { cowXpPerLevel } from '../../data/cowData';
@@ -232,13 +224,10 @@ export const CowInfoBox = ({
   );
 
   useEffect(() => {
-    if (!textRef.current) return;
-    textRef.current.style = new TextStyle({
+    const textWidth = measureText(cow.name || ' ', {
       fontSize: baseFontSize,
       fontFamily: 'pixelFont',
     });
-    const bounds = textRef.current.getLocalBounds();
-    const textWidth = bounds.width;
     const newScale = textWidth > titleWidth ? titleWidth / textWidth : 1;
     setScale(newScale);
   }, [cow.name, titleWidth]);
