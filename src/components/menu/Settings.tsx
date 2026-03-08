@@ -83,7 +83,7 @@ export const Settings = ({
       setSelectedMenu(null);
     } else {
       audioMap.wrong.play();
-      showToast('Error: File could not be imported', redColor);
+      showToast('Error: File could not be imported.', redColor);
     }
   }
 
@@ -91,7 +91,7 @@ export const Settings = ({
     audioMap.type.play();
     setLastExportReminder(Date.now());
     exportGameSave();
-    showToast('Save file exported', greenColor);
+    showToast('Save file exported.', greenColor);
   }
 
   function handleClick() {

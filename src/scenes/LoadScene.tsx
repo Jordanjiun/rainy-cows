@@ -60,6 +60,8 @@ const manifest = {
     {
       name: 'icons',
       assets: [
+        { alias: 'arrowDown', src: '/assets/icons/arrow-down-to-line.png' },
+        { alias: 'arrowUp', src: '/assets/icons/arrow-up-to-line.png' },
         { alias: 'barn', src: '/assets/icons/warehouse.png' },
         { alias: 'cowIcon', src: '/assets/icons/cow-head.png' },
         { alias: 'click', src: '/assets/icons/mouse-pointer-click.png' },

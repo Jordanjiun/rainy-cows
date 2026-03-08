@@ -7,7 +7,7 @@ export const gameUpgrades = {
   harvestMultiplierIncreasePerUpgrade: 50,
 };
 
-export const cowPrices = {
+export const cowPrices: Record<number, number> = {
   1: 50,
   2: 500,
   3: 1e3,
@@ -23,11 +23,11 @@ export const cowPrices = {
   13: 3e5,
   14: 5e5,
   15: 1e6,
-  16: 2e6,
-  17: 3e6,
-  18: 4e6,
-  19: 5e6,
-  20: 6e6,
+  16: 1.5e6,
+  17: 2e6,
+  18: 2.5e6,
+  19: 3e6,
+  20: 4e6,
 };
 
 export const shopItemData = [

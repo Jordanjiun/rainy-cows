@@ -1,26 +1,26 @@
 import { extend } from '@pixi/react';
 import { Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useCallback, useEffect, useState } from 'react';
-import { useAudio, useCow, useMenu } from '../../context/hooks';
-import { cowXpPerLevel } from '../../data/cowData';
+import { useAudio, useCow, useMenu, useToast } from '../../context/hooks';
+import { cowPrices } from '../../data/gameData';
 import { useGameStore } from '../../game/store';
 import { measureText } from '../../game/utils';
-import { Button } from './Button';
+import { Button } from '../menu/Button';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Container, Graphics, Sprite, Text });
 
 const baseFontSize = 20;
-const boxHeight = 200;
+const boxHeight = 180;
 const boxWidth = 260;
-const buttonWidth = 80;
-const buttonHeight = 40;
-const buttonOffset = 20;
+const buttonWidth = 110;
+const buttonHeight = 35;
+const buttonOffset = 14;
 const buttonY = boxHeight - buttonHeight - 15;
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
-export const SellCow = ({
+export const StoreCow = ({
   appWidth,
   appHeight,
 }: {
@@ -28,11 +28,17 @@ export const SellCow = ({
   appHeight: number;
 }) => {
   const { audioMap } = useAudio();
+  const { showToast } = useToast();
   const { selectedCow, setSelectedCow } = useCow();
   const { selectedMenu, setSelectedMenu } = useMenu();
-  const { addMooney, removeCow } = useGameStore();
+  const { cows, mooney, updateCowBarned, removeMooney } = useGameStore();
 
   const [mooneyImage, setMooneyImage] = useState<Texture | null>(null);
+
+  const keys = Object.keys(cowPrices).map(Number);
+  const maxKey = Math.max(...keys);
+  const currentPrice = cowPrices[cows.length + 1] ?? cowPrices[maxKey]!;
+  const value = currentPrice * 0.1;
 
   useEffect(() => {
     let mounted = true;
@@ -57,14 +63,21 @@ export const SellCow = ({
     [boxWidth, boxHeight],
   );
 
-  function handleClick(isSell: boolean = false, amount: number) {
-    if (isSell && selectedCow) {
+  function handleClick(isConfirm: boolean = false) {
+    if (isConfirm && selectedCow) {
+      if (mooney < value) {
+        audioMap.wrong.play();
+        showToast(
+          'You do not have enough mooney to store this cow.',
+          '#E28C80',
+        );
+        return;
+      }
       audioMap.coin.play();
-      const cowId = selectedCow.id;
-      addMooney(amount);
-      setSelectedCow(null);
-      removeCow(cowId);
+      updateCowBarned(selectedCow.id, true);
+      removeMooney(value);
     } else audioMap.type.play();
+    setSelectedCow(null);
     setSelectedMenu(null);
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;
     if (canvas) {
@@ -72,20 +85,7 @@ export const SellCow = ({
     }
   }
 
-  if (!mooneyImage || !selectedCow) return null;
-
-  const base = cowXpPerLevel[selectedCow.level - 1] ?? 0;
-  let value: number;
-  if (selectedCow.level == 10)
-    value = Math.round(
-      base * selectedCow.stats.valueMultiplier * (1 + selectedCow.hearts / 10),
-    );
-  else
-    value = Math.round(
-      (base + selectedCow.xp) *
-        selectedCow.stats.valueMultiplier *
-        (1 + selectedCow.hearts / 10),
-    );
+  if (!selectedCow || !mooneyImage) return null;
 
   const iconWidth = mooneyImage.width;
   const textWidth = measureText(value.toLocaleString('en-US'), {
@@ -97,7 +97,7 @@ export const SellCow = ({
 
   return (
     <>
-      {selectedMenu == 'sellCow' && (
+      {selectedMenu == 'storeCow' && (
         <>
           <pixiGraphics
             interactive={true}
@@ -117,15 +117,8 @@ export const SellCow = ({
             <pixiGraphics draw={drawBase} />
             <pixiText
               x={boxWidth / 2}
-              y={30}
-              text={'Sell Cow?'}
-              anchor={0.5}
-              style={{ fill: 'red', fontSize: 28, fontFamily: 'pixelFont' }}
-            />
-            <pixiText
-              x={boxWidth / 2}
-              y={boxHeight / 2 - 26}
-              text={`Do you want to sell ${selectedCow.name} for:`}
+              y={boxHeight / 2 - 50}
+              text={`Do you want to barn ${selectedCow.name} for:`}
               anchor={0.5}
               style={{
                 fontSize: baseFontSize,
@@ -135,7 +128,7 @@ export const SellCow = ({
                 wordWrapWidth: boxWidth - 30,
               }}
             />
-            <pixiContainer x={-3} y={101}>
+            <pixiContainer x={-3} y={(boxHeight - iconWidth) / 2 + 1}>
               <pixiSprite texture={mooneyImage} x={startX - 2} />
               <pixiText
                 x={startX + iconWidth + 3}
@@ -144,26 +137,25 @@ export const SellCow = ({
                 style={{ fontSize: baseFontSize, fontFamily: 'pixelFont' }}
               />
             </pixiContainer>
-
             <Button
               x={boxWidth - buttonWidth - buttonOffset}
               y={buttonY}
               buttonWidth={buttonWidth}
               buttonHeight={buttonHeight}
-              buttonText={'No'}
-              fontsize={28}
+              buttonText={'Cancel'}
+              fontsize={24}
               buttonColor={'#E28C80'}
-              onClick={() => handleClick(false, 0)}
+              onClick={() => handleClick(false)}
             />
             <Button
               x={buttonOffset}
               y={buttonY}
               buttonWidth={buttonWidth}
               buttonHeight={buttonHeight}
-              buttonText={'Yes'}
-              fontsize={28}
+              buttonText={'Confirm'}
+              fontsize={24}
               buttonColor={'#80E28C'}
-              onClick={() => handleClick(true, value)}
+              onClick={() => handleClick(true)}
             />
           </pixiContainer>
         </>

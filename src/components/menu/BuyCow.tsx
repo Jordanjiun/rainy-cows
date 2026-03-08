@@ -9,7 +9,7 @@ import {
   Texture,
 } from 'pixi.js';
 import { useEffect, useMemo, useState } from 'react';
-import { useAudio, useMenu } from '../../context/hooks';
+import { useAudio, useMenu, useToast } from '../../context/hooks';
 import { useGameStore } from '../../game/store';
 import { Cow } from '../../game/cowModel';
 import { Button } from './Button';
@@ -43,22 +43,19 @@ export const BuyCow = ({ y, maxWidth, prices }: BuyCowProps) => {
   } = useGameStore();
   const { audioMap } = useAudio();
   const { setSelectedMenu } = useMenu();
+  const { showToast } = useToast();
 
   const [textures, setTextures] = useState<Record<string, Texture>>({});
   const [price, setPrice] = useState<number | null>(null);
-  const [isMaxed, setIsMaxed] = useState(false);
   const [isMooneyEnough, setIsMooneyEnough] = useState(false);
 
   const priceFontSize = useMemo(() => {
     let size = maxFontSize;
-    setIsMaxed(false);
 
     while (size > 8) {
-      const newPrice = prices[cows.length + 1] ?? null;
-      if (!newPrice || cows.length >= upgrades.farmLevel * 2) {
-        setIsMaxed(true);
-        return size;
-      }
+      const keys = Object.keys(prices).map(Number);
+      const maxKey = Math.max(...keys);
+      const newPrice = prices[cows.length + 1] ?? prices[maxKey]!;
       setPrice(newPrice);
 
       const style = new TextStyle({ fontSize: size, fontFamily: 'pixelFont' });
@@ -70,7 +67,7 @@ export const BuyCow = ({ y, maxWidth, prices }: BuyCowProps) => {
   }, [mooney, upgrades.farmLevel, prices]);
 
   useEffect(() => {
-    if (!isMaxed && price && mooney < price) setIsMooneyEnough(false);
+    if (price && mooney < price) setIsMooneyEnough(false);
     else setIsMooneyEnough(true);
   }, [mooney]);
 
@@ -95,6 +92,14 @@ export const BuyCow = ({ y, maxWidth, prices }: BuyCowProps) => {
   }, [boxSize]);
 
   function handleClick() {
+    if (cows.filter((cow) => !cow.barned).length == upgrades.farmLevel * 2) {
+      audioMap.wrong.play();
+      showToast(
+        'Farm is full. Store a cow before buying a new cow.',
+        '#E28C80',
+      );
+      return;
+    }
     if (price) {
       audioMap.coin.play();
       removeMooney(price);
@@ -125,7 +130,7 @@ export const BuyCow = ({ y, maxWidth, prices }: BuyCowProps) => {
       />
       <pixiSprite texture={textures.mooney} x={60} y={20} />
 
-      {!isMaxed && price ? (
+      {price ? (
         <pixiText
           x={98}
           y={35}
@@ -143,7 +148,7 @@ export const BuyCow = ({ y, maxWidth, prices }: BuyCowProps) => {
         />
       )}
 
-      {isMaxed || !isMooneyEnough ? (
+      {!isMooneyEnough ? (
         <pixiContainer
           x={maxWidth - buttonWidth - 40}
           y={(boxSize - buttonHeight) / 2}

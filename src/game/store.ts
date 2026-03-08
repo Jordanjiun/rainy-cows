@@ -128,6 +128,7 @@ interface GameState {
   removeMooney: (amount: number) => void;
   removeCow: (cowId: string) => void;
   updateCowName: (cowId: string, newName: string) => void;
+  updateCowBarned: (cowId: string, barned: boolean) => void;
   unlockAchievement: (label: string) => void;
   checkAchievements: () => void;
   loadData: (data: Partial<GameState>) => void;
@@ -248,6 +249,18 @@ export const useGameStore = create<GameState>((set, get) => {
       cow.name = newName;
       updateStats({ cowsRenamed: get().stats.cowsRenamed + 1 });
     },
+
+    updateCowBarned: (cowId: string, barned: boolean) =>
+      set((state) => {
+        const cows = state.cows.map((cow) => {
+          if (cow.id === cowId) {
+            cow.barned = barned;
+          }
+          return cow;
+        });
+
+        return { cows };
+      }),
 
     addUpgrade: (key: keyof Upgrades) => {
       updateStats({ upgradesBought: get().stats.upgradesBought + 1 });

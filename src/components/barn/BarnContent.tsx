@@ -8,7 +8,8 @@ import type { FederatedPointerEvent } from 'pixi.js';
 extend({ Container, Graphics, Text });
 
 const offset = 15;
-const cardStartY = 55;
+const startY = 15;
+const cardOffsetY = 45;
 const scrollBarWidth = 5;
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
@@ -32,7 +33,8 @@ export const BarnContent = ({
   if (appWidth > 450) cardHeight = 110;
 
   const maskHeight = appHeight - footerHeight * 2;
-  const contentHeight = cardStartY * 2 + (cardHeight + offset) * cows.length;
+  const contentHeight =
+    startY + cardOffsetY * 2 + (cardHeight + offset) * cows.length;
   const cardWidth = appWidth - offset * 2;
   const scrollBarHeight = appHeight - (footerHeight + offset) * 2;
   const maxScroll = Math.max(0, contentHeight - maskHeight);
@@ -67,7 +69,7 @@ export const BarnContent = ({
         g.fill({ color: 'grey' });
       }
     },
-    [scrollY, maskHeight, contentHeight],
+    [scrollY, maskHeight, contentHeight, appWidth, appHeight],
   );
 
   return (
@@ -113,27 +115,55 @@ export const BarnContent = ({
       >
         <pixiText
           x={offset}
-          y={footerHeight + 10}
-          text={`Active Cows (${cows.length}/${upgrades.farmLevel * 2})`}
+          y={footerHeight + startY}
+          text={`Active Cows (${cows.filter((cow) => !cow.barned).length}/${upgrades.farmLevel * 2})`}
           style={{ fontSize: 28, fontFamily: 'pixelFont' }}
         />
-        {cows.map((cow, i) => {
-          const y = footerHeight + cardStartY + i * (cardHeight + offset);
-          return (
-            <CowCard
-              key={cow.id}
-              x={offset}
-              y={y}
-              cardWidth={cardWidth}
-              cardHeight={cardHeight}
-              cow={cow}
-            />
-          );
-        })}
+        {cows
+          .filter((cow) => !cow.barned)
+          .map((cow, i) => {
+            const y =
+              footerHeight + startY + cardOffsetY + i * (cardHeight + offset);
+            return (
+              <CowCard
+                key={cow.id}
+                x={offset}
+                y={y}
+                cardWidth={cardWidth}
+                cardHeight={cardHeight}
+                cow={cow}
+              />
+            );
+          })}
+        {cows
+          .filter((cow) => cow.barned)
+          .map((cow, i) => {
+            const y =
+              footerHeight +
+              startY +
+              cardOffsetY * 2 +
+              cows.filter((cow) => !cow.barned).length * (cardHeight + offset) +
+              i * (cardHeight + offset);
+            return (
+              <CowCard
+                key={cow.id}
+                x={offset}
+                y={y}
+                cardWidth={cardWidth}
+                cardHeight={cardHeight}
+                cow={cow}
+              />
+            );
+          })}
         <pixiText
           x={offset}
-          y={footerHeight + cardStartY + cows.length * (cardHeight + offset)}
-          text={'Stored Cows'}
+          y={
+            footerHeight +
+            startY +
+            cardOffsetY +
+            cows.filter((cow) => !cow.barned).length * (cardHeight + offset)
+          }
+          text={`Stored Cows (${cows.filter((cow) => cow.barned).length})`}
           style={{ fontSize: 28, fontFamily: 'pixelFont' }}
         />
       </pixiContainer>

@@ -44,6 +44,11 @@ export const CowManager = ({
   const cleanupPointerHandlers = useRef<Record<string, () => void>>({});
   const lastCowIdRef = useRef<string | null>(null);
 
+  const nonBarnedCows = useMemo(
+    () => cows.filter((cow) => !cow.barned),
+    [cows],
+  );
+
   const handleSetCow = useCallback(
     (cow: Cow) => {
       if (lastCowIdRef.current === cow.id) {
@@ -70,13 +75,13 @@ export const CowManager = ({
     const initialXps: Record<string, number> = {};
     const initialHearts: Record<string, number> = {};
 
-    cows.forEach((cow) => {
+    nonBarnedCows.forEach((cow) => {
       initialXps[cow.id] = cow.xp;
       initialHearts[cow.id] = cow.hearts;
     });
 
     setCowHearts(initialHearts);
-  }, [cows, appWidth, appHeight]);
+  }, [nonBarnedCows, appWidth, appHeight]);
 
   const clearHeartEvents = useCallback(() => {
     setHeartEvents([]);
@@ -193,7 +198,7 @@ export const CowManager = ({
     [isHarvest, selectedCow, handleHeartChange],
   );
 
-  const sortedCows = [...cows].sort(
+  const sortedCows = [...nonBarnedCows].sort(
     (a, b) => (cowPositions[a.id] ?? 0) - (cowPositions[b.id] ?? 0),
   );
 

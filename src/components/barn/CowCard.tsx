@@ -2,17 +2,15 @@ import { extend } from '@pixi/react';
 import { AnimatedSprite, Assets, Container, Graphics } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cowXpPerLevel, cowConfig } from '../../data/cowData';
-import { useCow, useMenu } from '../../context/hooks';
+import { useAudio, useCow, useMenu, useToast } from '../../context/hooks';
 import { useCowAnimations, useCowFilter } from '../../game/cowBuilder';
+import { useGameStore } from '../../game/store';
 import { measureText } from '../../game/utils';
 import { CardButton } from './CardButton';
 import type { Cow } from '../../game/cowModel';
 import type { Texture } from 'pixi.js';
 
 extend({ AnimatedSprite, Container, Graphics });
-
-let animY, cowX, buttonX, buttonY, buttonSize;
-let infoX = 0;
 
 const barWidth = 190;
 const cowScale = 2.5;
@@ -22,9 +20,17 @@ const heartScale = 0.07;
 const heartSpacing = 1.6;
 const heartY = 65;
 const xpBarY = 85;
-const assetNames = ['dollar', 'mooney', 'heart', 'noHeart', 'pen'];
+const assetNames = [
+  'arrowDown',
+  'arrowUp',
+  'dollar',
+  'mooney',
+  'heart',
+  'noHeart',
+  'pen',
+];
 
-type ButtonKey = 'SellCow' | 'RenameCow';
+type ButtonKey = 'SellCow' | 'RenameCow' | 'BarnCow';
 
 interface CowCardProps {
   x: number;
@@ -35,8 +41,12 @@ interface CowCardProps {
 }
 
 export const CowCard = ({ x, y, cardWidth, cardHeight, cow }: CowCardProps) => {
+  const { audioMap } = useAudio();
   const { setSelectedCow } = useCow();
   const { setSelectedMenu } = useMenu();
+  const { showToast } = useToast();
+  const { cows, upgrades, updateCowBarned } = useGameStore();
+
   const animations = useCowAnimations(cow.sprite.layers);
   const layerFilters = useCowFilter(cow.sprite);
 
@@ -51,6 +61,7 @@ export const CowCard = ({ x, y, cardWidth, cardHeight, cow }: CowCardProps) => {
     fontFamily: 'pixelFont',
   });
   const textScale = textWidth > barWidth ? barWidth / textWidth : 1;
+  const arrowTexture = cow.barned ? textures.arrowUp : textures.arrowDown;
 
   const base = cowXpPerLevel[cow.level - 1] ?? 0;
   let value: number;
@@ -62,6 +73,12 @@ export const CowCard = ({ x, y, cardWidth, cardHeight, cow }: CowCardProps) => {
     value = Math.round(
       (base + cow.xp) * cow.stats.valueMultiplier * (1 + cow.hearts / 10),
     );
+
+  let animY, cowX;
+  let buttonX = 0;
+  let buttonY = 0;
+  let buttonSize = 0;
+  let infoX = 0;
 
   if (cardHeight > 120) {
     animY = 63;
@@ -100,6 +117,22 @@ export const CowCard = ({ x, y, cardWidth, cardHeight, cow }: CowCardProps) => {
       case 'RenameCow':
         setSelectedCow(cow);
         setSelectedMenu('renameCow');
+        return;
+      case 'BarnCow':
+        if (!cow.barned) {
+          setSelectedCow(cow);
+          setSelectedMenu('storeCow');
+        } else {
+          if (cows.filter((cow) => !cow.barned).length < upgrades.farmLevel * 2)
+            updateCowBarned(cow.id, false);
+          else {
+            audioMap.wrong.play();
+            showToast(
+              'Farm is full. Store a cow before making this one active.',
+              '#E28C80',
+            );
+          }
+        }
         return;
       default:
         return null;
@@ -214,6 +247,12 @@ export const CowCard = ({ x, y, cardWidth, cardHeight, cow }: CowCardProps) => {
 
   if (!animations) return null;
 
+  const buttons: { image: Texture; action: ButtonKey }[] = [
+    { image: textures.dollar, action: 'SellCow' },
+    { image: textures.pen, action: 'RenameCow' },
+    { image: arrowTexture, action: 'BarnCow' },
+  ];
+
   return (
     <>
       <pixiGraphics draw={drawBox} />
@@ -238,20 +277,16 @@ export const CowCard = ({ x, y, cardWidth, cardHeight, cow }: CowCardProps) => {
       {drawHearts}
       {drawXp}
       {drawValue}
-      <CardButton
-        buttonX={buttonX}
-        buttonY={buttonY}
-        buttonSize={buttonSize}
-        image={textures.dollar}
-        onClick={() => handleButton('SellCow')}
-      />
-      <CardButton
-        buttonX={buttonX + buttonSize + 10}
-        buttonY={buttonY}
-        buttonSize={buttonSize}
-        image={textures.pen}
-        onClick={() => handleButton('RenameCow')}
-      />
+      {buttons.map((btn, index) => (
+        <CardButton
+          key={btn.action}
+          buttonX={buttonX + index * (buttonSize + 10)}
+          buttonY={buttonY}
+          buttonSize={buttonSize}
+          image={btn.image}
+          onClick={() => handleButton(btn.action)}
+        />
+      ))}
     </>
   );
 };

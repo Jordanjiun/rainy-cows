@@ -5,6 +5,7 @@ import { CowProvider, MenuProvider, ToastProvider } from '../context/Providers';
 import { Barn } from '../components/barn/Barn';
 import { RenameCow } from '../components/barn/RenameCow';
 import { SellCow } from '../components/menu/SellCow';
+import { StoreCow } from '../components/barn/StoreCow';
 
 extend({ Container });
 
@@ -37,6 +38,7 @@ export const BarnScene = () => {
             <Barn appWidth={size.width} appHeight={size.height} />
             <SellCow appWidth={size.width} appHeight={size.height} />
             <RenameCow appWidth={size.width} appHeight={size.height} />
+            <StoreCow appWidth={size.width} appHeight={size.height} />
           </CowProvider>
         </MenuProvider>
       </ToastProvider>

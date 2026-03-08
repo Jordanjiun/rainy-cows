@@ -8,7 +8,9 @@ import type { Texture } from 'pixi.js';
 
 extend({ Container, Graphics, Text });
 
+const offset = 10;
 const buttonSize = 50;
+const assetNames = ['mooney', 'undo'];
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
@@ -20,21 +22,22 @@ export const Barn = ({
   appHeight: number;
 }) => {
   const { audioMap } = useAudio();
+  const { mooney } = useGameStore();
   const { switchScene } = useScene();
 
-  const [backImage, setBackImage] = useState<Texture | null>(null);
+  const [textures, setTextures] = useState<Record<string, Texture>>({});
   const [isHovered, setIsHovered] = useState(false);
 
+  const amount = mooney.toLocaleString('en-US');
   const iconColor = isHovered ? 'yellow' : 'white';
 
   useEffect(() => {
     let mounted = true;
-    async function loadBackImage() {
-      const loaded = await Assets.load<Texture>('undo');
-      loaded.source.scaleMode = 'linear';
-      if (mounted) setBackImage(loaded);
+    async function loadTextures() {
+      const loaded: Record<string, Texture> = await Assets.load(assetNames);
+      if (mounted) setTextures(loaded);
     }
-    loadBackImage();
+    loadTextures();
     return () => {
       mounted = false;
     };
@@ -85,7 +88,7 @@ export const Barn = ({
     };
   }, [isHovered]);
 
-  if (!backImage) return null;
+  if (!textures) return null;
 
   return (
     <>
@@ -100,6 +103,17 @@ export const Barn = ({
         anchor={0.5}
         style={{ fontSize: 32, fontFamily: 'pixelFont', fill: 'white' }}
       />
+      <pixiSprite
+        texture={textures.mooney}
+        x={offset}
+        y={appHeight - footerHeight / 2 - 16.5}
+      />
+      <pixiText
+        x={34 + 1.5 * offset}
+        y={appHeight - footerHeight / 2 - 15}
+        text={amount}
+        style={{ fontFamily: 'pixelFont', fill: 'white' }}
+      />
       <pixiContainer
         x={appWidth - buttonSize - 10}
         y={appHeight - buttonSize - 10}
@@ -111,7 +125,7 @@ export const Barn = ({
       >
         <pixiGraphics draw={drawButtonBase} />
         <pixiSprite
-          texture={backImage}
+          texture={textures.undo}
           anchor={0.5}
           x={buttonSize / 2}
           y={buttonSize / 2}
