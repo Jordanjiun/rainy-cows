@@ -129,6 +129,7 @@ interface GameState {
   removeCow: (cowId: string) => void;
   updateCowName: (cowId: string, newName: string) => void;
   updateCowBarned: (cowId: string, barned: boolean) => void;
+  petCow: (cowId: string) => number;
   unlockAchievement: (label: string) => void;
   checkAchievements: () => void;
   loadData: (data: Partial<GameState>) => void;
@@ -261,6 +262,18 @@ export const useGameStore = create<GameState>((set, get) => {
 
         return { cows };
       }),
+
+    petCow: (cowId: string) => {
+      let hearts = 0;
+      set((state) => {
+        const cow = state.cows.find((c) => c.id === cowId);
+        if (cow) {
+          hearts = cow.pet();
+        }
+        return { cows: [...state.cows] };
+      });
+      return hearts;
+    },
 
     addUpgrade: (key: keyof Upgrades) => {
       updateStats({ upgradesBought: get().stats.upgradesBought + 1 });

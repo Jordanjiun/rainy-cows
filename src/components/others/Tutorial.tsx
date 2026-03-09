@@ -168,7 +168,7 @@ export const Tutorial = ({
 
   const drawSecondHalfScene = useMemo(() => {
     const buttonX = (appWidth - menuWidth) / 2 + buttonOffset;
-    const buttonY = (appHeight - menuHeight) / 2 + buttonOffset;
+    const buttonY = (appHeight - menuHeight) / 2 + buttonOffset + 10;
     return (
       <>
         <pixiGraphics
@@ -203,17 +203,17 @@ export const Tutorial = ({
               (appWidth - shopWidth) / 2 + 245,
               0,
               appWidth,
-              (appHeight - shopHeight) / 2 + 32,
+              (appHeight - shopHeight) / 2 + 22,
             );
             g.rect(
               (appWidth - shopWidth) / 2 + 245,
-              (appHeight - shopHeight) / 2 + 67,
+              (appHeight - shopHeight) / 2 + 57,
               appWidth,
               appHeight,
             );
             g.rect(
               (appWidth - shopWidth) / 2 + 305,
-              (appHeight - shopHeight) / 2 + 32,
+              (appHeight - shopHeight) / 2 + 22,
               appWidth,
               35,
             );
@@ -222,7 +222,7 @@ export const Tutorial = ({
         />
         <FloatingArrow
           x={(appWidth - shopWidth) / 2 + 275}
-          y={(appHeight - shopHeight) / 2 + 95}
+          y={(appHeight - shopHeight) / 2 + 85}
         />
       </>
     );

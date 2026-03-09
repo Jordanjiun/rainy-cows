@@ -1,14 +1,15 @@
 import { extend } from '@pixi/react';
 import { Container, Graphics, Text } from 'pixi.js';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useGameStore } from '../../game/store';
+import { AutoPet } from './AutoPet';
 import { CowCard } from './CowCard';
+import { FloatingHearts } from '../cow/FloatingHeart';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Container, Graphics, Text });
 
 const offset = 15;
-const startY = 15;
 const cardOffsetY = 45;
 const scrollBarWidth = 5;
 
@@ -24,10 +25,46 @@ export const BarnContent = ({
   const { cows, upgrades } = useGameStore();
 
   const [scrollY, setScrollY] = useState(0);
+  const [_, setCowHearts] = useState<Record<string, number>>({});
+  const [heartEvents, setHeartEvents] = useState<
+    { id: string; x: number; y: number }[]
+  >([]);
 
   const scrollContainerRef = useRef<Container>(null);
   const dragging = useRef(false);
   const lastY = useRef(0);
+
+  const handleHeartChange = useCallback(
+    (id: string, hearts: number, x: number, y: number) => {
+      setCowHearts((prev) => {
+        const oldHearts = prev[id] ?? 0;
+        const newHearts = hearts;
+        if (newHearts > oldHearts) {
+          setHeartEvents((prev) => [...prev, { id, x: x, y: y }]);
+        }
+        return { ...prev, [id]: newHearts };
+      });
+    },
+    [],
+  );
+
+  const clearHeartEvents = useCallback(() => {
+    setHeartEvents([]);
+  }, []);
+
+  const unPetCows = useMemo(() => {
+    const now = new Date();
+    return cows.filter((cow) => {
+      const lastPetDate = new Date(cow.lastPet);
+      return (
+        now.getFullYear() !== lastPetDate.getFullYear() ||
+        now.getMonth() !== lastPetDate.getMonth() ||
+        now.getDate() !== lastPetDate.getDate()
+      );
+    });
+  }, [cows]);
+
+  const startY = unPetCows.length > 0 ? 110 : 10;
 
   let cardHeight = 150;
   if (appWidth > 450) cardHeight = 110;
@@ -49,6 +86,14 @@ export const BarnContent = ({
   useEffect(() => {
     setScrollY((prev) => Math.min(prev, maxScroll));
   }, [maxScroll]);
+
+  useEffect(() => {
+    const initialHearts: Record<string, number> = {};
+    cows.forEach((cow) => {
+      initialHearts[cow.id] = cow.hearts;
+    });
+    setCowHearts(initialHearts);
+  }, [cows, appWidth, appHeight]);
 
   function handleScroll(delta: number) {
     setScrollY((prev) => Math.min(maxScroll, Math.max(0, prev + delta)));
@@ -113,6 +158,13 @@ export const BarnContent = ({
         }}
         y={-scrollY}
       >
+        {unPetCows.length > 0 && (
+          <AutoPet x={offset} y={footerHeight + 10} unPetCows={unPetCows} />
+        )}
+        <FloatingHearts
+          heartEvents={heartEvents}
+          onConsumed={clearHeartEvents}
+        />
         <pixiText
           x={offset}
           y={footerHeight + startY}
@@ -132,6 +184,7 @@ export const BarnContent = ({
                 cardWidth={cardWidth}
                 cardHeight={cardHeight}
                 cow={cow}
+                onPet={handleHeartChange}
               />
             );
           })}
@@ -152,6 +205,7 @@ export const BarnContent = ({
                 cardWidth={cardWidth}
                 cardHeight={cardHeight}
                 cow={cow}
+                onPet={handleHeartChange}
               />
             );
           })}

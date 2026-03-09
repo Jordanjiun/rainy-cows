@@ -3,7 +3,11 @@ import { AnimatedSprite, Assets, Container, Graphics } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cowXpPerLevel, cowConfig } from '../../data/cowData';
 import { useAudio, useCow, useMenu, useToast } from '../../context/hooks';
-import { useCowAnimations, useCowFilter } from '../../game/cowBuilder';
+import {
+  animationsDef,
+  useCowAnimations,
+  useCowFilter,
+} from '../../game/cowBuilder';
 import { useGameStore } from '../../game/store';
 import { measureText } from '../../game/utils';
 import { CardButton } from './CardButton';
@@ -38,19 +42,30 @@ interface CowCardProps {
   cardWidth: number;
   cardHeight: number;
   cow: Cow;
+  onPet: (id: string, hearts: number, x: number, y: number) => void;
 }
 
-export const CowCard = ({ x, y, cardWidth, cardHeight, cow }: CowCardProps) => {
+export const CowCard = ({
+  x,
+  y,
+  cardWidth,
+  cardHeight,
+  cow,
+  onPet,
+}: CowCardProps) => {
   const { audioMap } = useAudio();
   const { setSelectedCow } = useCow();
   const { setSelectedMenu } = useMenu();
   const { showToast } = useToast();
-  const { cows, upgrades, updateCowBarned } = useGameStore();
+  const { cows, upgrades, petCow, updateCowBarned } = useGameStore();
 
   const animations = useCowAnimations(cow.sprite.layers);
   const layerFilters = useCowFilter(cow.sprite);
 
+  const [currentAnim, setCurrentAnim] = useState('idle');
   const [textures, setTextures] = useState<Record<string, Texture>>({});
+
+  const layerRefs = useRef<Record<string, AnimatedSprite | null>>({});
   const containerRef = useRef<Container>(null);
 
   const rectSize = cowConfig.frameSize * cowScale;
@@ -107,6 +122,39 @@ export const CowCard = ({ x, y, cardWidth, cardHeight, cow }: CowCardProps) => {
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!animations) return;
+    Object.entries(animations).forEach(([layerName, animMap]) => {
+      const sprite = layerRefs.current[layerName];
+      playAnim(sprite, animMap[currentAnim]);
+      if (sprite) {
+        sprite.filters = [layerFilters[layerName]];
+      }
+    });
+  }, [currentAnim, animations]);
+
+  const playAnim = (
+    sprite: AnimatedSprite | null,
+    textures: Texture[] | undefined,
+  ) => {
+    if (!sprite || !textures) return;
+    sprite.textures = textures;
+    sprite.animationSpeed = cowConfig.animSpeed;
+    sprite.play();
+  };
+
+  const handlePet = () => {
+    if (currentAnim == 'pet') return;
+    var soundId = audioMap.moo.play();
+    audioMap.moo.rate(cow.pitch ?? 1, soundId);
+    onPet(cow.id, petCow(cow.id), cowX, y + animY);
+
+    setTimeout(() => {
+      setCurrentAnim('idle');
+    }, animationsDef['pet'].length * cowConfig.msPerFrame);
+    setCurrentAnim('pet');
+  };
 
   const handleButton = (button: ButtonKey) => {
     switch (button) {
@@ -260,9 +308,12 @@ export const CowCard = ({ x, y, cardWidth, cardHeight, cow }: CowCardProps) => {
         {Object.entries(animations).map(([layerName, animMap]) => (
           <pixiAnimatedSprite
             key={layerName}
-            textures={animMap['idle']}
+            ref={(el) => void (layerRefs.current[layerName] = el)}
+            textures={animMap[currentAnim]}
             anchor={0.5}
             filters={[layerFilters[layerName]]}
+            eventMode="static"
+            onPointerTap={handlePet}
           />
         ))}
       </pixiContainer>

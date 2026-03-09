@@ -25,7 +25,7 @@ export const CowManager = ({
 }) => {
   const { audioMap } = useAudio();
   const { selectedMenu } = useMenu();
-  const { cows, isHarvest, tutorial, setTutorial } = useGameStore();
+  const { cows, isHarvest, tutorial, setTutorial, petCow } = useGameStore();
   const { selectedCow, setSelectedCow } = useCow();
   const cowScale = getCowScale(appWidth * appHeight);
 
@@ -72,16 +72,12 @@ export const CowManager = ({
   }, [cowXY]);
 
   useEffect(() => {
-    const initialXps: Record<string, number> = {};
     const initialHearts: Record<string, number> = {};
-
     nonBarnedCows.forEach((cow) => {
-      initialXps[cow.id] = cow.xp;
       initialHearts[cow.id] = cow.hearts;
     });
-
     setCowHearts(initialHearts);
-  }, [nonBarnedCows, appWidth, appHeight]);
+  }, [nonBarnedCows]);
 
   const clearHeartEvents = useCallback(() => {
     setHeartEvents([]);
@@ -165,7 +161,7 @@ export const CowManager = ({
         const duration = performance.now() - pointerDownTime;
         if (duration < holdThreshold) {
           handlePetAnimation();
-          handleHeartChange(cow.id, cow.pet());
+          handleHeartChange(cow.id, petCow(cow.id));
           if (tutorial == 4 && useGameStore.getState().tutorial == 4) {
             setSelectedCow(null);
             setTutorial(5);
