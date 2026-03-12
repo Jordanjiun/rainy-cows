@@ -129,6 +129,7 @@ interface GameState {
   removeCow: (cowId: string) => void;
   updateCowName: (cowId: string, newName: string) => void;
   updateCowBarned: (cowId: string, barned: boolean) => void;
+  updateCowLastGame: (cowId: string) => void;
   petCow: (cowId: string) => number;
   unlockAchievement: (label: string) => void;
   checkAchievements: () => void;
@@ -256,6 +257,19 @@ export const useGameStore = create<GameState>((set, get) => {
         const cows = state.cows.map((cow) => {
           if (cow.id === cowId) {
             cow.barned = barned;
+          }
+          return cow;
+        });
+
+        return { cows };
+      }),
+
+    updateCowLastGame: (cowId: string) =>
+      set((state) => {
+        const cows = state.cows.map((cow) => {
+          if (cow.id === cowId) {
+            const now = new Date();
+            cow.lastGame = now.toISOString();
           }
           return cow;
         });

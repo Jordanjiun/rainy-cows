@@ -2,6 +2,7 @@ import { Application } from '@pixi/react';
 import { AudioProvider, FileInputProvider } from './context/Providers';
 import { useScene } from './context/hooks';
 import { BarnScene } from './scenes/BarnScene';
+import { HopScene } from './scenes/HopScene';
 import { LoadScreen } from './scenes/LoadScene';
 import { MainScene } from './scenes/MainScene';
 import { useGamePersistence } from './game/store';
@@ -27,6 +28,8 @@ export const AppContent = () => {
     switch (scene) {
       case 'BarnScene':
         return <BarnScene />;
+      case 'HopScene':
+        return <HopScene />;
       case 'LoadScreen':
         return <LoadScreen />;
       case 'MainScene':

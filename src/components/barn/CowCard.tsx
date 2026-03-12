@@ -2,7 +2,13 @@ import { extend } from '@pixi/react';
 import { AnimatedSprite, Assets, Container, Graphics } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cowXpPerLevel, cowConfig } from '../../data/cowData';
-import { useAudio, useCow, useMenu, useToast } from '../../context/hooks';
+import {
+  useAudio,
+  useCow,
+  useMenu,
+  useScene,
+  useToast,
+} from '../../context/hooks';
 import {
   animationsDef,
   useCowAnimations,
@@ -28,13 +34,14 @@ const assetNames = [
   'arrowDown',
   'arrowUp',
   'dollar',
+  'game',
   'mooney',
   'heart',
   'noHeart',
   'pen',
 ];
 
-type ButtonKey = 'SellCow' | 'RenameCow' | 'BarnCow';
+type ButtonKey = 'SellCow' | 'RenameCow' | 'BarnCow' | 'PlayCow';
 
 interface CowCardProps {
   x: number;
@@ -56,8 +63,10 @@ export const CowCard = ({
   const { audioMap } = useAudio();
   const { setSelectedCow } = useCow();
   const { setSelectedMenu } = useMenu();
+  const { switchScene } = useScene();
   const { showToast } = useToast();
-  const { cows, upgrades, petCow, updateCowBarned } = useGameStore();
+  const { cows, upgrades, petCow, updateCowBarned, updateCowLastGame } =
+    useGameStore();
 
   const animations = useCowAnimations(cow.sprite.layers);
   const layerFilters = useCowFilter(cow.sprite);
@@ -182,6 +191,10 @@ export const CowCard = ({
           }
         }
         return;
+      case 'PlayCow':
+        updateCowLastGame(cow.id);
+        switchScene('HopScene');
+        return;
       default:
         return null;
     }
@@ -300,6 +313,17 @@ export const CowCard = ({
     { image: textures.pen, action: 'RenameCow' },
     { image: arrowTexture, action: 'BarnCow' },
   ];
+
+  const now = new Date();
+  const lastPetDate = new Date(cow.lastGame);
+  const isNewDay =
+    now.getFullYear() !== lastPetDate.getFullYear() ||
+    now.getMonth() !== lastPetDate.getMonth() ||
+    now.getDate() !== lastPetDate.getDate();
+
+  if (isNewDay) {
+    buttons.push({ image: textures.game, action: 'PlayCow' });
+  }
 
   return (
     <>
