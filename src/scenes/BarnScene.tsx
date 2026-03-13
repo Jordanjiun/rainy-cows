@@ -1,7 +1,7 @@
 import { extend, useApplication } from '@pixi/react';
 import { Container } from 'pixi.js';
 import { useEffect, useState } from 'react';
-import { CowProvider, MenuProvider, ToastProvider } from '../context/Providers';
+import { MenuProvider, ToastProvider } from '../context/Providers';
 import { Barn } from '../components/barn/Barn';
 import { RenameCow } from '../components/barn/RenameCow';
 import { SellCow } from '../components/menu/SellCow';
@@ -34,12 +34,10 @@ export const BarnScene = () => {
     <pixiContainer>
       <ToastProvider>
         <MenuProvider>
-          <CowProvider>
-            <Barn appWidth={size.width} appHeight={size.height} />
-            <SellCow appWidth={size.width} appHeight={size.height} />
-            <RenameCow appWidth={size.width} appHeight={size.height} />
-            <StoreCow appWidth={size.width} appHeight={size.height} />
-          </CowProvider>
+          <Barn appWidth={size.width} appHeight={size.height} />
+          <SellCow appWidth={size.width} appHeight={size.height} />
+          <RenameCow appWidth={size.width} appHeight={size.height} />
+          <StoreCow appWidth={size.width} appHeight={size.height} />
         </MenuProvider>
       </ToastProvider>
     </pixiContainer>

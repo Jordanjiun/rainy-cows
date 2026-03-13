@@ -1,10 +1,11 @@
 import { extend, useTick } from '@pixi/react';
 import { Assets, Container, Graphics, Text } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useAudio, useScene } from '../../context/hooks';
-import { useGameStore } from '../../game/store';
+import { useAudio, useMenu } from '../../context/hooks';
 import { Obstacle } from './Obstacle';
 import { Player } from './Player';
+import { Ground } from './Ground';
+import { ExitMenu } from './ExitMenu';
 import type { Texture, Ticker } from 'pixi.js';
 
 extend({ Container, Graphics, Text });
@@ -18,6 +19,7 @@ const playerX = 50;
 const playerSize = 40;
 const startSpeed = 5;
 const speedIncrement = 0.005;
+const scoreMultiplier = 0.1;
 const assetNames = ['mooney', 'undo'];
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
@@ -30,27 +32,28 @@ export const HopGame = ({
   appHeight: number;
 }) => {
   const { audioMap } = useAudio();
-  const { switchScene } = useScene();
+  const { selectedMenu, setSelectedMenu } = useMenu();
+
+  const groundY = (appHeight - footerHeight) / 2 + 100 - playerSize;
 
   const [textures, setTextures] = useState<Record<string, Texture>>({});
   const [isHovered, setIsHovered] = useState(false);
   const [started, setStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
-  const [playerY, setPlayerY] = useState(appHeight - footerHeight - playerSize);
+  const [playerY, setPlayerY] = useState(groundY);
   const [, setTick] = useState(0);
 
   const velocity = useRef(0);
   const chargePower = useRef(0);
   const spawnTimer = useRef(0);
   const distance = useRef(0);
+  const speed = useRef(0);
   const nextSpawn = useRef(60 + Math.random() * 120);
-  const speed = useRef(startSpeed);
   const charging = useRef(false);
   const obstacles = useRef<{ x: number; width: number; height: number }[]>([]);
 
   const iconColor = isHovered ? 'yellow' : 'white';
   const gravity = charging.current ? 0.45 : 0.9;
-  const groundY = appHeight - footerHeight - playerSize;
 
   useEffect(() => {
     let mounted = true;
@@ -63,12 +66,6 @@ export const HopGame = ({
       mounted = false;
     };
   }, []);
-
-  function handleClick() {
-    audioMap.click.play();
-    useGameStore.getState().reloadCows();
-    switchScene('MainScene');
-  }
 
   const drawDefaultBackground = useCallback(
     (g: Graphics) => {
@@ -98,29 +95,13 @@ export const HopGame = ({
     };
   }, [isHovered]);
 
-  const resetGame = () => {
-    obstacles.current = [];
-    spawnTimer.current = 0;
-
-    speed.current = startSpeed;
-    distance.current = 0;
-    velocity.current = 0;
-    chargePower.current = 0;
-    nextSpawn.current = 60 + Math.random() * 120;
-    charging.current = false;
-
-    setPlayerY(groundY);
-    setGameOver(false);
-    setStarted(true);
-  };
-
   const pointerDown = () => {
     if (gameOver) {
-      resetGame();
       return;
     }
 
     if (!started) {
+      speed.current = startSpeed;
       setStarted(true);
       return;
     }
@@ -140,10 +121,10 @@ export const HopGame = ({
   };
 
   const updateGame = (ticker: Ticker) => {
-    if (!started || gameOver) return;
+    if (!started || gameOver || selectedMenu == 'exitEarly') return;
 
     const delta = ticker.deltaTime;
-    distance.current += speed.current * delta;
+    distance.current += speed.current * delta * scoreMultiplier;
     speed.current += speedIncrement * delta;
 
     if (charging.current) {
@@ -167,11 +148,15 @@ export const HopGame = ({
       velocity.current = 0;
     }
 
+    obstacles.current.forEach((o) => {
+      o.x -= speed.current * delta;
+    });
+
     for (const o of obstacles.current) {
-      const playerTop = newY;
-      const playerBottom = newY + playerSize;
-      const playerLeft = playerX;
-      const playerRight = playerX + playerSize;
+      const nextTop = newY;
+      const nextBottom = newY + playerSize;
+      const nextLeft = playerX;
+      const nextRight = playerX + playerSize;
 
       const obstacleTop = groundY - o.height;
       const obstacleBottom = groundY;
@@ -179,15 +164,16 @@ export const HopGame = ({
       const obstacleRight = o.x + o.width;
 
       const collide =
-        playerRight > obstacleLeft &&
-        playerLeft < obstacleRight &&
-        playerBottom > obstacleTop &&
-        playerTop < obstacleBottom;
+        nextRight >= obstacleLeft &&
+        nextLeft <= obstacleRight &&
+        nextBottom >= obstacleTop &&
+        nextTop <= obstacleBottom;
 
       if (collide) {
-        newY = obstacleTop - playerSize;
         velocity.current = 0;
+        speed.current = 0;
         setGameOver(true);
+        setSelectedMenu('exitGame');
         break;
       }
     }
@@ -208,22 +194,7 @@ export const HopGame = ({
       });
     }
 
-    obstacles.current.forEach((o) => {
-      o.x -= speed.current * delta;
-    });
-
     obstacles.current = obstacles.current.filter((o) => o.x > -100);
-
-    for (const o of obstacles.current) {
-      const collide =
-        playerX < o.x + o.width &&
-        playerX + playerSize > o.x &&
-        playerY + playerSize > groundY - o.height;
-
-      if (collide) {
-        setGameOver(true);
-      }
-    }
   };
 
   useTick((ticker) => {
@@ -236,7 +207,14 @@ export const HopGame = ({
   return (
     <>
       <pixiGraphics draw={drawDefaultBackground} />
+      <Ground
+        appWidth={appWidth}
+        appHeight={appHeight}
+        grassY={groundY + playerSize}
+        speed={speed.current}
+      />
       <pixiGraphics draw={drawFooter} />
+
       <pixiContainer
         interactive
         cursor="pointer"
@@ -251,14 +229,15 @@ export const HopGame = ({
             x={o.x}
             width={o.width}
             height={o.height}
-            groundY={appHeight - footerHeight}
+            groundY={groundY + playerSize}
           />
         ))}
 
         <pixiText
           text={`Score: ${Math.floor(distance.current)}`}
-          x={20}
+          x={appWidth / 2}
           y={20}
+          anchor={{ x: 0.5, y: 0 }}
           style={{ fill: 'black', fontSize: 32, fontFamily: 'pixelFont' }}
         />
 
@@ -270,21 +249,6 @@ export const HopGame = ({
             anchor={0.5}
             style={{
               fill: 'white',
-              fontSize: 32,
-              align: 'center',
-              fontFamily: 'pixelFont',
-            }}
-          />
-        )}
-
-        {gameOver && (
-          <pixiText
-            text={`Game Over\nScore: ${Math.floor(distance.current)}\nTap to restart`}
-            x={appWidth / 2}
-            y={appHeight / 2}
-            anchor={0.5}
-            style={{
-              fill: 'red',
               fontSize: 32,
               align: 'center',
               fontFamily: 'pixelFont',
@@ -309,7 +273,10 @@ export const HopGame = ({
         cursor="pointer"
         onPointerOver={() => setIsHovered(true)}
         onPointerOut={() => setIsHovered(false)}
-        onPointerTap={handleClick}
+        onPointerTap={() => {
+          audioMap.click.play();
+          setSelectedMenu('exitEarly');
+        }}
       >
         <pixiGraphics draw={drawButtonBase} />
         <pixiSprite
@@ -320,6 +287,12 @@ export const HopGame = ({
           tint={iconColor}
         />
       </pixiContainer>
+
+      <ExitMenu
+        appWidth={appWidth}
+        appHeight={appHeight}
+        score={Math.floor(distance.current)}
+      />
     </>
   );
 };

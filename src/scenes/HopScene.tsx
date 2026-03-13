@@ -1,7 +1,7 @@
 import { extend, useApplication } from '@pixi/react';
 import { Container } from 'pixi.js';
 import { useEffect, useState } from 'react';
-import { CowProvider, MenuProvider, ToastProvider } from '../context/Providers';
+import { MenuProvider, ToastProvider } from '../context/Providers';
 import { HopGame } from '../components/hop/HopGame';
 
 extend({ Container });
@@ -31,9 +31,7 @@ export const HopScene = () => {
     <pixiContainer>
       <ToastProvider>
         <MenuProvider>
-          <CowProvider>
-            <HopGame appWidth={size.width} appHeight={size.height} />
-          </CowProvider>
+          <HopGame appWidth={size.width} appHeight={size.height} />
         </MenuProvider>
       </ToastProvider>
     </pixiContainer>

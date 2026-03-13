@@ -168,7 +168,7 @@ export const Tutorial = ({
 
   const drawSecondHalfScene = useMemo(() => {
     const buttonX = (appWidth - menuWidth) / 2 + buttonOffset;
-    const buttonY = (appHeight - menuHeight) / 2 + buttonOffset + 10;
+    const buttonY = (appHeight - menuHeight) / 2 + buttonOffset + 40;
     return (
       <>
         <pixiGraphics

@@ -1,5 +1,9 @@
 import { Application } from '@pixi/react';
-import { AudioProvider, FileInputProvider } from './context/Providers';
+import {
+  AudioProvider,
+  CowProvider,
+  FileInputProvider,
+} from './context/Providers';
 import { useScene } from './context/hooks';
 import { BarnScene } from './scenes/BarnScene';
 import { HopScene } from './scenes/HopScene';
@@ -105,14 +109,16 @@ export const AppContent = () => {
 
         <FileInputProvider>
           <AudioProvider>
-            <Application
-              antialias={true}
-              className="canvas"
-              resizeTo={window}
-              roundPixels={false}
-            >
-              {renderScene(currentScene)}
-            </Application>
+            <CowProvider>
+              <Application
+                antialias={true}
+                className="canvas"
+                resizeTo={window}
+                roundPixels={false}
+              >
+                {renderScene(currentScene)}
+              </Application>
+            </CowProvider>
           </AudioProvider>
         </FileInputProvider>
       </div>

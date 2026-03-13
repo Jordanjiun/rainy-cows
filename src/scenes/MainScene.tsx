@@ -11,7 +11,6 @@ import { SellCow } from '../components/menu/SellCow';
 import { Tutorial } from '../components/others/Tutorial';
 import { useGameStore } from '../game/store';
 import {
-  CowProvider,
   MenuProvider,
   MooneyProvider,
   ToastProvider,
@@ -50,18 +49,16 @@ export const MainScene = () => {
       <ToastProvider>
         <MenuProvider>
           <MooneyProvider>
-            <CowProvider>
-              <Farm appWidth={size.width} appHeight={size.height} />
-              <FarmHud />
-              <CowManager appWidth={size.width} appHeight={size.height} />
-              <HarvestButton appHeight={size.height} />
-              <FloatingMooney appWidth={size.width} appHeight={size.height} />
-              <Menu appWidth={size.width} appHeight={size.height} />
-              <SellCow appWidth={size.width} appHeight={size.height} />
-              {isTutorial && (
-                <Tutorial appWidth={size.width} appHeight={size.height} />
-              )}
-            </CowProvider>
+            <Farm appWidth={size.width} appHeight={size.height} />
+            <FarmHud />
+            <CowManager appWidth={size.width} appHeight={size.height} />
+            <HarvestButton appHeight={size.height} />
+            <FloatingMooney appWidth={size.width} appHeight={size.height} />
+            <Menu appWidth={size.width} appHeight={size.height} />
+            <SellCow appWidth={size.width} appHeight={size.height} />
+            {isTutorial && (
+              <Tutorial appWidth={size.width} appHeight={size.height} />
+            )}
           </MooneyProvider>
         </MenuProvider>
       </ToastProvider>

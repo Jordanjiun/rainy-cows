@@ -193,6 +193,7 @@ export const CowCard = ({
         return;
       case 'PlayCow':
         updateCowLastGame(cow.id);
+        setSelectedCow(cow);
         switchScene('HopScene');
         return;
       default:

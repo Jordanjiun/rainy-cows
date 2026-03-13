@@ -13,7 +13,7 @@ import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Graphics, Sprite, Text });
 
-const boxHeight = 280;
+const boxHeight = 250;
 const boxWidth = 210;
 const buttonSize = 50;
 const crossSize = 20;
@@ -204,14 +204,14 @@ export const Menu = ({
               style={{ fontSize: 28, fontFamily: 'pixelFont' }}
             />
             <pixiText
-              x={14}
-              y={boxHeight - 38}
+              x={17}
+              y={boxHeight - 48}
               text={'©'}
               style={{ fontSize: 24, fontFamily: 'pixelFont' }}
             />
             <pixiText
               x={boxWidth / 2 + 10}
-              y={boxHeight - 25}
+              y={boxHeight - 35}
               text={`Jordan Tay, ${new Date().getFullYear()}`}
               anchor={0.5}
               style={{ fontSize: 16, fontFamily: 'pixelFont' }}
@@ -227,7 +227,7 @@ export const Menu = ({
             const col = index % itemsPerRow;
             const row = Math.floor(index / itemsPerRow);
             const startX = (appWidth - boxWidth) / 2 + padding;
-            const startY = (appHeight - boxHeight) / 2 + padding;
+            const startY = (appHeight - boxHeight) / 2 + padding + 15;
 
             return (
               <Component

@@ -4,6 +4,7 @@ import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
 import { useEffect } from 'react';
 import { gameUpgrades } from '../data/gameData';
 import { achievementItemData } from '../data/gameData';
+import { cowXpPerLevel } from '../data/cowData';
 import { Cow } from './cowModel';
 
 const dbName = String(import.meta.env.VITE_DB_NAME);
@@ -131,6 +132,7 @@ interface GameState {
   updateCowBarned: (cowId: string, barned: boolean) => void;
   updateCowLastGame: (cowId: string) => void;
   petCow: (cowId: string) => number;
+  addCowXp: (cowId: string, amount: number) => void;
   unlockAchievement: (label: string) => void;
   checkAchievements: () => void;
   loadData: (data: Partial<GameState>) => void;
@@ -288,6 +290,24 @@ export const useGameStore = create<GameState>((set, get) => {
       });
       return hearts;
     },
+
+    addCowXp: (cowId: string, amount: number) =>
+      set((state) => {
+        const cows = state.cows.map((cow) => {
+          if (cow.id === cowId) {
+            cow.xp += amount;
+            while (
+              cowXpPerLevel[cow.level] &&
+              cow.xp >= cowXpPerLevel[cow.level]
+            ) {
+              cow.xp -= cowXpPerLevel[cow.level];
+              cow.level++;
+            }
+          }
+          return cow;
+        });
+        return { cows };
+      }),
 
     addUpgrade: (key: keyof Upgrades) => {
       updateStats({ upgradesBought: get().stats.upgradesBought + 1 });
