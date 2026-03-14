@@ -15,7 +15,6 @@ extend({ Container, Graphics, Sprite });
 
 const numOfCloudTypes = 20;
 const maxClouds = 20;
-const landRatio = Number(import.meta.env.VITE_LAND_RATIO);
 
 type Cloud = {
   id: number;
@@ -44,9 +43,11 @@ function adjustSkyColor(baseHex: string, brightness: number) {
 export const Sky = ({
   appWidth,
   appHeight,
+  landRatio,
 }: {
   appWidth: number;
   appHeight: number;
+  landRatio: number;
 }) => {
   const [textures, setTextures] = useState<Record<string, Texture>>({});
   const [clouds, setClouds] = useState<Cloud[]>([]);

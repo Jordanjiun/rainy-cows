@@ -16,7 +16,7 @@ import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Graphics, Sprite, Text });
 
-const boxHeight = 350;
+const boxHeight = 380;
 const boxWidth = 260;
 const buttonWidth = 220;
 const buttonHeight = 40;
@@ -25,6 +25,7 @@ const crossThickness = 4;
 const padding = 20;
 const buttonGap = 15;
 const yOffset = 12;
+const tickBoxSize = 30;
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
@@ -45,7 +46,7 @@ export const Settings = ({
   buttonY: number;
   buttonSize: number;
 }) => {
-  const { setLastExportReminder } = useGameStore();
+  const { isHitbox, setLastExportReminder, setHitbox } = useGameStore();
   const { audioMap, setGlobalVolume } = useAudio();
   const { selectedCow, setSelectedCow } = useCow();
   const { selectedMenu, setSelectedMenu } = useMenu();
@@ -55,6 +56,7 @@ export const Settings = ({
   const [isHovered, setIsHovered] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
+  const [boxHovered, setBoxHovered] = useState(false);
   const [menuImage, setMenuImage] = useState<Texture | null>(null);
 
   const iconColor = isHovered ? 'white' : 'black';
@@ -143,6 +145,16 @@ export const Settings = ({
     [boxWidth, boxHeight, boxColor],
   );
 
+  const drawBox = useMemo(() => {
+    return (g: Graphics) => {
+      g.clear();
+      g.rect(0, 0, tickBoxSize, tickBoxSize);
+      g.fill({ alpha: 0 });
+      g.rect(0, 0, tickBoxSize, tickBoxSize);
+      g.stroke({ width: 3, color: boxHovered ? 'white' : 'black' });
+    };
+  }, [tickBoxSize, boxHovered]);
+
   const drawCloseButton = useMemo(() => {
     return (g: Graphics) => {
       g.clear();
@@ -219,6 +231,39 @@ export const Settings = ({
               anchor={0.5}
               style={{ fontSize: 28, fontFamily: 'pixelFont' }}
             />
+
+            <pixiText
+              x={padding}
+              y={107}
+              text={'Runner Hitbox:'}
+              style={{ fontSize: 22, fontFamily: 'pixelFont' }}
+            />
+            <pixiContainer
+              x={boxWidth - tickBoxSize - padding - 12}
+              y={106}
+              interactive={true}
+              cursor="pointer"
+              onPointerOver={() => setBoxHovered(true)}
+              onPointerOut={() => setBoxHovered(false)}
+              onPointerTap={() => {
+                audioMap.type.play();
+                setHitbox(!isHitbox);
+              }}
+            >
+              <pixiGraphics draw={drawBox} />
+              {isHitbox && (
+                <pixiText
+                  y={-8}
+                  text={'✓'}
+                  style={{
+                    fontSize: 42,
+                    fill: 'red',
+                    fontFamily: 'pixelFont',
+                    fontWeight: 'bold',
+                  }}
+                />
+              )}
+            </pixiContainer>
 
             <AudioBar
               x={(boxWidth - buttonWidth) / 2}

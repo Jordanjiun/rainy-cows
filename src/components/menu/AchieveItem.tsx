@@ -52,7 +52,7 @@ export const AchieveItem = ({
         tickBoxSize,
         tickBoxSize,
       );
-      g.stroke({ width: 2, color: 'black' });
+      g.stroke({ width: 3, color: 'black' });
     };
   }, [maxWidth]);
 

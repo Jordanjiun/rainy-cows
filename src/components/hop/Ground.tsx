@@ -1,8 +1,9 @@
 import { extend, useTick } from '@pixi/react';
-import { Container, Sprite, TilingSprite } from 'pixi.js';
+import { ColorMatrixFilter, Container, Sprite, TilingSprite } from 'pixi.js';
 import { useEffect, useMemo, useRef } from 'react';
 import { useMenu } from '../../context/hooks';
 import { useGrassFrame } from '../../game/grass';
+import { brightnessByTime } from '../../game/utils';
 
 extend({ Container, Sprite, TilingSprite });
 
@@ -43,6 +44,12 @@ export const Ground = ({
 
   if (!frames.every((f) => f)) return null;
 
+  const filter = useMemo(() => {
+    const f = new ColorMatrixFilter();
+    f.brightness(brightnessByTime(), true);
+    return f;
+  }, []);
+
   const baseTexture = useMemo(() => frames[0], [frames]);
   const stubTexture = useMemo(() => frames[1], [frames]);
   const topTexture = useMemo(() => frames[2], [frames]);
@@ -66,9 +73,10 @@ export const Ground = ({
   });
 
   return (
-    <pixiContainer y={grassY}>
+    <pixiContainer y={grassY} filters={[filter]}>
       <pixiTilingSprite
         ref={baseRef}
+        y={5}
         texture={baseTexture}
         width={appWidth}
         height={grassHeight}

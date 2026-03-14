@@ -101,7 +101,7 @@ export const Farm = ({
   return (
     <>
       <pixiGraphics draw={drawDefaultBackground} />
-      <Sky appWidth={appWidth} appHeight={appHeight} />
+      <Sky appWidth={appWidth} appHeight={appHeight} landRatio={landRatio} />
       <Grass appWidth={appWidth} appHeight={appHeight} />
       {isHarvest && drawHarvestTime}
       <pixiGraphics draw={drawFooter} />

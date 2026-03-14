@@ -154,7 +154,7 @@ export const ExitMenu = ({
             <pixiText
               x={boxWidth / 2}
               y={boxHeight / 2 - 5}
-              text={`${selectedCow.name} gained ${score} XP!`}
+              text={`${selectedCow.name} gained ${score.toLocaleString('en-US')} XP!`}
               anchor={0.5}
               style={{
                 fontSize: baseFontSize,

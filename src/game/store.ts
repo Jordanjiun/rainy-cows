@@ -55,6 +55,7 @@ function getSerializableState(state: GameState) {
     volume: state.volume,
     tutorial: state.tutorial,
     isHarvest: state.isHarvest,
+    isHitbox: state.isHitbox,
     upgrades: state.upgrades,
     stats: state.stats,
     achievements: state.achievements,
@@ -116,11 +117,13 @@ interface GameState {
   volume: number;
   tutorial: number;
   isHarvest: boolean;
+  isHitbox: boolean;
   upgrades: Upgrades;
   stats: Stats;
   achievements: AchievementsState;
   setVolume: (volume: number) => void;
   setTutorial: (scene: number) => void;
+  setHitbox: (value: boolean) => void;
   setLastExportReminder: (datetime: number) => void;
   addMooney: (amount: number) => void;
   addCow: (cow: Cow) => void;
@@ -214,6 +217,7 @@ export const useGameStore = create<GameState>((set, get) => {
     cows: [],
     lastHarvest: null,
     isHarvest: false,
+    isHitbox: false,
     upgrades: upgrades,
     stats: stats,
     achievements: achievements,
@@ -223,6 +227,7 @@ export const useGameStore = create<GameState>((set, get) => {
 
     setVolume: (newVolume: number) => set({ volume: newVolume }),
     setTutorial: (scene: number) => set({ tutorial: scene }),
+    setHitbox: (value: boolean) => set({ isHitbox: value }),
     setLastExportReminder: (datetime: number) =>
       set({ lastExportReminder: datetime }),
 
@@ -373,6 +378,7 @@ export const useGameStore = create<GameState>((set, get) => {
             ? data.lastHarvest
             : state.lastHarvest;
         let isHarvest = data.isHarvest ?? state.isHarvest;
+        let isHitbox = data.isHitbox ?? state.isHitbox;
 
         if (lastHarvest && lastHarvest + harvestDuration < now) {
           isHarvest = false;
@@ -384,6 +390,7 @@ export const useGameStore = create<GameState>((set, get) => {
           cows: restoredCows,
           lastHarvest,
           isHarvest,
+          isHitbox,
           upgrades: {
             ...upgrades,
             ...(data.upgrades ?? {}),
@@ -409,6 +416,7 @@ export const useGameStore = create<GameState>((set, get) => {
         cows: [],
         lastHarvest: null,
         isHarvest: false,
+        isHitbox: false,
         upgrades: upgrades,
         stats: stats,
         achievements: achievements,
