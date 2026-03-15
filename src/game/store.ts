@@ -4,6 +4,7 @@ import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
 import { useEffect } from 'react';
 import { gameUpgrades } from '../data/gameData';
 import { achievementItemData } from '../data/gameData';
+import { cowXpPerLevel } from '../data/cowData';
 import { Cow } from './cowModel';
 
 const dbName = String(import.meta.env.VITE_DB_NAME);
@@ -54,6 +55,7 @@ function getSerializableState(state: GameState) {
     volume: state.volume,
     tutorial: state.tutorial,
     isHarvest: state.isHarvest,
+    isHitbox: state.isHitbox,
     upgrades: state.upgrades,
     stats: state.stats,
     achievements: state.achievements,
@@ -115,11 +117,13 @@ interface GameState {
   volume: number;
   tutorial: number;
   isHarvest: boolean;
+  isHitbox: boolean;
   upgrades: Upgrades;
   stats: Stats;
   achievements: AchievementsState;
   setVolume: (volume: number) => void;
   setTutorial: (scene: number) => void;
+  setHitbox: (value: boolean) => void;
   setLastExportReminder: (datetime: number) => void;
   addMooney: (amount: number) => void;
   addCow: (cow: Cow) => void;
@@ -128,9 +132,14 @@ interface GameState {
   removeMooney: (amount: number) => void;
   removeCow: (cowId: string) => void;
   updateCowName: (cowId: string, newName: string) => void;
+  updateCowBarned: (cowId: string, barned: boolean) => void;
+  updateCowLastGame: (cowId: string) => void;
+  petCow: (cowId: string) => number;
+  addCowXp: (cowId: string, amount: number) => void;
   unlockAchievement: (label: string) => void;
   checkAchievements: () => void;
   loadData: (data: Partial<GameState>) => void;
+  reloadCows: () => void;
   reset: () => void;
 }
 
@@ -208,6 +217,7 @@ export const useGameStore = create<GameState>((set, get) => {
     cows: [],
     lastHarvest: null,
     isHarvest: false,
+    isHitbox: false,
     upgrades: upgrades,
     stats: stats,
     achievements: achievements,
@@ -217,6 +227,7 @@ export const useGameStore = create<GameState>((set, get) => {
 
     setVolume: (newVolume: number) => set({ volume: newVolume }),
     setTutorial: (scene: number) => set({ tutorial: scene }),
+    setHitbox: (value: boolean) => set({ isHitbox: value }),
     setLastExportReminder: (datetime: number) =>
       set({ lastExportReminder: datetime }),
 
@@ -247,6 +258,61 @@ export const useGameStore = create<GameState>((set, get) => {
       cow.name = newName;
       updateStats({ cowsRenamed: get().stats.cowsRenamed + 1 });
     },
+
+    updateCowBarned: (cowId: string, barned: boolean) =>
+      set((state) => {
+        const cows = state.cows.map((cow) => {
+          if (cow.id === cowId) {
+            cow.barned = barned;
+          }
+          return cow;
+        });
+
+        return { cows };
+      }),
+
+    updateCowLastGame: (cowId: string) =>
+      set((state) => {
+        const cows = state.cows.map((cow) => {
+          if (cow.id === cowId) {
+            const now = new Date();
+            cow.lastGame = now.toISOString();
+          }
+          return cow;
+        });
+
+        return { cows };
+      }),
+
+    petCow: (cowId: string) => {
+      let hearts = 0;
+      set((state) => {
+        const cow = state.cows.find((c) => c.id === cowId);
+        if (cow) {
+          hearts = cow.pet();
+        }
+        return { cows: [...state.cows] };
+      });
+      return hearts;
+    },
+
+    addCowXp: (cowId: string, amount: number) =>
+      set((state) => {
+        const cows = state.cows.map((cow) => {
+          if (cow.id === cowId) {
+            cow.xp += amount;
+            while (
+              cowXpPerLevel[cow.level] &&
+              cow.xp >= cowXpPerLevel[cow.level]
+            ) {
+              cow.xp -= cowXpPerLevel[cow.level];
+              cow.level++;
+            }
+          }
+          return cow;
+        });
+        return { cows };
+      }),
 
     addUpgrade: (key: keyof Upgrades) => {
       updateStats({ upgradesBought: get().stats.upgradesBought + 1 });
@@ -286,6 +352,18 @@ export const useGameStore = create<GameState>((set, get) => {
       });
     },
 
+    reloadCows: () =>
+      set((state) => ({
+        cows: state.cows.map((c) => {
+          const cow = Object.assign(new Cow(), c);
+          cow.seed = Number.parseInt(
+            crypto.randomUUID().replace(/-/g, '').slice(0, 12),
+            16,
+          );
+          return cow;
+        }),
+      })),
+
     loadData: (data) =>
       set((state) => {
         let restoredCows = state.cows;
@@ -300,6 +378,7 @@ export const useGameStore = create<GameState>((set, get) => {
             ? data.lastHarvest
             : state.lastHarvest;
         let isHarvest = data.isHarvest ?? state.isHarvest;
+        let isHitbox = data.isHitbox ?? state.isHitbox;
 
         if (lastHarvest && lastHarvest + harvestDuration < now) {
           isHarvest = false;
@@ -311,6 +390,7 @@ export const useGameStore = create<GameState>((set, get) => {
           cows: restoredCows,
           lastHarvest,
           isHarvest,
+          isHitbox,
           upgrades: {
             ...upgrades,
             ...(data.upgrades ?? {}),
@@ -336,6 +416,7 @@ export const useGameStore = create<GameState>((set, get) => {
         cows: [],
         lastHarvest: null,
         isHarvest: false,
+        isHitbox: false,
         upgrades: upgrades,
         stats: stats,
         achievements: achievements,

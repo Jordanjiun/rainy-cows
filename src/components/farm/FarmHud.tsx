@@ -16,7 +16,7 @@ export const FarmHud = () => {
   const [textures, setTextures] = useState<Record<string, Texture>>({});
 
   const amount = mooney.toLocaleString('en-US');
-  const ratio = `${cows.length}/${upgrades.farmLevel * 2}`;
+  const ratio = `${cows.filter((cow) => !cow.barned).length}/${upgrades.farmLevel * 2}`;
 
   useEffect(() => {
     let mounted = true;

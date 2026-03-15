@@ -1,12 +1,18 @@
 import { Application } from '@pixi/react';
-import { AudioProvider, FileInputProvider } from './context/Providers';
+import {
+  AudioProvider,
+  CowProvider,
+  FileInputProvider,
+} from './context/Providers';
 import { useScene } from './context/hooks';
-import type { SceneKey } from './context/Contexts';
+import { BarnScene } from './scenes/BarnScene';
+import { HopScene } from './scenes/HopScene';
 import { LoadScreen } from './scenes/LoadScene';
 import { MainScene } from './scenes/MainScene';
 import { useGamePersistence } from './game/store';
 import { Maximize, Minimize } from 'lucide-react';
 import { useRef, useEffect, useState } from 'react';
+import type { SceneKey } from './context/Contexts';
 import type { MouseEvent } from 'react';
 import './App.css';
 
@@ -24,6 +30,10 @@ export const AppContent = () => {
 
   const renderScene = (scene: SceneKey) => {
     switch (scene) {
+      case 'BarnScene':
+        return <BarnScene />;
+      case 'HopScene':
+        return <HopScene />;
       case 'LoadScreen':
         return <LoadScreen />;
       case 'MainScene':
@@ -99,14 +109,16 @@ export const AppContent = () => {
 
         <FileInputProvider>
           <AudioProvider>
-            <Application
-              antialias={true}
-              className="canvas"
-              resizeTo={window}
-              roundPixels={false}
-            >
-              {renderScene(currentScene)}
-            </Application>
+            <CowProvider>
+              <Application
+                antialias={true}
+                className="canvas"
+                resizeTo={window}
+                roundPixels={false}
+              >
+                {renderScene(currentScene)}
+              </Application>
+            </CowProvider>
           </AudioProvider>
         </FileInputProvider>
       </div>

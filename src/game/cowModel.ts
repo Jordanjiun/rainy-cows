@@ -163,6 +163,8 @@ export class Cow {
   pitch: number;
   lastPet: string;
   lastDecayCheck: string;
+  lastGame: string;
+  barned: boolean;
   stats: CowStats;
 
   constructor(cows?: Cow[]) {
@@ -182,6 +184,8 @@ export class Cow {
     this.pitch = Math.round((0.8 + 0.8 * rng()) * 100) / 100;
     this.lastPet = yesterday.toISOString();
     this.lastDecayCheck = yesterday.toISOString();
+    this.lastGame = yesterday.toISOString();
+    this.barned = false;
   }
 
   eat() {

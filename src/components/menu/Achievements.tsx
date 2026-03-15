@@ -2,6 +2,7 @@ import { extend } from '@pixi/react';
 import { Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AchieveItem } from './AchieveItem';
+import { Button } from './Button';
 import { useAudio, useCow, useMenu, useToast } from '../../context/hooks';
 import { achievementItemData } from '../../data/gameData';
 import { useGameStore } from '../../game/store';
@@ -9,14 +10,15 @@ import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Container, Graphics, Sprite, Text });
 
-const boxHeight = 400;
+const boxHeight = 420;
 const boxWidth = 325;
-const buttonSize = 50;
+const buttonWidth = 80;
+const buttonHeight = 35;
 const crossSize = 20;
 const crossThickness = 4;
 const offset = 20;
 const achieveItemHeight = 60;
-const maskHeight = boxHeight - 80;
+const maskHeight = boxHeight - 110;
 const scrollBarWidth = 5;
 const scrollBarHeight = boxHeight - 2 * offset;
 
@@ -27,9 +29,15 @@ const boxColor = '#ebd9c0ff';
 export const Achievements = ({
   appWidth,
   appHeight,
+  buttonX,
+  buttonY,
+  buttonSize,
 }: {
   appWidth: number;
   appHeight: number;
+  buttonX: number;
+  buttonY: number;
+  buttonSize: number;
 }) => {
   const { audioMap } = useAudio();
   const { achievements } = useGameStore();
@@ -53,7 +61,7 @@ export const Achievements = ({
   const dragging = useRef(false);
   const lastY = useRef(0);
 
-  const iconColor = isHovered ? 'yellow' : 'white';
+  const iconColor = isHovered ? 'white' : 'black';
   const contentHeight = achievementItemData.length * achieveItemHeight;
   const maxScroll = Math.max(0, contentHeight - maskHeight);
   const trackHeight = scrollBarHeight;
@@ -93,14 +101,14 @@ export const Achievements = ({
     }
   }, [achievements, seenAchievements]);
 
-  function handleClick() {
+  function handleClick(backClick: boolean) {
+    setScrollY(0);
     audioMap.click.play();
     if (selectedCow) setSelectedCow(null);
-    if (selectedMenu != 'achievements') setSelectedMenu('achievements');
-    else {
-      setSelectedMenu(null);
-      setScrollY(0);
-    }
+    if (selectedMenu == 'achievements') {
+      if (backClick) setSelectedMenu('menu');
+      else setSelectedMenu(null);
+    } else setSelectedMenu('achievements');
   }
 
   function handleScroll(delta: number) {
@@ -124,7 +132,7 @@ export const Achievements = ({
       g.roundRect(0, 0, buttonSize, buttonSize, 10);
       g.fill({ alpha: 0 });
       g.roundRect(0, 0, buttonSize, buttonSize, 10);
-      g.stroke({ width: 2, color: isHovered ? 'yellow' : 'white' });
+      g.stroke({ width: 3, color: isHovered ? 'white' : 'black' });
     };
   }, [isHovered]);
 
@@ -188,13 +196,13 @@ export const Achievements = ({
   return (
     <>
       <pixiContainer
-        x={appWidth - (buttonSize + 10) * 2}
-        y={appHeight - buttonSize - 10}
+        x={buttonX}
+        y={buttonY}
         interactive={true}
         cursor="pointer"
         onPointerOver={() => setIsHovered(true)}
         onPointerOut={() => setIsHovered(false)}
-        onPointerTap={handleClick}
+        onPointerTap={() => handleClick(false)}
       >
         <pixiGraphics draw={drawButtonBase} />
         <pixiSprite
@@ -266,6 +274,16 @@ export const Achievements = ({
               text={'Achievements'}
               anchor={0.5}
               style={{ fontSize: 28, fontFamily: 'pixelFont' }}
+            />
+
+            <Button
+              x={(boxWidth - buttonWidth) / 2}
+              y={boxHeight - buttonHeight - 10}
+              buttonWidth={buttonWidth}
+              buttonHeight={buttonHeight}
+              buttonText={'Back'}
+              buttonColor={'white'}
+              onClick={() => handleClick(true)}
             />
 
             <pixiContainer x={offset} y={60}>

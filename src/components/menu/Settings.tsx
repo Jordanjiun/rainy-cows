@@ -11,23 +11,21 @@ import {
 import { exportGameSave, importGameSave, useGameStore } from '../../game/store';
 import { AudioBar } from './AudioBar';
 import { Button } from './Button';
-import { Credits } from './Credits';
 import { FinalWarning } from './FinalWarning';
-import { Stats } from './Stats';
 import type { FederatedPointerEvent } from 'pixi.js';
 
 extend({ Graphics, Sprite, Text });
 
-const boxHeight = 415;
-const boxWidth = 200;
-const buttonWidth = 170;
+const boxHeight = 380;
+const boxWidth = 260;
+const buttonWidth = 220;
 const buttonHeight = 40;
-const buttonSize = 50;
 const crossSize = 20;
 const crossThickness = 4;
 const padding = 20;
 const buttonGap = 15;
-const yOffset = 32;
+const yOffset = 12;
+const tickBoxSize = 30;
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
@@ -35,14 +33,20 @@ const boxColor = '#ebd9c0ff';
 const greenColor = '#80E28C';
 const redColor = '#E28C80';
 
-export const MainMenu = ({
+export const Settings = ({
   appWidth,
   appHeight,
+  buttonX,
+  buttonY,
+  buttonSize,
 }: {
   appWidth: number;
   appHeight: number;
+  buttonX: number;
+  buttonY: number;
+  buttonSize: number;
 }) => {
-  const { setLastExportReminder } = useGameStore();
+  const { isHitbox, setLastExportReminder, setHitbox } = useGameStore();
   const { audioMap, setGlobalVolume } = useAudio();
   const { selectedCow, setSelectedCow } = useCow();
   const { selectedMenu, setSelectedMenu } = useMenu();
@@ -51,19 +55,18 @@ export const MainMenu = ({
 
   const [isHovered, setIsHovered] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
-  const [isStats, setIsStats] = useState(false);
-  const [isCredit, setIsCredit] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
+  const [boxHovered, setBoxHovered] = useState(false);
   const [menuImage, setMenuImage] = useState<Texture | null>(null);
 
-  const iconColor = isHovered ? 'yellow' : 'white';
+  const iconColor = isHovered ? 'white' : 'black';
 
   onFileSelected((file) => handleImport(file));
 
   useEffect(() => {
     let mounted = true;
     async function loadMenuImage() {
-      const loaded = await Assets.load<Texture>('menu');
+      const loaded = await Assets.load<Texture>('settings');
       loaded.source.scaleMode = 'linear';
       if (mounted) setMenuImage(loaded);
     }
@@ -82,7 +85,7 @@ export const MainMenu = ({
       setSelectedMenu(null);
     } else {
       audioMap.wrong.play();
-      showToast('Error: File could not be imported', redColor);
+      showToast('Error: File could not be imported.', redColor);
     }
   }
 
@@ -90,7 +93,7 @@ export const MainMenu = ({
     audioMap.type.play();
     setLastExportReminder(Date.now());
     exportGameSave();
-    showToast('Save file exported', greenColor);
+    showToast('Save file exported.', greenColor);
   }
 
   function handleClick() {
@@ -98,8 +101,8 @@ export const MainMenu = ({
     if (selectedCow) {
       setSelectedCow(null);
     }
-    if (selectedMenu != 'menu') {
-      setSelectedMenu('menu');
+    if (selectedMenu != 'settings') {
+      setSelectedMenu('settings');
     } else {
       setSelectedMenu(null);
     }
@@ -107,7 +110,7 @@ export const MainMenu = ({
 
   function handleDeleteButton() {
     audioMap.type.play();
-    setSelectedMenu(null);
+    setSelectedMenu('warning');
     setIsWarning(true);
   }
 
@@ -127,7 +130,7 @@ export const MainMenu = ({
       g.roundRect(0, 0, buttonSize, buttonSize, 10);
       g.fill({ alpha: 0 });
       g.roundRect(0, 0, buttonSize, buttonSize, 10);
-      g.stroke({ width: 2, color: isHovered ? 'yellow' : 'white' });
+      g.stroke({ width: 3, color: isHovered ? 'white' : 'black' });
     };
   }, [isHovered]);
 
@@ -141,6 +144,16 @@ export const MainMenu = ({
     },
     [boxWidth, boxHeight, boxColor],
   );
+
+  const drawBox = useMemo(() => {
+    return (g: Graphics) => {
+      g.clear();
+      g.rect(0, 0, tickBoxSize, tickBoxSize);
+      g.fill({ alpha: 0 });
+      g.rect(0, 0, tickBoxSize, tickBoxSize);
+      g.stroke({ width: 3, color: boxHovered ? 'white' : 'black' });
+    };
+  }, [tickBoxSize, boxHovered]);
 
   const drawCloseButton = useMemo(() => {
     return (g: Graphics) => {
@@ -162,8 +175,8 @@ export const MainMenu = ({
   return (
     <>
       <pixiContainer
-        x={appWidth - buttonSize - 10}
-        y={appHeight - buttonSize - 10}
+        x={buttonX}
+        y={buttonY}
         interactive={true}
         cursor="pointer"
         onPointerOver={() => setIsHovered(true)}
@@ -180,7 +193,7 @@ export const MainMenu = ({
         />
       </pixiContainer>
 
-      {selectedMenu == 'menu' && !isCredit && !isStats && (
+      {selectedMenu == 'settings' && (
         <>
           <pixiGraphics
             interactive={true}
@@ -214,23 +227,43 @@ export const MainMenu = ({
             <pixiText
               x={boxWidth / 2}
               y={29}
-              text={'Menu'}
+              text={'Settings'}
               anchor={0.5}
               style={{ fontSize: 28, fontFamily: 'pixelFont' }}
             />
+
             <pixiText
-              x={14}
-              y={boxHeight - 38}
-              text={'©'}
-              style={{ fontSize: 24, fontFamily: 'pixelFont' }}
+              x={padding}
+              y={107}
+              text={'Runner Hitbox:'}
+              style={{ fontSize: 22, fontFamily: 'pixelFont' }}
             />
-            <pixiText
-              x={boxWidth / 2 + 10}
-              y={boxHeight - 25}
-              text={`Jordan Tay, ${new Date().getFullYear()}`}
-              anchor={0.5}
-              style={{ fontSize: 16, fontFamily: 'pixelFont' }}
-            />
+            <pixiContainer
+              x={boxWidth - tickBoxSize - padding - 12}
+              y={106}
+              interactive={true}
+              cursor="pointer"
+              onPointerOver={() => setBoxHovered(true)}
+              onPointerOut={() => setBoxHovered(false)}
+              onPointerTap={() => {
+                audioMap.type.play();
+                setHitbox(!isHitbox);
+              }}
+            >
+              <pixiGraphics draw={drawBox} />
+              {isHitbox && (
+                <pixiText
+                  y={-8}
+                  text={'✓'}
+                  style={{
+                    fontSize: 42,
+                    fill: 'red',
+                    fontFamily: 'pixelFont',
+                    fontWeight: 'bold',
+                  }}
+                />
+              )}
+            </pixiContainer>
 
             <AudioBar
               x={(boxWidth - buttonWidth) / 2}
@@ -276,24 +309,11 @@ export const MainMenu = ({
               y={boxHeight - (buttonHeight + buttonGap) * 4 - yOffset}
               buttonWidth={buttonWidth}
               buttonHeight={buttonHeight}
-              buttonText={'Statistics'}
+              buttonText={'Return to Menu'}
               buttonColor={'white'}
               onClick={() => {
                 audioMap.type.play();
-                setIsStats(true);
-              }}
-            />
-
-            <Button
-              x={(boxWidth - buttonWidth) / 2}
-              y={boxHeight - (buttonHeight + buttonGap) * 5 - yOffset}
-              buttonWidth={buttonWidth}
-              buttonHeight={buttonHeight}
-              buttonText={'Credits'}
-              buttonColor={'white'}
-              onClick={() => {
-                audioMap.type.play();
-                setIsCredit(true);
+                setSelectedMenu('menu');
               }}
             />
           </pixiContainer>
@@ -305,28 +325,6 @@ export const MainMenu = ({
           appWidth={appWidth}
           appHeight={appHeight}
           onClick={() => setIsWarning(false)}
-        />
-      )}
-
-      {isStats && (
-        <Stats
-          appWidth={appWidth}
-          appHeight={appHeight}
-          onClick={() => {
-            audioMap.type.play();
-            setIsStats(false);
-          }}
-        />
-      )}
-
-      {isCredit && (
-        <Credits
-          appWidth={appWidth}
-          appHeight={appHeight}
-          onClick={() => {
-            audioMap.type.play();
-            setIsCredit(false);
-          }}
         />
       )}
     </>

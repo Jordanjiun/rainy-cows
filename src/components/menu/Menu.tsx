@@ -1,66 +1,83 @@
 import { extend } from '@pixi/react';
-import { Assets, Container, Graphics, Text } from 'pixi.js';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button } from './Button';
-import { useAudio, useMenu } from '../../context/hooks';
+import { Assets, Graphics, Sprite, Text, Texture } from 'pixi.js';
+import { useCallback, useMemo, useState, useEffect } from 'react';
+import { useAudio, useCow, useMenu } from '../../context/hooks';
 import { useGameStore } from '../../game/store';
-import type { FederatedPointerEvent, Texture } from 'pixi.js';
+import { Achievements } from './Achievements.tsx';
+import { BarnButton } from './BarnButton.tsx';
+import { Credits } from './Credits.tsx';
+import { Shop } from './Shop.tsx';
+import { Settings } from './Settings.tsx';
+import { Stats } from './Stats.tsx';
+import type { FederatedPointerEvent } from 'pixi.js';
 
-extend({ Container, Graphics, Text });
+extend({ Graphics, Sprite, Text });
 
-const boxHeight = 290;
-const boxWidth = 320;
-const buttonWidth = 80;
-const buttonHeight = 40;
+const boxHeight = 250;
+const boxWidth = 210;
+const buttonSize = 50;
 const crossSize = 20;
 const crossThickness = 4;
-const offset = 20;
-const padding = 25;
-const boxColor = '#ebd9c0ff';
+const itemsPerRow = 3;
+const padding = 20;
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
-export const Stats = ({
+const boxColor = '#ebd9c0ff';
+
+export const Menu = ({
   appWidth,
   appHeight,
-  buttonX,
-  buttonY,
-  buttonSize,
 }: {
   appWidth: number;
   appHeight: number;
-  buttonX: number;
-  buttonY: number;
-  buttonSize: number;
 }) => {
   const { audioMap } = useAudio();
-  const { stats } = useGameStore();
+  const { selectedCow, setSelectedCow } = useCow();
   const { selectedMenu, setSelectedMenu } = useMenu();
+  const { tutorial, setTutorial } = useGameStore();
 
   const [isHovered, setIsHovered] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
-  const [statImage, setStatImage] = useState<Texture | null>(null);
+  const [menuImage, setMenuImage] = useState<Texture | null>(null);
 
-  const iconColor = isHovered ? 'white' : 'black';
-
-  const statsRows = [
-    { label: 'Clicks', value: stats.clicks },
-    { label: 'Moonies Earned', value: stats.mooneyEarned },
-    { label: 'Upgrades Bought', value: stats.upgradesBought },
-    { label: 'Cows Bought', value: stats.cowsBought },
-    { label: 'Cows Sold', value: stats.cowsSold },
-    { label: 'Cows Renamed', value: stats.cowsRenamed },
-    { label: 'Cows Pet', value: stats.cowsPet },
+  const menuComponents = [
+    {
+      keys: ['menu', 'shop'],
+      Component: Shop,
+    },
+    {
+      keys: ['menu'],
+      Component: BarnButton,
+    },
+    {
+      keys: ['menu', 'achievements'],
+      Component: Achievements,
+    },
+    {
+      keys: ['menu', 'stats'],
+      Component: Stats,
+    },
+    {
+      keys: ['menu', 'credits'],
+      Component: Credits,
+    },
+    {
+      keys: ['menu', 'settings', 'warning'],
+      Component: Settings,
+    },
   ];
+
+  const iconColor = isHovered ? 'yellow' : 'white';
 
   useEffect(() => {
     let mounted = true;
-    async function loadStatImage() {
-      const loaded = await Assets.load<Texture>('stats');
+    async function loadMenuImage() {
+      const loaded = await Assets.load<Texture>('menu');
       loaded.source.scaleMode = 'linear';
-      if (mounted) setStatImage(loaded);
+      if (mounted) setMenuImage(loaded);
     }
-    loadStatImage();
+    loadMenuImage();
     return () => {
       mounted = false;
     };
@@ -68,8 +85,15 @@ export const Stats = ({
 
   function handleClick() {
     audioMap.click.play();
-    if (selectedMenu == 'stats') setSelectedMenu('menu');
-    else setSelectedMenu('stats');
+    if (tutorial == 2) setTutorial(2.5);
+    if (selectedCow) {
+      setSelectedCow(null);
+    }
+    if (selectedMenu != 'menu') {
+      setSelectedMenu('menu');
+    } else {
+      setSelectedMenu(null);
+    }
   }
 
   function closeMenu() {
@@ -88,7 +112,7 @@ export const Stats = ({
       g.roundRect(0, 0, buttonSize, buttonSize, 10);
       g.fill({ alpha: 0 });
       g.roundRect(0, 0, buttonSize, buttonSize, 10);
-      g.stroke({ width: 3, color: isHovered ? 'white' : 'black' });
+      g.stroke({ width: 3, color: isHovered ? 'yellow' : 'white' });
     };
   }, [isHovered]);
 
@@ -101,17 +125,6 @@ export const Stats = ({
       g.stroke({ width: 3, color: 'black' });
     },
     [boxWidth, boxHeight, boxColor],
-  );
-
-  const drawLine = useCallback(
-    (g: Graphics) => {
-      const lineY = 60;
-      g.clear();
-      g.moveTo(padding - 5, lineY);
-      g.lineTo(boxWidth - padding + 5, lineY);
-      g.stroke({ width: 3, color: 'black' });
-    },
-    [boxWidth],
   );
 
   const drawCloseButton = useMemo(() => {
@@ -129,13 +142,13 @@ export const Stats = ({
     };
   }, [closeHovered]);
 
-  if (!statImage) return null;
+  if (!menuImage) return null;
 
   return (
     <>
       <pixiContainer
-        x={buttonX}
-        y={buttonY}
+        x={appWidth - buttonSize - 10}
+        y={appHeight - buttonSize - 10}
         interactive={true}
         cursor="pointer"
         onPointerOver={() => setIsHovered(true)}
@@ -144,7 +157,7 @@ export const Stats = ({
       >
         <pixiGraphics draw={drawButtonBase} />
         <pixiSprite
-          texture={statImage}
+          texture={menuImage}
           anchor={0.5}
           x={buttonSize / 2}
           y={buttonSize / 2}
@@ -152,7 +165,7 @@ export const Stats = ({
         />
       </pixiContainer>
 
-      {selectedMenu == 'stats' && (
+      {selectedMenu == 'menu' && (
         <>
           <pixiGraphics
             interactive={true}
@@ -172,8 +185,8 @@ export const Stats = ({
             <pixiGraphics draw={drawBase} />
 
             <pixiContainer
-              x={offset}
-              y={offset}
+              x={padding}
+              y={padding}
               interactive={true}
               cursor="pointer"
               onPointerOver={() => setCloseHovered(true)}
@@ -185,45 +198,48 @@ export const Stats = ({
 
             <pixiText
               x={boxWidth / 2}
-              y={30}
-              text={'Statistics'}
+              y={29}
+              text={'Menu'}
               anchor={0.5}
               style={{ fontSize: 28, fontFamily: 'pixelFont' }}
             />
-            <pixiGraphics draw={drawLine} />
-            {statsRows.map((row, i) => {
-              const y = 80 + i * 20;
-              return (
-                <pixiContainer key={row.label}>
-                  <pixiText
-                    x={padding}
-                    y={y}
-                    text={row.label}
-                    style={{ fontSize: 16, fontFamily: 'pixelFont' }}
-                  />
-                  <pixiText
-                    x={boxWidth - padding}
-                    y={y}
-                    text={row.value.toLocaleString('en-US')}
-                    anchor={{ x: 1, y: 0 }}
-                    style={{ fontSize: 16, fontFamily: 'pixelFont' }}
-                  />
-                </pixiContainer>
-              );
-            })}
-
-            <Button
-              x={(boxWidth - buttonWidth) / 2}
-              y={boxHeight - buttonHeight - 20}
-              buttonWidth={buttonWidth}
-              buttonHeight={buttonHeight}
-              buttonText={'Back'}
-              buttonColor={'white'}
-              onClick={handleClick}
+            <pixiText
+              x={17}
+              y={boxHeight - 48}
+              text={'©'}
+              style={{ fontSize: 24, fontFamily: 'pixelFont' }}
+            />
+            <pixiText
+              x={boxWidth / 2 + 10}
+              y={boxHeight - 35}
+              text={`Jordan Tay, ${new Date().getFullYear()}`}
+              anchor={0.5}
+              style={{ fontSize: 16, fontFamily: 'pixelFont' }}
             />
           </pixiContainer>
         </>
       )}
+
+      {selectedMenu &&
+        menuComponents
+          .filter(({ keys }) => keys.includes(selectedMenu))
+          .map(({ Component }, index) => {
+            const col = index % itemsPerRow;
+            const row = Math.floor(index / itemsPerRow);
+            const startX = (appWidth - boxWidth) / 2 + padding;
+            const startY = (appHeight - boxHeight) / 2 + padding + 15;
+
+            return (
+              <Component
+                key={index}
+                appWidth={appWidth}
+                appHeight={appHeight}
+                buttonSize={buttonSize}
+                buttonX={startX + col * (buttonSize + padding / 2)}
+                buttonY={startY + row * (buttonSize + padding / 2)}
+              />
+            );
+          })}
     </>
   );
 };

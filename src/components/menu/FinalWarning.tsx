@@ -1,7 +1,7 @@
 import { extend } from '@pixi/react';
 import { Container, Graphics, Text } from 'pixi.js';
 import { useCallback } from 'react';
-import { useAudio } from '../../context/hooks';
+import { useAudio, useMenu } from '../../context/hooks';
 import { purgeGameData } from '../../game/store';
 import { Button } from './Button';
 import type { FederatedPointerEvent } from 'pixi.js';
@@ -27,6 +27,7 @@ export const FinalWarning = ({
   onClick: () => void;
 }) => {
   const { audioMap, setGlobalVolume } = useAudio();
+  const { setSelectedMenu } = useMenu();
 
   const drawBase = useCallback(
     (g: Graphics) => {
@@ -47,6 +48,7 @@ export const FinalWarning = ({
     } else {
       audioMap.type.play();
     }
+    setSelectedMenu(null);
     onClick();
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;
     if (canvas) {
