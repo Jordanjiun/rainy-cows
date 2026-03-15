@@ -8,7 +8,7 @@ import type { FederatedPointerEvent, Texture } from 'pixi.js';
 
 extend({ Container, Graphics, Text });
 
-const boxHeight = 320;
+const boxHeight = 345;
 const boxWidth = 300;
 const buttonWidth = 80;
 const buttonHeight = 40;
@@ -21,7 +21,11 @@ const boxColor = '#ebd9c0ff';
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
 const infoRows = [
-  { label: 'Developer:', value: 'Jordan Tay', url: '' },
+  {
+    label: 'Developer:',
+    value: 'Jordan Tay',
+    url: 'https://linktr.ee/jordan.tay',
+  },
   {
     label: 'Pixel Font:',
     value: 'Yuji Oshimoto',
@@ -42,7 +46,16 @@ const infoRows = [
     value: 'Kass',
     url: 'https://kassjak.itch.io/',
   },
-  { label: 'Audio:', value: 'Pixabay', url: '' },
+  {
+    label: 'Pixel Obstacles:',
+    value: 'SciGho',
+    url: 'https://ninjikin.itch.io/',
+  },
+  {
+    label: 'Sound Effects:',
+    value: 'Pixabay',
+    url: 'https://pixabay.com/sound-effects/',
+  },
 ];
 
 export const Credits = ({

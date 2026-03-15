@@ -9,6 +9,8 @@ extend({ Container });
 const audioManifest = [
   { alias: 'coin', src: '/assets/audio/coin.mp3', volume: 1 },
   { alias: 'click', src: '/assets/audio/click.mp3', volume: 1 },
+  { alias: 'jump', src: '/assets/audio/jump.mp3', volume: 0.3 },
+  { alias: 'hit', src: '/assets/audio/hit.mp3', volume: 0.5 },
   { alias: 'moo', src: '/assets/audio/moo.mp3', volume: 0.3 },
   { alias: 'type', src: '/assets/audio/type.mp3', volume: 0.5 },
   { alias: 'powerup', src: '/assets/audio/powerup.mp3', volume: 0.3 },

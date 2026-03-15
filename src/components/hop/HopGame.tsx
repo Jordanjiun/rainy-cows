@@ -10,20 +10,39 @@ import { Player } from './Player';
 import { Ground } from './Ground';
 import { ExitMenu } from './ExitMenu';
 import type { Texture, Ticker } from 'pixi.js';
+import type { Object } from './Obstacle';
 
 extend({ Container, Graphics, Text });
 
 const buttonSize = 50;
-const maxCharge = 23;
-const minJump = 10;
 const minGap = 100;
 const maxGap = 250;
 const playerX = 20;
 const cowScale = 2;
 const startSpeed = 5;
 const speedIncrement = 0.005;
+const jumpInitialVelocity = 14;
+const jumpHoldForce = 0.5;
+const maxJumpHoldTime = 38;
+const gravity = 0.9;
 const assetNames = ['mooney', 'undo'];
-const objectHeights: number[] = [25, 55, 130];
+const objects = [
+  {
+    name: 'plant',
+    width: 45,
+    height: 30,
+  },
+  {
+    name: 'fence',
+    width: 25,
+    height: 100,
+  },
+  {
+    name: 'totem',
+    width: 40,
+    height: 140,
+  },
+];
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
@@ -53,18 +72,16 @@ export const HopGame = ({
   const [, setTick] = useState(0);
 
   const velocity = useRef(0);
-  const chargePower = useRef(0);
+  const jumpHolding = useRef(false);
+  const jumpHoldTimer = useRef(0);
+
   const spawnTimer = useRef(0);
   const distance = useRef(0);
   const speed = useRef(0);
   const nextSpawn = useRef(60 + Math.random() * 120);
-  const charging = useRef(false);
-  const obstacles = useRef<
-    { x: number; y: number; width: number; height: number }[]
-  >([]);
+  const obstacles = useRef<{ x: number; y: number; object: Object }[]>([]);
 
   const iconColor = isHovered ? 'yellow' : 'white';
-  const gravity = charging.current ? 0.45 : 0.9;
 
   useEffect(() => {
     let mounted = true;
@@ -112,9 +129,7 @@ export const HopGame = ({
   }, [isHovered]);
 
   const pointerDown = () => {
-    if (gameOver) {
-      return;
-    }
+    if (gameOver) return;
 
     if (!started) {
       setCowAnimation('walk');
@@ -126,17 +141,15 @@ export const HopGame = ({
     }
 
     if (playerY >= groundY) {
-      charging.current = true;
-      chargePower.current = minJump;
+      audioMap.jump.play();
+      velocity.current = -jumpInitialVelocity;
+      jumpHolding.current = true;
+      jumpHoldTimer.current = 0;
     }
   };
 
   const pointerUp = () => {
-    if (!charging.current) return;
-
-    velocity.current = -chargePower.current;
-    chargePower.current = 0;
-    charging.current = false;
+    jumpHolding.current = false;
   };
 
   const updateGame = (ticker: Ticker) => {
@@ -146,16 +159,12 @@ export const HopGame = ({
     distance.current += speed.current * delta;
     speed.current += speedIncrement * delta;
 
-    if (charging.current) {
-      chargePower.current = Math.min(
-        maxCharge,
-        chargePower.current + 1.2 * delta,
-      );
-
-      if (chargePower.current >= maxCharge) {
-        velocity.current = -chargePower.current;
-        chargePower.current = 0;
-        charging.current = false;
+    if (jumpHolding.current) {
+      jumpHoldTimer.current += delta;
+      if (jumpHoldTimer.current < maxJumpHoldTime) {
+        velocity.current -= jumpHoldForce * delta;
+      } else {
+        jumpHolding.current = false;
       }
     }
 
@@ -173,12 +182,13 @@ export const HopGame = ({
 
     for (const o of obstacles.current) {
       const collide =
-        playerX < o.x + o.width &&
+        playerX < o.x + o.object.width &&
         playerX + playerSize > o.x &&
-        playerY + velocity.current < o.y + o.height &&
+        playerY + velocity.current < o.y + o.object.height &&
         playerY + playerSize + velocity.current > o.y;
 
       if (collide) {
+        audioMap.hit.play();
         velocity.current = 0;
         speed.current = 0;
         setGameOver(true);
@@ -194,16 +204,12 @@ export const HopGame = ({
       spawnTimer.current = 0;
       nextSpawn.current =
         (minGap + Math.random() * (maxGap - minGap)) / (speed.current * 0.18);
-      const obstacleHeight =
-        objectHeights[Math.floor(Math.random() * objectHeights.length)];
-      let obstacleWidth = 25;
-      if (obstacleHeight == 25) obstacleWidth = 45;
-      if (obstacleHeight == 130) obstacleWidth = 40;
+      const object = objects[Math.floor(Math.random() * objects.length)];
+
       obstacles.current.push({
         x: appWidth,
-        y: groundY + playerSize - obstacleHeight,
-        width: obstacleWidth,
-        height: obstacleHeight,
+        y: groundY + playerSize - object.height,
+        object: object,
       });
     }
 
@@ -220,10 +226,11 @@ export const HopGame = ({
   return (
     <>
       <pixiGraphics draw={drawDefaultBackground} />
+
       <Sky appWidth={appWidth} appHeight={appHeight} landRatio={0.3} />
 
       {obstacles.current.map((o, i) => (
-        <Obstacle key={i} x={o.x} y={o.y} width={o.width} height={o.height} />
+        <Obstacle key={i} x={o.x} y={o.y} object={o.object} />
       ))}
 
       <Ground
@@ -232,6 +239,7 @@ export const HopGame = ({
         grassY={groundY + playerSize}
         speed={speed.current}
       />
+
       <pixiGraphics draw={drawFooter} />
 
       <pixiContainer
@@ -257,7 +265,9 @@ export const HopGame = ({
         />
 
         <pixiText
-          text={`XP Gained: ${Math.floor(distance.current * scoreMultiplier).toLocaleString('en-US')}`}
+          text={`XP Gained: ${Math.floor(
+            distance.current * scoreMultiplier,
+          ).toLocaleString('en-US')}`}
           x={15}
           y={45}
           style={{ fill: 'black', fontSize: 32, fontFamily: 'pixelFont' }}
@@ -301,6 +311,7 @@ export const HopGame = ({
         }}
       >
         <pixiGraphics draw={drawButtonBase} />
+
         <pixiSprite
           texture={textures.undo}
           anchor={0.5}

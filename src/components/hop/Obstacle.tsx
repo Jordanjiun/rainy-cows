@@ -7,14 +7,19 @@ extend({ Graphics, Sprite });
 
 const assetNames = ['fence', 'plant', 'totem'];
 
+export type Object = {
+  name: string;
+  width: number;
+  height: number;
+};
+
 interface ObstacleProps {
   x: number;
   y: number;
-  width: number;
-  height: number;
+  object: Object;
 }
 
-export const Obstacle = ({ x, y, width, height }: ObstacleProps) => {
+export const Obstacle = ({ x, y, object }: ObstacleProps) => {
   const { isHitbox } = useGameStore();
 
   const [textures, setTextures] = useState<Record<string, Texture>>({});
@@ -38,21 +43,22 @@ export const Obstacle = ({ x, y, width, height }: ObstacleProps) => {
   if (!textures) return;
 
   useEffect(() => {
-    if (height === 130 && textures.totem) setImage(textures.totem);
-    if (height === 55 && textures.fence) setImage(textures.fence);
-    if (height === 25 && textures.plant) setImage(textures.plant);
-  }, [height, textures]);
+    const tex = textures[object.name];
+    if (tex) {
+      setImage(tex);
+    }
+  }, [object, textures]);
 
   const draw = useCallback(
     (g: Graphics) => {
       g.clear();
-      g.rect(0, 0, width, height);
+      g.rect(0, 0, object.width, object.height);
       g.stroke({
         width: 2,
         color: 'red',
       });
     },
-    [width, height],
+    [object],
   );
 
   return (
