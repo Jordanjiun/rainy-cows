@@ -22,26 +22,27 @@ import type { Texture } from 'pixi.js';
 
 extend({ AnimatedSprite, Container, Graphics });
 
-const barWidth = 190;
+const barWidth = 215;
 const cowScale = 2.5;
 const cowNameFontSize = 24;
 const heartMaxNum = 10;
-const heartScale = 0.07;
-const heartSpacing = 1.6;
-const heartY = 65;
-const xpBarY = 85;
+const heartScale = 0.08;
+const heartSpacing = 1.75;
+const heartY = 62;
+const xpBarY = 86;
 const assetNames = [
   'arrowDown',
   'arrowUp',
   'dollar',
   'game',
+  'info',
   'mooney',
   'heart',
   'noHeart',
   'pen',
 ];
 
-type ButtonKey = 'SellCow' | 'RenameCow' | 'BarnCow' | 'PlayCow';
+type ButtonKey = 'SellCow' | 'RenameCow' | 'BarnCow' | 'PlayCow' | 'InfoCow';
 
 interface CowCardProps {
   x: number;
@@ -196,6 +197,10 @@ export const CowCard = ({
         setSelectedCow(cow);
         switchScene('HopScene');
         return;
+      case 'InfoCow':
+        setSelectedCow(cow);
+        setSelectedMenu('infoCow');
+        return;
       default:
         return null;
     }
@@ -294,12 +299,12 @@ export const CowCard = ({
         <pixiSprite
           texture={textures.mooney}
           x={infoX}
-          y={y + 35}
+          y={y + 33}
           scale={0.8}
         />
         <pixiText
           x={infoX + 32}
-          y={y + 34}
+          y={y + 32}
           text={value.toLocaleString('en-US')}
           style={{ fontSize: 24, fontFamily: 'pixelFont' }}
         />
@@ -310,6 +315,7 @@ export const CowCard = ({
   if (!animations) return null;
 
   const buttons: { image: Texture; action: ButtonKey }[] = [
+    { image: textures.info, action: 'InfoCow' },
     { image: textures.dollar, action: 'SellCow' },
     { image: textures.pen, action: 'RenameCow' },
     { image: arrowTexture, action: 'BarnCow' },
@@ -344,15 +350,15 @@ export const CowCard = ({
       </pixiContainer>
       <pixiText
         x={infoX}
-        y={y + 20}
+        y={y + 18}
         text={`${cow.name} (Lvl. ${cow.level})`}
         anchor={{ x: 0, y: 0.5 }}
         scale={{ x: textScale, y: textScale }}
         style={{ fontSize: cowNameFontSize, fontFamily: 'pixelFont' }}
       />
+      {drawValue}
       {drawHearts}
       {drawXp}
-      {drawValue}
       {buttons.map((btn, index) => (
         <CardButton
           key={btn.action}

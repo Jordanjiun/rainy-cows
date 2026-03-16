@@ -67,7 +67,7 @@ export const BarnContent = ({
   const startY = unPetCows.length > 0 ? 110 : 10;
 
   let cardHeight = 150;
-  if (appWidth > 450) cardHeight = 110;
+  if (appWidth > 550) cardHeight = 110;
 
   const maskHeight = appHeight - footerHeight * 2;
   const contentHeight =

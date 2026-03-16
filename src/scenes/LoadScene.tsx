@@ -73,6 +73,7 @@ const manifest = {
         { alias: 'dollar', src: '/assets/icons/dollar-sign.png' },
         { alias: 'game', src: '/assets/icons/gamepad.png' },
         { alias: 'housePlus', src: '/assets/icons/house-plus.png' },
+        { alias: 'info', src: '/assets/icons/info.png' },
         { alias: 'menu', src: '/assets/icons/menu.png' },
         { alias: 'pen', src: '/assets/icons/square-pen.png' },
         { alias: 'settings', src: '/assets/icons/settings.png' },
