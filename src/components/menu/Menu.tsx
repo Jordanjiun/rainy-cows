@@ -35,7 +35,7 @@ export const Menu = ({
   const { audioMap } = useAudio();
   const { selectedCow, setSelectedCow } = useCow();
   const { selectedMenu, setSelectedMenu } = useMenu();
-  const { tutorial, setTutorial } = useGameStore();
+  const { isHarvest, tutorial, setTutorial } = useGameStore();
 
   const [isHovered, setIsHovered] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
@@ -146,24 +146,26 @@ export const Menu = ({
 
   return (
     <>
-      <pixiContainer
-        x={appWidth - buttonSize - 10}
-        y={appHeight - buttonSize - 10}
-        interactive={true}
-        cursor="pointer"
-        onPointerOver={() => setIsHovered(true)}
-        onPointerOut={() => setIsHovered(false)}
-        onPointerTap={handleClick}
-      >
-        <pixiGraphics draw={drawButtonBase} />
-        <pixiSprite
-          texture={menuImage}
-          anchor={0.5}
-          x={buttonSize / 2}
-          y={buttonSize / 2}
-          tint={iconColor}
-        />
-      </pixiContainer>
+      {!isHarvest && (
+        <pixiContainer
+          x={appWidth - buttonSize - 10}
+          y={appHeight - buttonSize - 10}
+          interactive={true}
+          cursor="pointer"
+          onPointerOver={() => setIsHovered(true)}
+          onPointerOut={() => setIsHovered(false)}
+          onPointerTap={handleClick}
+        >
+          <pixiGraphics draw={drawButtonBase} />
+          <pixiSprite
+            texture={menuImage}
+            anchor={0.5}
+            x={buttonSize / 2}
+            y={buttonSize / 2}
+            tint={iconColor}
+          />
+        </pixiContainer>
+      )}
 
       {selectedMenu == 'menu' && (
         <>

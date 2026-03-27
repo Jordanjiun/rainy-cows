@@ -59,6 +59,7 @@ function getSerializableState(state: GameState) {
     upgrades: state.upgrades,
     stats: state.stats,
     achievements: state.achievements,
+    sortType: state.sortType,
   };
 }
 
@@ -121,9 +122,11 @@ interface GameState {
   upgrades: Upgrades;
   stats: Stats;
   achievements: AchievementsState;
+  sortType: SortTypes;
   setVolume: (volume: number) => void;
   setTutorial: (scene: number) => void;
   setHitbox: (value: boolean) => void;
+  setSortType: (value: SortTypes) => void;
   setLastExportReminder: (datetime: number) => void;
   addMooney: (amount: number) => void;
   addCow: (cow: Cow) => void;
@@ -189,6 +192,21 @@ const achievements: AchievementsState = achievementItemData.reduce(
   {} as AchievementsState,
 );
 
+export const sortTypes = [
+  'Inactive',
+  'Name (A-Z)',
+  'Name (Z-A)',
+  'XP (Low-High)',
+  'XP (High-Low)',
+  'Value (Low-High)',
+  'Value (High-Low)',
+  'Rarity (Low-High)',
+  'Rarity (High-Low)',
+  'Hearts (Low-High)',
+  'Hearts (High-Low)',
+] as const;
+export type SortTypes = (typeof sortTypes)[number];
+
 function isStatKey(key: string): key is keyof Stats {
   return key in stats;
 }
@@ -221,6 +239,7 @@ export const useGameStore = create<GameState>((set, get) => {
     upgrades: upgrades,
     stats: stats,
     achievements: achievements,
+    sortType: sortTypes[0],
     lastExportReminder: Date.now(),
     volume: 1,
     tutorial: 1,
@@ -228,6 +247,7 @@ export const useGameStore = create<GameState>((set, get) => {
     setVolume: (newVolume: number) => set({ volume: newVolume }),
     setTutorial: (scene: number) => set({ tutorial: scene }),
     setHitbox: (value: boolean) => set({ isHitbox: value }),
+    setSortType: (value: SortTypes) => set({ sortType: value }),
     setLastExportReminder: (datetime: number) =>
       set({ lastExportReminder: datetime }),
 
@@ -403,6 +423,7 @@ export const useGameStore = create<GameState>((set, get) => {
             ...achievements,
             ...(data.achievements ?? {}),
           },
+          sortType: data.sortType ?? state.sortType,
           lastExportReminder:
             data.lastExportReminder ?? state.lastExportReminder,
           volume: data.volume ?? state.volume,
@@ -420,6 +441,7 @@ export const useGameStore = create<GameState>((set, get) => {
         upgrades: upgrades,
         stats: stats,
         achievements: achievements,
+        sortType: sortTypes[0],
         lastExportReminder: Date.now(),
         volume: 1,
         tutorial: 1,

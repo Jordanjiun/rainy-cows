@@ -7,6 +7,7 @@ import { InfoCow } from '../components/barn/Info';
 import { RenameCow } from '../components/barn/RenameCow';
 import { SellCow } from '../components/menu/SellCow';
 import { StoreCow } from '../components/barn/StoreCow';
+import { SortCow } from '../components/barn/SortCow';
 
 extend({ Container });
 
@@ -40,6 +41,7 @@ export const BarnScene = () => {
           <SellCow appWidth={size.width} appHeight={size.height} />
           <RenameCow appWidth={size.width} appHeight={size.height} />
           <StoreCow appWidth={size.width} appHeight={size.height} />
+          <SortCow appWidth={size.width} appHeight={size.height} />
         </MenuProvider>
       </ToastProvider>
     </pixiContainer>
