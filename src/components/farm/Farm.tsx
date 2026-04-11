@@ -3,6 +3,7 @@ import { Container, Graphics, Text } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { gameUpgrades } from '../../data/gameData';
 import { useGameStore } from '../../game/store';
+import { FarmBarn } from './FarmBarn';
 import { Grass } from './Grass';
 import { Sky } from './Sky';
 
@@ -102,6 +103,7 @@ export const Farm = ({
     <>
       <pixiGraphics draw={drawDefaultBackground} />
       <Sky appWidth={appWidth} appHeight={appHeight} landRatio={landRatio} />
+      <FarmBarn appWidth={appWidth} appHeight={appHeight} />
       <Grass appWidth={appWidth} appHeight={appHeight} />
       {isHarvest && drawHarvestTime}
       <pixiGraphics draw={drawFooter} />
