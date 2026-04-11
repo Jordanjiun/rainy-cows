@@ -8,6 +8,7 @@ import {
   useCowAnimations,
   useCowFilter,
 } from '../../game/cowBuilder';
+import { useGameStore } from '../../game/store';
 import type { Cow } from '../../game/cowModel';
 import type { Texture } from 'pixi.js';
 
@@ -21,10 +22,19 @@ interface BarnCowProps {
   barnWidth: number;
   barnHeight: number;
   cow: Cow;
+  onPet: (id: string, hearts: number, x: number, y: number) => void;
+  onExitComplete: () => void;
 }
 
-export const BarnCow = ({ barnWidth, barnHeight, cow }: BarnCowProps) => {
+export const BarnCow = ({
+  barnWidth,
+  barnHeight,
+  cow,
+  onPet,
+  onExitComplete,
+}: BarnCowProps) => {
   const { audioMap } = useAudio();
+  const { petCow } = useGameStore();
 
   const animations = useCowAnimations(cow.sprite.layers);
   const layerFilters = useCowFilter(cow.sprite);
@@ -41,6 +51,7 @@ export const BarnCow = ({ barnWidth, barnHeight, cow }: BarnCowProps) => {
   const idleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const rectSize = cowConfig.frameSize * cowScale;
+  const cowY = barnHeight / 2 + rectSize / 2 + 8;
 
   useEffect(() => {
     if (!animations) return;
@@ -112,9 +123,10 @@ export const BarnCow = ({ barnWidth, barnHeight, cow }: BarnCowProps) => {
   };
 
   const handlePet = () => {
-    if (currentAnim != 'idle') return;
+    if (currentAnim != 'idle' || !containerRef.current) return;
     var soundId = audioMap.moo.play();
     audioMap.moo.rate(cow.pitch ?? 1, soundId);
+    onPet(cow.id, petCow(cow.id), containerRef.current.x, cowY);
 
     setTimeout(() => {
       setCurrentAnim('idle');
@@ -149,6 +161,9 @@ export const BarnCow = ({ barnWidth, barnHeight, cow }: BarnCowProps) => {
     cowXOffset.current = next;
 
     if (isGoingToTarget && next === targetX) handleAnimationChange('idle');
+    if (!isGoingToTarget && next === startX) {
+      onExitComplete();
+    }
 
     if (containerRef.current) {
       containerRef.current.x = barnWidth / 2 - next;
@@ -165,7 +180,7 @@ export const BarnCow = ({ barnWidth, barnHeight, cow }: BarnCowProps) => {
     <>
       <pixiContainer
         ref={containerRef}
-        y={barnHeight / 2 + rectSize / 2 + 8}
+        y={cowY}
         scale={{ x: cowScale * direction.current, y: cowScale }}
       >
         {Object.entries(animations).map(([layerName, animMap]) => (
