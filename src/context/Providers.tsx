@@ -7,6 +7,7 @@ import {
   MooneyContext,
   SceneContext,
   ToastContext,
+  WeatherContext,
 } from './Contexts';
 import { Howl, Howler } from 'howler';
 import { ToastOverlay } from '../components/others/Toast';
@@ -209,3 +210,115 @@ export const AudioProvider = ({ children }: { children: ReactNode }) => {
     </AudioContext.Provider>
   );
 };
+
+export function WeatherProvider({ children }: { children: ReactNode }) {
+  const [isRaining, setIsRaining] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const rainCodes = new Set([
+    51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82,
+  ]);
+
+  const fetchWeather = async (lat: number, lon: number) => {
+    const res = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`,
+    );
+    const data = await res.json();
+    const code = data.current_weather.weathercode;
+    setIsRaining(rainCodes.has(code));
+  };
+
+  const fetchCityFromIP = async () => {
+    const res = await fetch('https://ipapi.co/json/');
+    const data = await res.json();
+    return {
+      city: data.city,
+      lat: data.latitude,
+      lon: data.longitude,
+    };
+  };
+
+  const fetchCityCoords = async (city: string) => {
+    const res = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1`,
+    );
+    const data = await res.json();
+    if (!data.results?.length) {
+      throw new Error('City not found');
+    }
+    return {
+      lat: data.results[0].latitude,
+      lon: data.results[0].longitude,
+    };
+  };
+
+  const refresh = async () => {
+    setLoading(true);
+    setError(null);
+
+    const defaultCity = 'Melbourne';
+
+    try {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            console.log(
+              `Using navigator geolocation with ${pos.coords.latitude}, ${pos.coords.longitude}.`,
+            );
+            await fetchWeather(pos.coords.latitude, pos.coords.longitude);
+            setLoading(false);
+          },
+          async () => {
+            try {
+              const ipLocation = await fetchCityFromIP();
+              if (ipLocation?.lat && ipLocation?.lon) {
+                console.log(
+                  `Using IP location with ${ipLocation.lat}, ${ipLocation.lon}.`,
+                );
+                await fetchWeather(ipLocation.lat, ipLocation.lon);
+                setLoading(false);
+                return;
+              }
+            } catch (err: any) {
+              setError(
+                `Could not detect location via IP: ${err}. Using default city.`,
+              );
+            }
+            const { lat, lon } = await fetchCityCoords(defaultCity);
+            console.log(
+              `Using default city ${defaultCity} with ${lat}, ${lon}.`,
+            );
+            await fetchWeather(lat, lon);
+            setLoading(false);
+          },
+        );
+        return;
+      }
+
+      const { lat, lon } = await fetchCityCoords(defaultCity);
+      await fetchWeather(lat, lon);
+      setLoading(false);
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong.');
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refresh();
+  }, []);
+
+  return (
+    <WeatherContext.Provider
+      value={{
+        isRaining,
+        loading,
+        error,
+        refresh,
+      }}
+    >
+      {children}
+    </WeatherContext.Provider>
+  );
+}

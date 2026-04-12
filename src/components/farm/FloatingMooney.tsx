@@ -1,7 +1,7 @@
 import { extend } from '@pixi/react';
 import { Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { useEffect, useState } from 'react';
-import { useAudio, useMooney } from '../../context/hooks';
+import { useAudio, useMooney, useWeather } from '../../context/hooks';
 import { useGameStore } from '../../game/store';
 import type { FederatedPointerEvent } from 'pixi.js';
 
@@ -19,6 +19,7 @@ export const FloatingMooney = ({
   const { isHarvest, upgrades, addMooney, addStats } = useGameStore();
   const { moonies, addMooneyEffect } = useMooney();
   const { audioMap } = useAudio();
+  const { isRaining } = useWeather();
 
   const [mooneyImage, setMooneyImage] = useState<Texture | null>(null);
 
@@ -36,9 +37,10 @@ export const FloatingMooney = ({
 
   function handleClick(event: any) {
     const { x, y } = event.data.global;
+    const amount = upgrades.clickLevel * (isRaining ? 3 : 1);
     addStats('clicks');
-    addMooney(upgrades.clickLevel);
-    addMooneyEffect(x, y, upgrades.clickLevel);
+    addMooney(amount);
+    addMooneyEffect(x, y, amount);
     audioMap.coin.play();
   }
 

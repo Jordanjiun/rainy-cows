@@ -1,7 +1,7 @@
 import { extend } from '@pixi/react';
 import { AnimatedSprite, Container, Texture } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
-import { useMooney } from '../../context/hooks';
+import { useMooney, useWeather } from '../../context/hooks';
 import { cowConfig } from '../../data/cowData';
 import { gameUpgrades } from '../../data/gameData';
 import { useCowActions } from '../../game/cowLogic';
@@ -31,6 +31,7 @@ export const CowComponent = ({
 }: CowComponentProps) => {
   const { addMooney, isHarvest, upgrades } = useGameStore();
   const { addMooneyEffect } = useMooney();
+  const { isRaining } = useWeather();
   const { pos, cowScale, animation, direction, handlePetAnimation } =
     useCowActions(appWidth, appHeight, cow);
   const animations = useCowAnimations(cow.sprite.layers);
@@ -90,7 +91,7 @@ export const CowComponent = ({
   useEffect(() => {
     if (currentAnim === 'eat') {
       const timer = setTimeout(() => {
-        let base = cow.eat() + cow.stats.extraMooney;
+        let base = (cow.eat() + cow.stats.extraMooney) * (isRaining ? 3 : 1);
         if (isHarvest)
           base =
             base *
@@ -102,7 +103,7 @@ export const CowComponent = ({
       }, cowConfig.msEatCheck);
       return () => clearTimeout(timer);
     }
-  }, [currentAnim]);
+  }, [currentAnim, isRaining]);
 
   useEffect(() => {
     if (!animations) return;

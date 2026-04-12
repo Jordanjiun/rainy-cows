@@ -1,6 +1,7 @@
 import { extend, useTick } from '@pixi/react';
 import { Container, Graphics } from 'pixi.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useWeather } from '../../context/hooks';
 import type { Splash } from './Splashes';
 
 extend({ Container, Graphics });
@@ -31,6 +32,8 @@ export const Rain = ({
   intensity = 1,
   onSplash,
 }: RainProps) => {
+  const { isRaining } = useWeather();
+
   const [drops, setDrops] = useState<Raindrop[]>([]);
   const splashBuffer = useRef<Splash[]>([]);
 
@@ -63,13 +66,14 @@ export const Rain = ({
 
   useEffect(() => {
     const interval = setInterval(() => {
+      if (!isRaining) return;
       setDrops((prev) => {
         if (prev.length >= maxDrops * intensity) return prev;
         return [...prev, spawnDrop()];
       });
     }, 40);
     return () => clearInterval(interval);
-  }, [spawnDrop, intensity]);
+  }, [spawnDrop, intensity, isRaining]);
 
   useEffect(() => {
     const interval = setInterval(() => {
