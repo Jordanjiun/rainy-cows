@@ -147,21 +147,16 @@ export const LoadScreen = () => {
       if (!app) return;
 
       const totalAssets =
-        manifest.bundles.reduce(
-          (sum, bundle) => sum + bundle.assets.length,
-          0,
-        ) +
+        manifest.bundles.reduce((sum, b) => sum + b.assets.length, 0) +
         fonts.length +
         audioManifest.length;
       let loadedCount = 0;
 
       for (const bundle of manifest.bundles) {
-        for (const asset of bundle.assets) {
-          await Assets.load(asset.src);
-          if (isCancelled) return;
-          loadedCount += 1;
-          setProgress(Math.floor((loadedCount / totalAssets) * 100));
-        }
+        await Assets.loadBundle(bundle.name);
+        if (isCancelled) return;
+        loadedCount += bundle.assets.length;
+        setProgress(Math.floor((loadedCount / totalAssets) * 100));
       }
 
       for (const font of fonts) {
@@ -186,7 +181,7 @@ export const LoadScreen = () => {
     return () => {
       isCancelled = true;
     };
-  }, [app, switchScene, useAudio]);
+  }, [app, switchScene, loadAudio]);
 
   if (!app) return null;
 
