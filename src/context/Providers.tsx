@@ -230,7 +230,7 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
   };
 
   const fetchCityFromIP = async () => {
-    const res = await fetch('https://ipapi.co/json/');
+    const res = await fetch('https://ipwho.is/');
     const data = await res.json();
     return {
       city: data.city,
