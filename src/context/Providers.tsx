@@ -230,7 +230,7 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
   };
 
   const fetchCoordsFromCloudflare = async () => {
-    const res = await fetch("https://rainy-cows.jordanjiunftw.workers.dev/");
+    const res = await fetch('https://rainy-cows.jordanjiunftw.workers.dev/');
     const data = await res.json();
     const coords = await fetchCityCoords(data.city);
     return {

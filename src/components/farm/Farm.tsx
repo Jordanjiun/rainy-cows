@@ -15,6 +15,18 @@ extend({ Container, Graphics, Text });
 const landRatio = Number(import.meta.env.VITE_LAND_RATIO);
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
+const offset = 2;
+const offsets = [
+  [offset, offset],
+  [offset, 0],
+  [offset, -offset],
+  [0, offset],
+  [0, -offset],
+  [-offset, offset],
+  [-offset, 0],
+  [-offset, -offset],
+];
+
 export const Farm = ({
   appWidth,
   appHeight,
@@ -26,7 +38,7 @@ export const Farm = ({
   const [remainingTime, setRemainingTime] = useState(0);
   const splashRef = useRef<Splash[]>([]);
 
-  let harvestTimeYoffset = 25;
+  let harvestTimeYoffset = 20;
   if (appWidth > 600) harvestTimeYoffset = 0;
 
   useEffect(() => {
@@ -87,6 +99,23 @@ export const Farm = ({
         x={appWidth / 2}
         y={(appHeight * (1 - landRatio)) / 2 + harvestTimeYoffset}
       >
+        {offsets.map(([dx, dy], i) => (
+          <pixiText
+            key={i}
+            text={`Harvest time!\n(${remainingTime} seconds left)`}
+            x={dx}
+            y={dy}
+            anchor={0.5}
+            style={{
+              fontSize: 32,
+              fontFamily: 'pixelFont',
+              fill: 'white',
+              align: 'center',
+              wordWrap: true,
+              wordWrapWidth: appWidth,
+            }}
+          />
+        ))}
         <pixiText
           text={`Harvest time!\n(${remainingTime} seconds left)`}
           anchor={0.5}
