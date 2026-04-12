@@ -2,7 +2,6 @@ import { extend, useApplication } from '@pixi/react';
 import { Container } from 'pixi.js';
 import { useEffect, useMemo, useState } from 'react';
 import { Farm } from '../components/farm/Farm';
-import { FarmHud } from '../components/farm/FarmHud';
 import { FloatingMooney } from '../components/farm/FloatingMooney';
 import { HarvestButton } from '../components/farm/HarvestButton';
 import { Menu } from '../components/menu/Menu';
@@ -49,7 +48,6 @@ export const MainScene = () => {
         <MenuProvider>
           <MooneyProvider>
             <Farm appWidth={size.width} appHeight={size.height} />
-            <FarmHud />
             <HarvestButton appHeight={size.height} />
             <FloatingMooney appWidth={size.width} appHeight={size.height} />
             <Menu appWidth={size.width} appHeight={size.height} />

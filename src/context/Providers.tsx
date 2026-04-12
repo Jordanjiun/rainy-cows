@@ -264,9 +264,6 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           async (pos) => {
-            console.log(
-              `Using navigator geolocation with ${pos.coords.latitude}, ${pos.coords.longitude}.`,
-            );
             await fetchWeather(pos.coords.latitude, pos.coords.longitude);
             setLoading(false);
           },
@@ -274,9 +271,6 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
             try {
               const location = await fetchCoordsFromCloudflare();
               if (location?.lat && location?.lon) {
-                console.log(
-                  `Using city ${location.city} with ${location.lat}, ${location.lon}.`,
-                );
                 await fetchWeather(location.lat, location.lon);
                 setLoading(false);
                 return;
@@ -285,9 +279,6 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
               setError(`Could not detect city: ${err}. Using default city.`);
             }
             const { lat, lon } = await fetchCityCoords(defaultCity);
-            console.log(
-              `Using default city ${defaultCity} with ${lat}, ${lon}.`,
-            );
             await fetchWeather(lat, lon);
             setLoading(false);
           },

@@ -5,6 +5,7 @@ import { gameUpgrades } from '../../data/gameData';
 import { useGameStore } from '../../game/store';
 import { CowManager } from '../cow/CowManager';
 import { FarmBarn } from './FarmBarn';
+import { FarmHud } from './FarmHud';
 import { Grass } from './Grass';
 import { Sky } from './Sky';
 import { Rain } from './Rain';
@@ -139,6 +140,7 @@ export const Farm = ({
       <FarmBarn appWidth={appWidth} appHeight={appHeight} />
       <Grass appWidth={appWidth} appHeight={appHeight} />
       <Splashes incomingSplashesRef={splashRef} />
+      <FarmHud />
       <CowManager appWidth={appWidth} appHeight={appHeight} />
       <Rain
         appWidth={appWidth}
