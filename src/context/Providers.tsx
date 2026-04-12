@@ -216,8 +216,6 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const cloudflareEndpoint = String(import.meta.env.VITE_CLOUDFLARE_WORKER);
-
   const rainCodes = new Set([
     51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82,
   ]);
@@ -232,7 +230,7 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
   };
 
   const fetchCoordsFromCloudflare = async () => {
-    const res = await fetch(cloudflareEndpoint);
+    const res = await fetch("https://rainy-cows.jordanjiunftw.workers.dev/");
     const data = await res.json();
     const coords = await fetchCityCoords(data.city);
     return {
