@@ -53,6 +53,13 @@ export interface AudioContextType {
   setGlobalVolume: (volume: number) => void;
 }
 
+export interface WeatherContextType {
+  isRaining: boolean | null;
+  loading: boolean;
+  error: string | null;
+  refresh?: (city?: string) => void;
+}
+
 export const SceneContext = createContext<SceneContextType | undefined>(
   undefined,
 );
@@ -64,3 +71,4 @@ export const ToastContext = createContext<ToastContexType | null>(null);
 export const MenuContext = createContext<MenuContextType | null>(null);
 export const MooneyContext = createContext<MooneyContextType | null>(null);
 export const AudioContext = createContext<AudioContextType | null>(null);
+export const WeatherContext = createContext<WeatherContextType | null>(null);

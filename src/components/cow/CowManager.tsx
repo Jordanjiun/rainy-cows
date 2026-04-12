@@ -43,6 +43,8 @@ export const CowManager = ({
   const petAnimMap = useRef(new WeakMap<AnimatedSprite, () => void>()).current;
   const cleanupPointerHandlers = useRef<Record<string, () => void>>({});
   const lastCowIdRef = useRef<string | null>(null);
+  const cowInteractionHandled = useRef(false);
+  const globalStartPos = useRef({ x: 0, y: 0 });
 
   const nonBarnedCows = useMemo(
     () => cows.filter((cow) => !cow.barned),
@@ -78,6 +80,47 @@ export const CowManager = ({
     });
     setCowHearts(initialHearts);
   }, [nonBarnedCows]);
+
+  useEffect(() => {
+    if (selectedMenu == 'sellCow') return;
+
+    const handlePointerDown = (e: PointerEvent) => {
+      globalStartPos.current = { x: e.clientX, y: e.clientY };
+    };
+
+    const handlePointerUp = (e: PointerEvent) => {
+      if (isInsideCowInfoBox(e.clientX, e.clientY)) return;
+
+      requestAnimationFrame(() => {
+        if (!cowInteractionHandled.current) {
+          lastCowIdRef.current = null;
+          setSelectedCow(null);
+        }
+        cowInteractionHandled.current = false;
+      });
+    };
+
+    window.addEventListener('pointerdown', handlePointerDown);
+    window.addEventListener('pointerup', handlePointerUp);
+
+    return () => {
+      window.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [setSelectedCow, selectedMenu]);
+
+  const isInsideCowInfoBox = (x: number, y: number) => {
+    const bannerHeight = 64;
+    const boxWidth = 210;
+    const boxHeight = 155;
+    const offset = 10;
+    const boxX = appWidth - boxWidth - offset;
+    const boxY = bannerHeight + offset;
+
+    return (
+      x >= boxX && x <= boxX + boxWidth && y >= boxY && y <= boxY + boxHeight
+    );
+  };
 
   const clearHeartEvents = useCallback(() => {
     setHeartEvents([]);
@@ -127,6 +170,7 @@ export const CowManager = ({
       const handlePointerDown = (e: PointerEvent) => {
         if (isHarvest) return;
         if (e.button !== 0 && e.pointerType !== 'touch') return;
+        cowInteractionHandled.current = true;
         activePointerId = e.pointerId;
         pointerDownTime = performance.now();
         startX = e.clientX;
@@ -163,6 +207,7 @@ export const CowManager = ({
           handlePetAnimation();
           handleHeartChange(cow.id, petCow(cow.id));
           if (tutorial == 4 && useGameStore.getState().tutorial == 4) {
+            lastCowIdRef.current = null;
             setSelectedCow(null);
             setTutorial(5);
           }

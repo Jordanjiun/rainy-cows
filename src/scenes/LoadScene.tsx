@@ -88,6 +88,7 @@ const manifest = {
     {
       name: 'others',
       assets: [
+        { alias: 'farmbarn', src: '/assets/others/barn.png' },
         { alias: 'heart', src: '/assets/others/heart.png' },
         { alias: 'noHeart', src: '/assets/others/noHeart.png' },
         { alias: 'logo', src: '/assets/others/logo.png' },

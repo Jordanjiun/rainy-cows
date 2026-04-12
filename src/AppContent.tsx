@@ -3,6 +3,7 @@ import {
   AudioProvider,
   CowProvider,
   FileInputProvider,
+  WeatherProvider,
 } from './context/Providers';
 import { useScene } from './context/hooks';
 import { BarnScene } from './scenes/BarnScene';
@@ -109,16 +110,18 @@ export const AppContent = () => {
 
         <FileInputProvider>
           <AudioProvider>
-            <CowProvider>
-              <Application
-                antialias={true}
-                className="canvas"
-                resizeTo={window}
-                roundPixels={false}
-              >
-                {renderScene(currentScene)}
-              </Application>
-            </CowProvider>
+            <WeatherProvider>
+              <CowProvider>
+                <Application
+                  antialias={true}
+                  className="canvas"
+                  resizeTo={window}
+                  roundPixels={false}
+                >
+                  {renderScene(currentScene)}
+                </Application>
+              </CowProvider>
+            </WeatherProvider>
           </AudioProvider>
         </FileInputProvider>
       </div>

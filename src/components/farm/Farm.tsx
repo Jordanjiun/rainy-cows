@@ -1,10 +1,14 @@
 import { extend } from '@pixi/react';
 import { Container, Graphics, Text } from 'pixi.js';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { gameUpgrades } from '../../data/gameData';
 import { useGameStore } from '../../game/store';
+import { CowManager } from '../cow/CowManager';
+import { FarmBarn } from './FarmBarn';
 import { Grass } from './Grass';
 import { Sky } from './Sky';
+import { Rain } from './Rain';
+import { Splashes, type Splash } from './Splashes';
 
 extend({ Container, Graphics, Text });
 
@@ -20,6 +24,7 @@ export const Farm = ({
 }) => {
   const { isHarvest, lastHarvest, upgrades } = useGameStore();
   const [remainingTime, setRemainingTime] = useState(0);
+  const splashRef = useRef<Splash[]>([]);
 
   let harvestTimeYoffset = 25;
   if (appWidth > 600) harvestTimeYoffset = 0;
@@ -102,7 +107,17 @@ export const Farm = ({
     <>
       <pixiGraphics draw={drawDefaultBackground} />
       <Sky appWidth={appWidth} appHeight={appHeight} landRatio={landRatio} />
+      <FarmBarn appWidth={appWidth} appHeight={appHeight} />
       <Grass appWidth={appWidth} appHeight={appHeight} />
+      <Splashes incomingSplashesRef={splashRef} />
+      <CowManager appWidth={appWidth} appHeight={appHeight} />
+      <Rain
+        appWidth={appWidth}
+        appHeight={appHeight}
+        onSplash={(newSplashes) => {
+          splashRef.current.push(...newSplashes);
+        }}
+      />
       {isHarvest && drawHarvestTime}
       <pixiGraphics draw={drawFooter} />
     </>

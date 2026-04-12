@@ -7,6 +7,7 @@ import {
   MooneyContext,
   SceneContext,
   ToastContext,
+  WeatherContext,
 } from './Contexts';
 
 export function useCow() {
@@ -51,5 +52,11 @@ export function useMooney() {
 export function useAudio() {
   const ctx = useContext(AudioContext);
   if (!ctx) throw new Error('useAudio must be used inside a AudioProvider');
+  return ctx;
+}
+
+export function useWeather() {
+  const ctx = useContext(WeatherContext);
+  if (!ctx) throw new Error('useWeather must be used inside a WeatherProvider');
   return ctx;
 }
