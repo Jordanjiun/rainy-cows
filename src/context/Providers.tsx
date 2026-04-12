@@ -216,6 +216,8 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const cloudflareEndpoint = String(import.meta.env.VITE_CLOUDFLARE_WORKER);
+
   const rainCodes = new Set([
     51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82,
   ]);
@@ -229,13 +231,14 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
     setIsRaining(rainCodes.has(code));
   };
 
-  const fetchCityFromIP = async () => {
-    const res = await fetch('https://ipwho.is/');
+  const fetchCoordsFromCloudflare = async () => {
+    const res = await fetch(cloudflareEndpoint);
     const data = await res.json();
+    const coords = await fetchCityCoords(data.city);
     return {
       city: data.city,
-      lat: data.latitude,
-      lon: data.longitude,
+      lat: coords.lat,
+      lon: coords.lon,
     };
   };
 
@@ -271,19 +274,17 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
           },
           async () => {
             try {
-              const ipLocation = await fetchCityFromIP();
-              if (ipLocation?.lat && ipLocation?.lon) {
+              const location = await fetchCoordsFromCloudflare();
+              if (location?.lat && location?.lon) {
                 console.log(
-                  `Using IP location with ${ipLocation.lat}, ${ipLocation.lon}.`,
+                  `Using city ${location.city} with ${location.lat}, ${location.lon}.`,
                 );
-                await fetchWeather(ipLocation.lat, ipLocation.lon);
+                await fetchWeather(location.lat, location.lon);
                 setLoading(false);
                 return;
               }
             } catch (err: any) {
-              setError(
-                `Could not detect location via IP: ${err}. Using default city.`,
-              );
+              setError(`Could not detect city: ${err}. Using default city.`);
             }
             const { lat, lon } = await fetchCityCoords(defaultCity);
             console.log(
