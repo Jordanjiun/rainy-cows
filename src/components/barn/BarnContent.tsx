@@ -17,6 +17,8 @@ const offset = 15;
 const titleOffsetY = 30;
 const cardOffsetY = 45;
 const scrollBarWidth = 5;
+const buttonWidth = 165;
+const buttonHeight = 45;
 
 const footerHeight = Number(import.meta.env.VITE_FOOTER_HEIGHT_PX);
 
@@ -97,6 +99,7 @@ export const BarnContent = ({
   const { setSelectedMenu } = useMenu();
 
   const [scrollY, setScrollY] = useState(0);
+  const [isInfo, setIsInfo] = useState(false);
   const [_, setCowHearts] = useState<Record<string, number>>({});
   const [heartEvents, setHeartEvents] = useState<
     { id: string; x: number; y: number }[]
@@ -255,15 +258,27 @@ export const BarnContent = ({
         />
         <Button
           x={15}
-          y={startY - 10 + 45}
-          buttonWidth={205}
-          buttonHeight={45}
-          buttonText={'Change sort'}
+          y={startY + 35}
+          buttonWidth={buttonWidth}
+          buttonHeight={buttonHeight}
+          buttonText={'Change Sort'}
           buttonColor={'white'}
-          fontsize={28}
           onClick={() => {
             audioMap.type.play();
             setSelectedMenu('sortCow');
+          }}
+        />
+
+        <Button
+          x={195}
+          y={startY + 35}
+          buttonWidth={buttonWidth}
+          buttonHeight={buttonHeight}
+          buttonText={'Change Info'}
+          buttonColor={'white'}
+          onClick={() => {
+            audioMap.type.play();
+            setIsInfo(!isInfo);
           }}
         />
 
@@ -292,6 +307,7 @@ export const BarnContent = ({
               y={y}
               cardWidth={cardWidth}
               cardHeight={cardHeight}
+              isInfo={isInfo}
               cow={cow}
               onPet={handleHeartChange}
             />
@@ -312,6 +328,7 @@ export const BarnContent = ({
               y={y}
               cardWidth={cardWidth}
               cardHeight={cardHeight}
+              isInfo={isInfo}
               cow={cow}
               onPet={handleHeartChange}
             />

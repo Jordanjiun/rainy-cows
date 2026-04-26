@@ -17,7 +17,7 @@ import {
 import { useGameStore } from '../../game/store';
 import { measureText } from '../../game/utils';
 import { CardButton } from './CardButton';
-import type { Cow } from '../../game/cowModel';
+import type { Cow, CowStat } from '../../game/cowModel';
 import type { Texture } from 'pixi.js';
 
 extend({ AnimatedSprite, Container, Graphics });
@@ -30,12 +30,12 @@ const heartScale = 0.08;
 const heartSpacing = 1.75;
 const heartY = 62;
 const xpBarY = 86;
+const infoY = 33;
 const assetNames = [
   'arrowDown',
   'arrowUp',
   'dollar',
   'game',
-  'info',
   'mooney',
   'heart',
   'noHeart',
@@ -49,15 +49,23 @@ interface CowCardProps {
   y: number;
   cardWidth: number;
   cardHeight: number;
+  isInfo: boolean;
   cow: Cow;
   onPet: (id: string, hearts: number, x: number, y: number) => void;
 }
+
+const infoRows: { label: string; value: CowStat }[] = [
+  { label: 'Eat Chance', value: 'eatChance' },
+  { label: 'Bonus Mooney', value: 'extraMooney' },
+  { label: 'Value Multiplier', value: 'valueMultiplier' },
+];
 
 export const CowCard = ({
   x,
   y,
   cardWidth,
   cardHeight,
+  isInfo,
   cow,
   onPet,
 }: CowCardProps) => {
@@ -312,10 +320,34 @@ export const CowCard = ({
     );
   }, [x, y, textures.mooney, value, cardWidth, cardHeight]);
 
+  const drawInfo = useMemo(() => {
+    if (!cow) return null;
+    return (
+      <pixiContainer x={infoX}>
+        <pixiText
+          y={y + infoY}
+          text={`Rarity: ${cow.stats.rarity.charAt(0).toUpperCase() + cow.stats.rarity.slice(1)}`}
+          style={{ fontSize: 16, fontFamily: 'pixelFont' }}
+        />
+        {infoRows.map((row, i) => {
+          const textY = y + infoY + (i + 1) * 16;
+          return (
+            <pixiContainer key={row.label}>
+              <pixiText
+                y={textY}
+                text={`${row.label}: ${cow.stats[row.value]}`}
+                style={{ fontSize: 16, fontFamily: 'pixelFont' }}
+              />
+            </pixiContainer>
+          );
+        })}
+      </pixiContainer>
+    );
+  }, [cow]);
+
   if (!animations) return null;
 
   const buttons: { image: Texture; action: ButtonKey }[] = [
-    { image: textures.info, action: 'InfoCow' },
     { image: textures.dollar, action: 'SellCow' },
     { image: textures.pen, action: 'RenameCow' },
     { image: arrowTexture, action: 'BarnCow' },
@@ -356,9 +388,17 @@ export const CowCard = ({
         scale={{ x: textScale, y: textScale }}
         style={{ fontSize: cowNameFontSize, fontFamily: 'pixelFont' }}
       />
-      {drawValue}
-      {drawHearts}
-      {drawXp}
+
+      {isInfo ? (
+        <>{drawInfo}</>
+      ) : (
+        <>
+          {drawValue}
+          {drawHearts}
+          {drawXp}
+        </>
+      )}
+
       {buttons.map((btn, index) => (
         <CardButton
           key={btn.action}
