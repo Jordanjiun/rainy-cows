@@ -205,10 +205,6 @@ export const CowCard = ({
         setSelectedCow(cow);
         switchScene('HopScene');
         return;
-      case 'InfoCow':
-        setSelectedCow(cow);
-        setSelectedMenu('infoCow');
-        return;
       default:
         return null;
     }
@@ -343,7 +339,7 @@ export const CowCard = ({
         })}
       </pixiContainer>
     );
-  }, [cow]);
+  }, [cow, y]);
 
   if (!animations) return null;
 
