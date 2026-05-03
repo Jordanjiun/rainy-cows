@@ -1,6 +1,7 @@
 import { extend } from '@pixi/react';
 import { AnimatedSprite, Container, Graphics } from 'pixi.js';
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { animationsDef } from '../../game/cowBuilder';
 import { CowComponent } from './CowComponent';
 import { CowInfoBox } from './CowInfoBox';
 import { FloatingArrow } from '../others/FloatingArrow';
@@ -40,6 +41,7 @@ export const CowManager = ({
 
   const cowXYRef = useRef(cowXY);
   const cowRefs = useRef<Record<string, AnimatedSprite | null>>({});
+  const heartCooldownRef = useRef<Record<string, boolean>>({});
   const petAnimMap = useRef(new WeakMap<AnimatedSprite, () => void>()).current;
   const cleanupPointerHandlers = useRef<Record<string, () => void>>({});
   const lastCowIdRef = useRef<string | null>(null);
@@ -140,15 +142,15 @@ export const CowManager = ({
 
   const handleHeartChange = useCallback((id: string, hearts: number) => {
     setCowHearts((prev) => {
-      const oldHearts = prev[id] ?? 0;
-      const newHearts = hearts;
-      if (newHearts > oldHearts) {
-        const cowPos = cowXYRef.current[id];
-        if (cowPos) {
-          setHeartEvents((prev) => [...prev, { id, x: cowPos.x, y: cowPos.y }]);
-        }
+      const cowPos = cowXYRef.current[id];
+      if (!heartCooldownRef.current[id] && cowPos) {
+        setHeartEvents((prev) => [...prev, { id, x: cowPos.x, y: cowPos.y }]);
+        heartCooldownRef.current[id] = true;
+        setTimeout(() => {
+          heartCooldownRef.current[id] = false;
+        }, animationsDef['pet'].length * cowConfig.msPerFrame);
       }
-      return { ...prev, [id]: newHearts };
+      return { ...prev, [id]: hearts };
     });
   }, []);
 
