@@ -110,14 +110,19 @@ export const BarnContent = ({
   const lastY = useRef(0);
 
   const handleHeartChange = useCallback(
-    (id: string, hearts: number, x: number, y: number) => {
+    (
+      id: string,
+      hearts: number,
+      x: number,
+      y: number,
+      firstPetToday: boolean,
+    ) => {
       setCowHearts((prev) => {
         const oldHearts = prev[id] ?? 0;
-        const newHearts = hearts;
-        if (newHearts > oldHearts) {
-          setHeartEvents((prev) => [...prev, { id, x: x, y: y }]);
+        if (hearts > oldHearts || firstPetToday) {
+          setHeartEvents((prev) => [...prev, { id, x, y }]);
         }
-        return { ...prev, [id]: newHearts };
+        return { ...prev, [id]: hearts };
       });
     },
     [],

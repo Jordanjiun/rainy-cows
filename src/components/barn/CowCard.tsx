@@ -51,7 +51,13 @@ interface CowCardProps {
   cardHeight: number;
   isInfo: boolean;
   cow: Cow;
-  onPet: (id: string, hearts: number, x: number, y: number) => void;
+  onPet: (
+    id: string,
+    hearts: number,
+    x: number,
+    y: number,
+    firstPetToday: boolean,
+  ) => void;
 }
 
 const infoRows: { label: string; value: CowStat }[] = [
@@ -166,7 +172,13 @@ export const CowCard = ({
     if (currentAnim == 'pet') return;
     var soundId = audioMap.moo.play();
     audioMap.moo.rate(cow.pitch ?? 1, soundId);
-    onPet(cow.id, petCow(cow.id), cowX, y + animY);
+    const lastPetDate = new Date(cow.lastPet);
+    const now = new Date();
+    const firstPetToday =
+      now.getFullYear() !== lastPetDate.getFullYear() ||
+      now.getMonth() !== lastPetDate.getMonth() ||
+      now.getDate() !== lastPetDate.getDate();
+    onPet(cow.id, petCow(cow.id), cowX, y + animY, firstPetToday);
 
     setTimeout(() => {
       setCurrentAnim('idle');

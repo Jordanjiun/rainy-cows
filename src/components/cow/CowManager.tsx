@@ -1,7 +1,6 @@
 import { extend } from '@pixi/react';
 import { AnimatedSprite, Container, Graphics } from 'pixi.js';
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
-import { animationsDef } from '../../game/cowBuilder';
 import { CowComponent } from './CowComponent';
 import { CowInfoBox } from './CowInfoBox';
 import { FloatingArrow } from '../others/FloatingArrow';
@@ -41,7 +40,6 @@ export const CowManager = ({
 
   const cowXYRef = useRef(cowXY);
   const cowRefs = useRef<Record<string, AnimatedSprite | null>>({});
-  const heartCooldownRef = useRef<Record<string, boolean>>({});
   const petAnimMap = useRef(new WeakMap<AnimatedSprite, () => void>()).current;
   const cleanupPointerHandlers = useRef<Record<string, () => void>>({});
   const lastCowIdRef = useRef<string | null>(null);
@@ -140,19 +138,24 @@ export const CowManager = ({
     [],
   );
 
-  const handleHeartChange = useCallback((id: string, hearts: number) => {
-    setCowHearts((prev) => {
-      const cowPos = cowXYRef.current[id];
-      if (!heartCooldownRef.current[id] && cowPos) {
-        setHeartEvents((prev) => [...prev, { id, x: cowPos.x, y: cowPos.y }]);
-        heartCooldownRef.current[id] = true;
-        setTimeout(() => {
-          heartCooldownRef.current[id] = false;
-        }, animationsDef['pet'].length * cowConfig.msPerFrame);
-      }
-      return { ...prev, [id]: hearts };
-    });
-  }, []);
+  const handleHeartChange = useCallback(
+    (id: string, hearts: number, firstPetToday: boolean) => {
+      setCowHearts((prev) => {
+        const oldHearts = prev[id] ?? 0;
+        if (hearts > oldHearts || firstPetToday) {
+          const cowPos = cowXYRef.current[id];
+          if (cowPos) {
+            setHeartEvents((prev) => [
+              ...prev,
+              { id, x: cowPos.x, y: cowPos.y },
+            ]);
+          }
+        }
+        return { ...prev, [id]: hearts };
+      });
+    },
+    [],
+  );
 
   const handleClick = useCallback(
     (
@@ -207,7 +210,13 @@ export const CowManager = ({
         const duration = performance.now() - pointerDownTime;
         if (duration < holdThreshold) {
           handlePetAnimation();
-          handleHeartChange(cow.id, petCow(cow.id));
+          const lastPetDate = new Date(cow.lastPet);
+          const now = new Date();
+          const firstPetToday =
+            now.getFullYear() !== lastPetDate.getFullYear() ||
+            now.getMonth() !== lastPetDate.getMonth() ||
+            now.getDate() !== lastPetDate.getDate();
+          handleHeartChange(cow.id, petCow(cow.id), firstPetToday);
           if (tutorial == 4 && useGameStore.getState().tutorial == 4) {
             lastCowIdRef.current = null;
             setSelectedCow(null);
