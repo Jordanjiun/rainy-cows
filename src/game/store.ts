@@ -212,14 +212,6 @@ function isStatKey(key: string): key is keyof Stats {
 }
 
 export const useGameStore = create<GameState>((set, get) => {
-  const getHarvestDuration = () => {
-    const level = get().upgrades.harvestDurationLevel || 1;
-    return (
-      gameUpgrades.harvestDurationSeconds * 1000 +
-      gameUpgrades.harvetDurationIncreasePerUpgrade * 1000 * (level - 1)
-    );
-  };
-
   const updateStats = (updates: Partial<Stats>) => {
     set((state) => ({
       stats: {
@@ -392,7 +384,15 @@ export const useGameStore = create<GameState>((set, get) => {
         }
 
         const now = Date.now();
-        const harvestDuration = getHarvestDuration();
+        const savedLevel =
+          data.upgrades?.harvestDurationLevel ??
+          state.upgrades.harvestDurationLevel ??
+          1;
+        const harvestDuration =
+          gameUpgrades.harvestDurationSeconds * 1000 +
+          gameUpgrades.harvetDurationIncreasePerUpgrade *
+            1000 *
+            (savedLevel - 1);
         let lastHarvest =
           typeof data.lastHarvest === 'number'
             ? data.lastHarvest
